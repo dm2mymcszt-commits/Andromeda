@@ -94,6 +94,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     private var altitude: Double = 0.0
     private var speedMultiplier: Double = 1.0
     private let updateInterval: TimeInterval = 1.0
+    private var lastSimulatedLocation: CLLocation?
     
     // Background handling
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
@@ -197,6 +198,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         isSimulating = true
         isPaused = false
         progress = 0.0
+        lastSimulatedLocation = nil
         
         // Request "Always" authorization for background
         locationManager.requestAlwaysAuthorization()
@@ -225,6 +227,18 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
             timer = nil
             endBackgroundTask()
         }
+        // Refresh motion at the same coordinate; pausing must not leave a moving speed.
+        if let location = lastSimulatedLocation {
+            injectLocation(CLLocation(
+                coordinate: location.coordinate,
+                altitude: location.altitude,
+                horizontalAccuracy: location.horizontalAccuracy,
+                verticalAccuracy: location.verticalAccuracy,
+                course: location.course,
+                speed: motion(at: currentPointIndex).speed,
+                timestamp: Date()
+            ))
+        }
     }
     
     func stopSimulation() {
@@ -239,6 +253,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         allRoutePolylines = []
         availableRoutes = []
         currentPosition = nil
+        lastSimulatedLocation = nil
         estimatedTime = ""
         locationManager.stopUpdatingLocation()
         endBackgroundTask()
@@ -291,14 +306,41 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         
         let wgsCoord = CoordTransform.gcj02ToWgs84(coord)
+        let motion = motion(at: index)
         let location = CLLocation(
             coordinate: wgsCoord,
             altitude: altitude + Double.random(in: -0.5...0.5), // Slight altitude jitter
             horizontalAccuracy: Double.random(in: 3.0...6.0),   // Varying accuracy
             verticalAccuracy: 5,
+            course: motion.course,
+            speed: motion.speed,
             timestamp: Date()
         )
+        injectLocation(location)
+    }
+
+    private func injectLocation(_ location: CLLocation) {
+        lastSimulatedLocation = location
         LocSimManager.startLocSim(location: location)
+    }
+
+    private func motion(at index: Int) -> (speed: CLLocationSpeed, course: CLLocationDirection) {
+        let previousCourse = lastSimulatedLocation?.course ?? 0
+        guard index >= 0, index + 1 < routePoints.count else {
+            // Keep the destination fixed with zero speed and the last known bearing.
+            return (0, previousCourse)
+        }
+        // Use unjittered WGS-84 route points so random noise does not steer the bearing.
+        let from = CoordTransform.gcj02ToWgs84(routePoints[index])
+        let to = CoordTransform.gcj02ToWgs84(routePoints[index + 1])
+        guard distanceBetween(from, to) > 0 else { return (0, previousCourse) }
+        let lat1 = from.latitude * .pi / 180
+        let lat2 = to.latitude * .pi / 180
+        let deltaLongitude = (to.longitude - from.longitude) * .pi / 180
+        let y = sin(deltaLongitude) * cos(lat2)
+        let x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(deltaLongitude)
+        let course = (atan2(y, x) * 180 / .pi + 360).truncatingRemainder(dividingBy: 360)
+        return (isPaused ? 0 : travelMode.speed * speedMultiplier, course)
     }
     
     // MARK: - Background Task Management
