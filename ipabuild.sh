@@ -27,6 +27,7 @@ xcodebuild -project "$WORKING_LOCATION/$APPLICATION_NAME.xcodeproj" \
     -destination 'generic/platform=iOS' \
     ONLY_ACTIVE_ARCH="NO" \
     CODE_SIGNING_ALLOWED="NO" \
+    ENABLE_DEBUG_DYLIB="NO"
     
 # Build helper
 # xcodebuild -project "$WORKING_LOCATION/$APPLICATION_NAME.xcodeproj" \
@@ -42,7 +43,9 @@ TARGET_APP="$WORKING_LOCATION/build/$APPLICATION_NAME.app"
 cp -r "$DD_APP_PATH" "$TARGET_APP"
 
 # Remove signature
-codesign --remove "$TARGET_APP"
+if codesign --display "$TARGET_APP" 2>/dev/null; then
+    codesign --remove-signature "$TARGET_APP"
+fi
 if [ -e "$TARGET_APP/_CodeSignature" ]; then
     rm -rf "$TARGET_APP/_CodeSignature"
 fi
@@ -51,10 +54,10 @@ if [ -e "$TARGET_APP/embedded.mobileprovision" ]; then
 fi
 
 git submodule update --init --recursive
-cd $WORKING_LOCATION/RootHelper
+cd "$WORKING_LOCATION/RootHelper"
 make clean
 make
-cp $WORKING_LOCATION/RootHelper/.theos/obj/debug/GeraniumRootHelper $WORKING_LOCATION/build/Geranium.app/GeraniumRootHelper
+cp "$WORKING_LOCATION/RootHelper/.theos/obj/debug/GeraniumRootHelper" "$TARGET_APP/GeraniumRootHelper"
 cd -
 
 #cp $WORKING_LOCATION/build/DerivedData/Build/Products/$CONFIGURATION-iphoneos/RootHelper $WORKING_LOCATION/build/Geranium.app/RootHelper

@@ -1,0 +1,63 @@
+name: Build TrollStore package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [experiment/route-motion]
+    paths-ignore: ['**.md']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+      THEOS: ${{ github.workspace }}/.theos-toolchain
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - name: Install build dependencies
+        run: |
+          brew install ldid make
+          echo "$(brew --prefix make)/libexec/gnubin" >> "$GITHUB_PATH"
+          xcodebuild -version
+
+      - name: Set up Theos and RootHelper SDK
+        run: |
+          git clone --recursive https://github.com/theos/theos.git "$THEOS"
+          git -C "$THEOS" checkout 5280bd038207e14f8bd76f5417aa2fe641c03228
+          git -C "$THEOS" submodule update --init --recursive
+          git clone --filter=blob:none --no-checkout https://github.com/theos/sdks.git "$RUNNER_TEMP/theos-sdks"
+          git -C "$RUNNER_TEMP/theos-sdks" sparse-checkout set iPhoneOS14.5.sdk
+          git -C "$RUNNER_TEMP/theos-sdks" checkout 0222fd5413cf4b9af096f37b4621afa2688572f7
+          cp -R "$RUNNER_TEMP/theos-sdks/iPhoneOS14.5.sdk" "$THEOS/sdks/"
+
+      - name: Build and package
+        run: |
+          set -o pipefail
+          bash ipabuild.sh 2>&1 | tee "$RUNNER_TEMP/trollstore-build.log"
+          test -s build/Geranium.tipa
+          unzip -t build/Geranium.tipa
+
+      - name: Upload TrollStore package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Andromeda-route-motion-${{ github.sha }}
+          path: build/Geranium.tipa
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: build-log-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/trollstore-build.log
+          if-no-files-found: ignore
+          retention-days: 14
