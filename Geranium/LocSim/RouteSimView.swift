@@ -15,17 +15,18 @@ struct RouteSimSheet: View {
     @State private var startCoord: CLLocationCoordinate2D? = nil
     @State private var endCoord: CLLocationCoordinate2D? = nil
     @State private var selectedMode: TravelMode = .driving
-    @State private var isSearchingStart: Bool = false
-    @State private var isSearchingEnd: Bool = false
-    @State private var startResults: [MKMapItem] = []
-    @State private var endResults: [MKMapItem] = []
-    @State private var activeField: ActiveField = .none
+    @StateObject private var currentLocation = RouteCurrentLocation()
+    @StateObject private var recentPlaces = RouteRecentPlaces()
+    @State private var pickerField: ActiveField?
+    @State private var waitingForCurrentStart = false
+    @State private var didInitializeStart = false
     @State private var routeReady: Bool = false
     @State private var speedMultiplier: Double = 1.0
     @State private var showGPXPicker: Bool = false
     
-    enum ActiveField {
-        case none, start, end
+    enum ActiveField: String, Identifiable {
+        case start, end
+        var id: String { rawValue }
     }
     
     var body: some View {
@@ -41,12 +42,19 @@ struct RouteSimSheet: View {
                             title: "Start Point",
                             icon: "play.circle.fill",
                             iconColor: .green,
-                            text: $startText,
-                            isSearching: isSearchingStart,
-                            results: startResults,
+                            text: startText,
                             selectedCoord: startCoord,
                             field: .start
                         )
+                        if waitingForCurrentStart {
+                            if currentLocation.isLocating {
+                                ProgressView("Finding your current location…")
+                            }
+                            if let message = currentLocation.message {
+                                Text(message).font(.caption).foregroundColor(.secondary).padding(.horizontal)
+                                Button("Retry Current Location", action: useCurrentStart)
+                            }
+                        }
                         
                         // Arrow between cards
                         Image(systemName: "arrow.down.circle.fill")
@@ -58,9 +66,7 @@ struct RouteSimSheet: View {
                             title: "Destination",
                             icon: "flag.checkered.circle.fill",
                             iconColor: .red,
-                            text: $endText,
-                            isSearching: isSearchingEnd,
-                            results: endResults,
+                            text: endText,
                             selectedCoord: endCoord,
                             field: .end
                         )
@@ -187,6 +193,7 @@ struct RouteSimSheet: View {
                     }
                 }
                 .padding(.vertical)
+                .disabled(routeSimulator.isCalculatingRoute)
             }
             .navigationTitle("Andromeda Navigation")
             .navigationBarTitleDisplayMode(.inline)
@@ -218,6 +225,16 @@ struct RouteSimSheet: View {
                     .disabled(routeSimulator.isSimulating)
                 }
             }
+            .sheet(item: $pickerField) { field in
+                RouteLocationPicker(
+                    title: field == .start ? "Start Point" : "Destination",
+                    region: searchRegion,
+                    selectedCoordinate: field == .start ? startCoord : endCoord,
+                    recents: recentPlaces,
+                    useCurrentLocation: field == .start ? useCurrentStart : nil,
+                    select: { selectPlace($0, field: field) }
+                )
+            }
             .sheet(isPresented: $showGPXPicker) {
                 GPXDocumentPicker { url in
                     guard let result = GPXParser.parse(url: url), !result.isEmpty else {
@@ -227,6 +244,9 @@ struct RouteSimSheet: View {
                     
                     let coords = result.allCoordinates
                     if coords.count >= 2 {
+                        waitingForCurrentStart = false
+                        currentLocation.cancel()
+                        routeReady = false
                         // Use first and last as start/end
                         startCoord = coords.first
                         endCoord = coords.last
@@ -245,6 +265,19 @@ struct RouteSimSheet: View {
                     }
                 }
             }
+        }
+        .onAppear {
+            if !didInitializeStart && !routeSimulator.isSimulating {
+                didInitializeStart = true
+                useCurrentStart()
+            }
+        }
+        .onReceive(currentLocation.$location) { location in
+            guard waitingForCurrentStart, let location = location else { return }
+            startCoord = CoordTransform.wgs84ToGcj02(location.coordinate)
+            startText = "Current Location"
+            waitingForCurrentStart = false
+            routeReady = false
         }
     }
     
@@ -434,109 +467,39 @@ struct RouteSimSheet: View {
     }
     
     // MARK: - Location Card
-    @ViewBuilder
     private func locationCard(
         title: String,
         icon: String,
         iconColor: Color,
-        text: Binding<String>,
-        isSearching: Bool,
-        results: [MKMapItem],
+        text: String,
         selectedCoord: CLLocationCoordinate2D?,
         field: ActiveField
     ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundColor(iconColor)
-                    .font(.title3)
-                Text(title)
-                    .font(.headline)
-                Spacer()
-                if selectedCoord != nil {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                }
-            }
-            .padding(.horizontal)
-            
-            HStack {
-                TextField("Search address...", text: text, onCommit: {
-                    searchLocation(query: text.wrappedValue, field: field)
-                })
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .onTapGesture {
-                    activeField = field
-                }
-                
-                if isSearching {
-                    ProgressView()
-                        .scaleEffect(0.7)
-                }
-                
-                Button(action: {
-                    searchLocation(query: text.wrappedValue, field: field)
-                }) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.accentColor)
-                }
-            }
-            .padding(.horizontal)
-            
-            if selectedCoord != nil {
-                HStack {
-                    Image(systemName: "mappin")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    Text(String(format: "%.4f, %.4f", selectedCoord!.latitude, selectedCoord!.longitude))
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.horizontal)
-            }
-            
-            // Search Results
-            if activeField == field && !results.isEmpty {
-                VStack(spacing: 0) {
-                    ForEach(results.prefix(5), id: \.self) { item in
-                        Button(action: {
-                            selectLocation(item, field: field)
-                        }) {
-                            HStack {
-                                Image(systemName: "mappin.circle.fill")
-                                    .foregroundColor(iconColor)
-                                VStack(alignment: .leading, spacing: 1) {
-                                    Text(item.name ?? "Unknown")
-                                        .font(.subheadline)
-                                        .foregroundColor(.primary)
-                                    if let addr = item.placemark.title {
-                                        Text(addr)
-                                            .font(.caption2)
-                                            .foregroundColor(.secondary)
-                                            .lineLimit(1)
-                                    }
-                                }
-                                Spacer()
-                            }
-                            .padding(.horizontal)
-                            .padding(.vertical, 6)
-                        }
-                        Divider().padding(.leading, 40)
+        Button { pickerField = field } label: {
+            HStack(spacing: 12) {
+                Image(systemName: icon).foregroundColor(iconColor).font(.title2)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(title).font(.caption).foregroundColor(.secondary)
+                    Text(text.isEmpty ? "Choose a place" : text)
+                        .font(.headline).foregroundColor(.primary)
+                    if field == .end && selectedCoord == nil {
+                        Text("Search, recent places, or choose on map")
+                            .font(.caption).foregroundColor(.secondary)
                     }
                 }
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(UIColor.tertiarySystemBackground))
-                )
-                .padding(.horizontal)
+                Spacer()
+                Image(systemName: "chevron.right").foregroundColor(.secondary)
             }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(.ultraThinMaterial)
+            .cornerRadius(16)
+            .contentShape(Rectangle())
         }
-        .padding(.vertical, 10)
-        .background(.ultraThinMaterial)
-        .cornerRadius(16)
+        .buttonStyle(.plain)
         .padding(.horizontal)
     }
-    
+
     // MARK: - Computed
     private var formattedSpeed: String {
         let baseSpeed = selectedMode.speed * speedMultiplier
@@ -545,48 +508,36 @@ struct RouteSimSheet: View {
     }
     
     // MARK: - Actions
-    private func searchLocation(query: String, field: ActiveField) {
-        guard !query.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        
-        activeField = field
-        
-        if field == .start { isSearchingStart = true }
-        else { isSearchingEnd = true }
-        
-        let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = query
-        
-        let search = MKLocalSearch(request: request)
-        search.start { response, error in
-            DispatchQueue.main.async {
-                if field == .start { isSearchingStart = false }
-                else { isSearchingEnd = false }
-                
-                if let items = response?.mapItems {
-                    if field == .start { startResults = items }
-                    else { endResults = items }
-                }
-            }
+    private var searchRegion: MKCoordinateRegion? {
+        if let coordinate = startCoord {
+            return MKCoordinateRegion(center: coordinate,
+                span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1))
         }
+        return mapRegion
     }
-    
-    private func selectLocation(_ item: MKMapItem, field: ActiveField) {
-        let coord = item.placemark.coordinate
-        
+
+    private func useCurrentStart() {
+        routeReady = false
+        startCoord = nil
+        startText = "Current Location"
+        waitingForCurrentStart = true
+        currentLocation.request()
+    }
+
+    private func selectPlace(_ place: RoutePlace, field: ActiveField) {
         if field == .start {
-            startCoord = coord
-            startText = item.name ?? "Selected"
-            startResults = []
+            waitingForCurrentStart = false
+            currentLocation.cancel()
+            startCoord = place.coordinate
+            startText = place.name
         } else {
-            endCoord = coord
-            endText = item.name ?? "Selected"
-            endResults = []
+            endCoord = place.coordinate
+            endText = place.name
         }
-        
-        activeField = .none
+        recentPlaces.remember(place)
         routeReady = false
     }
-    
+
     private func calculateRoute() {
         guard let start = startCoord, let end = endCoord else { return }
         

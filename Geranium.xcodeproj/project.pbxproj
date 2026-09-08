@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA080010000000000000002 /* RouteLocationPicker.swift */; };
 		AA222222222222220000BEEF /* GeraniumRootHelper in Resources */ = {isa = PBXBuildFile; fileRef = AA111111111111110000CAFE /* GeraniumRootHelper */; };
 		790301C12B377EA70044E30A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 790301C02B377EA70044E30A /* Localizable.xcstrings */; };
 		790301C52B3794480044E30A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 790301C42B3794480044E30A /* SettingsView.swift */; };
@@ -119,6 +120,7 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BDA080010000000000000002 /* RouteLocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteLocationPicker.swift; sourceTree = "<group>"; };
 		790301BA2B37747A0044E30A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		790301BC2B3774F90044E30A /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		790301C02B377EA70044E30A /* Localizable.xcstrings */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; tabWidth = 2; };
@@ -270,6 +272,7 @@
 				7989FD022B347EEA00FBAB8D /* LocSimView.swift */,
 				F82C58052E37790000F76DFA /* RouteSimulator.swift */,
 				F82C58072E37790100F76DFA /* RouteSimView.swift */,
+				BDA080010000000000000002 /* RouteLocationPicker.swift */,
 			);
 			path = LocSim;
 			sourceTree = "<group>";
@@ -631,6 +634,7 @@
 				799D42462B553AF1001867E0 /* CustomPaths.swift in Sources */,
 				F82C58062E37790000F76DFA /* RouteSimulator.swift in Sources */,
 				F82C58082E37790100F76DFA /* RouteSimView.swift in Sources */,
+				BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */,
 				BB110001000000010000AA01 /* FavoritesView.swift in Sources */,
 				BB110002000000020000AA02 /* JoystickView.swift in Sources */,
 				BB110003000000030000AA03 /* StorageAnalyzerView.swift in Sources */,

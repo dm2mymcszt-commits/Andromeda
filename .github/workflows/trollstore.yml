@@ -61,3 +61,15 @@ jobs:
           path: ${{ runner.temp }}/trollstore-build.log
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Check route picker and capture preview
+        run: bash Tests/RoutePicker/check.sh
+
+      - name: Upload route picker preview
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: route-picker-preview-${{ github.run_id }}
+          path: build/route-picker-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 14
