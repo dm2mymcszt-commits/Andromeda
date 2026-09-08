@@ -56,6 +56,15 @@ gh run download RUN_ID --repo dm2mymcszt-commits/Andromeda --dir build/download
 
 ## Test on iPhone 12 / iOS 17.0
 
+Build validation on 2026-09-08: [Actions run 34236216427](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34236216427)
+passed using source commit `e9db6db81ec44c170c8e226f8b9b504858654906`.
+The downloaded archive passed ZIP integrity checks; the app, rebuilt RootHelper,
+and bookmark extension are executable ARM64 binaries with XML entitlements
+matching their respective source plists. No separate debug dylib is packaged.
+The app reports minimum iOS 15.0. These checks do not replace device testing.
+The local package is `build/Geranium.tipa`; its SHA-256 is
+`87e665d3a3ade50c25999ca9230bc7e6d7dd32da853ee0f08a38e0038bd6d463`.
+
 Save a copy of your working `.tipa` before installing this experiment. Test the
 same short route before and after, with the same mode and multiplier:
 
