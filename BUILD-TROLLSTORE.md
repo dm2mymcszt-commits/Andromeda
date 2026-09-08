@@ -8,6 +8,60 @@ Branch: `experiment/route-motion`. Starting upstream commit:
 The Windows folder is a local Git checkout. `origin` points to your GitHub fork;
 `upstream` points to Son3ra1n/Andromeda. Creating a folder alone does not create a fork.
 
+## Route picker update
+
+Device package: `build/Andromeda-route-picker.tipa`, compiled from commit
+`6c5b46b8ad64e4a4613207977638420d9df8cb6b` in
+[Actions run 34238726647](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34238726647).
+ZIP integrity, ARM64 executables, and the app/helper/extension entitlements were
+verified after downloading. SHA-256:
+`8aefbd1c723a2c76d1b7b315e0b2a24a7c3d55a92f24e0ebcb68bcb75793d18c`.
+The original speed/course-only package remains at `build/Geranium.tipa` for rollback.
+The full workflow passed, including recent-place storage tests and an iPhone 12
+simulator capture of the production destination picker. The screenshot was visually
+checked for readable controls and clipping and is saved at
+`build/route-picker-preview/destination-picker.png`. Live search, permissions and
+location simulation still require the on-device acceptance checks below.
+
+The follow-up adds the requested route setup UI on top of the speed/course experiment.
+Opening route setup requests **Current Location** as the start. Tap either endpoint
+to search with live Apple Maps suggestions, pick a recently selected place, or use
+**Choose on Map**. On that separate map, pan/zoom, tap a point, and press **Use as
+Destination** (or **Use as Start Point**). Map browsing does not inject a location.
+Current Location is a snapshot of the position reported by iOS, which can already
+be simulated if spoofing is active. Permission failures provide retry and manual
+selection; a delayed fix cannot overwrite a manually chosen start.
+
+Recent places are saved only on this device, deduplicated, limited to 12 entries,
+and individually removable. They begin accumulating with this update; Google Maps
+history is not imported. A map-selected point is saved as "Map pin" with coordinates.
+Search errors allow retry or another selection method. Current-location lookup
+times out after 15 seconds if an authorized location request does not return a fix.
+
+Additional files changed:
+
+- `Geranium/LocSim/RouteLocationPicker.swift`: location lookup, cancellable address
+  suggestions/search, local recent places, and the confirmation map.
+- `Geranium/LocSim/RouteSimView.swift`: endpoint chooser cards, default current start,
+  and invalidation of calculated routes when either endpoint changes. Inputs are
+  disabled while route calculation is pending. GPX selection cancels current-start lookup.
+- `Geranium.xcodeproj/project.pbxproj`: registers the new Swift source with the app target.
+- `Tests/RoutePicker/main.swift`: checks recent-place retention, duplicate handling,
+  persistence, removal, invalid coordinates and corrupt stored data.
+- `Tests/RoutePicker/Preview.swift`: isolated simulator preview of the production
+  picker using sample Paris destinations; it is never included in the TrollStore app.
+- `Tests/RoutePicker/check.sh` and `.github/workflows/trollstore.yml`: run those checks
+  and capture/upload an iPhone 12 picker screenshot after the device package build.
+
+On-device acceptance checks: open route setup with location allowed, denied and
+temporarily unavailable; select a different start while location lookup is pending;
+type a partial destination and choose a suggestion; clear/change a query while search
+is pending; cancel a picker and verify the endpoint stays unchanged; select and confirm
+a map pin; reopen the app and reuse/remove a recent place; then calculate/start a
+route and check the earlier speed/course behavior. Map selection should never teleport
+the phone until you explicitly start simulation. Search and map tiles need connectivity;
+stored coordinates remain available offline, while route calculation still needs MapKit.
+
 ## Changes
 
 - `Geranium/LocSim/RouteSimulator.swift`: supplies CLLocation speed in metres per
