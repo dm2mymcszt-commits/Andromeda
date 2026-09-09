@@ -8,6 +8,55 @@ Branch: `experiment/route-motion`. Starting upstream commit:
 The Windows folder is a local Git checkout. `origin` points to your GitHub fork;
 `upstream` points to Son3ra1n/Andromeda. Creating a folder alone does not create a fork.
 
+## Route preview and motion metadata update (2026-09-09)
+
+This update addresses the reported route display and duration defects. The Snapchat
+car/Actionmoji outcome is **not verified**: the earlier speed/course experiment did
+not solve it on the user's phone. A Google Maps navigation car or speed display
+does not establish which contextual signals Snapchat is using.
+
+The route chooser now contains a map preview with numbered ETA badges and A/B
+start/destination markers. Numbers and colors match the choices below it; selecting
+a line, badge, or card highlights the same route. Alternatives stay visible beneath
+the selected route. Recalculation replaces geometry even when the route count stays
+the same. The map fits all alternatives, and preview taps never inject a location.
+Closing and reopening route setup retains the calculated choices. Starting closes
+the sheet to show movement on the main map.
+
+Apple Maps calculates the road routes with the selected travel mode and current
+departure time. Returned routes are ordered by their expected travel time before
+labeling the fastest one. Apple and Google may return different paths/estimates;
+this does not attempt to copy Google traffic data. Each choice shows its own
+simulation duration at the selected constant speed, including at 1x. Changing speed
+updates those durations and the sampled path without another directions request.
+Changing endpoints/mode cancels and clears old results. Cycling retains the existing
+walking-path routing behavior; the provider integration has not added bicycle routing.
+
+Motion locations now include explicit speed/course accuracy values. Their zero
+accuracy describes the deterministic simulation model, not a real sensor reading.
+The former initializer's default accuracy values are printed by the runtime test.
+Coordinates/altitude no longer receive random jitter, the destination is held exactly
+with zero speed, and invalid/nonpositive speeds cannot enter the sampling loop.
+Pause/resume preserves motion validity. The private system injection mechanism is
+unchanged; no Core Motion activity or Snapchat state is altered.
+
+References: [Apple speed accuracy](https://developer.apple.com/documentation/corelocation/cllocation/speedaccuracy),
+[Apple course accuracy](https://developer.apple.com/documentation/corelocation/cllocation/courseaccuracy),
+and [Snapchat Actionmoji support](https://help.snapchat.com/hc/en-us/articles/7012324804628-How-do-I-use-Bitmoji-on-the-Snap-Map-and-what-is-Actionmoji).
+Snapchat documents contextual signals including movement and says manually selected
+My Pose choices last four hours. It does not document a supported way for Andromeda
+to force the driving appearance. Do not interpret successful compilation or GPS
+metadata tests as proof that the Bitmoji switches to a car.
+
+Verification is performed by the macOS Actions build, production Swift sampling and
+motion-factory tests, and an isolated iPhone simulator app using the actual map and
+route-card views with synthetic fixtures. These fixtures test map behavior and layout,
+not the accuracy of live Bordeaux directions. On-device checks still needed: compare
+three alternatives and their markers, select each route, change speed, recalculate
+another destination with the same route count, start/pause/resume/finish, and observe
+Snapchat during a sustained driving simulation. Avoid selecting a manual My Pose
+while checking its automatic behavior.
+
 ## Route picker update
 
 Device package: `build/Andromeda-route-picker.tipa`, compiled from commit

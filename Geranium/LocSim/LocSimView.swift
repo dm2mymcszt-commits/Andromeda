@@ -48,7 +48,16 @@ struct LocSimView: View {
         private func LocSimMainView() -> some View {
             ZStack(alignment: .topTrailing) {
                 // MARK: - Main Map
-                CustomMapView(tappedCoordinate: $tappedCoordinate, moveToRegion: $mapRegion, routePolyline: routeSimulator.routePolyline, allRoutePolylines: routeSimulator.allRoutePolylines, selectedRouteIndex: routeSimulator.selectedRouteIndex, movingPosition: routeSimulator.currentPosition)
+                CustomMapView(tappedCoordinate: $tappedCoordinate, moveToRegion: $mapRegion,
+                              routePolyline: routeSimulator.routePolyline,
+                              allRoutePolylines: routeSimulator.allRoutePolylines,
+                              selectedRouteIndex: routeSimulator.selectedRouteIndex,
+                              movingPosition: routeSimulator.currentPosition,
+                              routeETAs: routeSimulator.availableRoutes.map(\.etaText),
+                              onSelectRoute: { index in
+                                  guard !routeSimulator.isSimulating else { return }
+                                  routeSimulator.selectRoute(at: index)
+                              })
                     .onAppear {
                         CLLocationManager().requestAlwaysAuthorization()
                     }

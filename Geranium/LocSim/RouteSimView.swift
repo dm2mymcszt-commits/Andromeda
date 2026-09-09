@@ -80,8 +80,9 @@ struct RouteSimSheet: View {
                             HStack(spacing: 12) {
                                 ForEach(TravelMode.allCases, id: \.self) { mode in
                                     Button(action: {
+                                        guard selectedMode != mode else { return }
                                         selectedMode = mode
-                                        routeReady = false
+                                        invalidateRoute()
                                     }) {
                                         VStack(spacing: 4) {
                                             Image(systemName: mode.icon)
@@ -124,7 +125,7 @@ struct RouteSimSheet: View {
                             Slider(value: $speedMultiplier, in: 0.5...10.0, step: 0.5)
                                 .padding(.horizontal)
                                 .onChange(of: speedMultiplier) { _ in
-                                    routeReady = false
+                                    routeSimulator.updateSpeedMultiplier(speedMultiplier)
                                 }
                         }
                         
@@ -167,6 +168,13 @@ struct RouteSimSheet: View {
                                         .foregroundColor(.secondary)
                                 }
                                 .padding(.horizontal)
+
+                                routePreview
+
+                                Text("Road estimates from Apple Maps. Simulation time uses your selected constant speed.")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .padding(.horizontal)
                                 
                                 ForEach(Array(routeSimulator.availableRoutes.enumerated()), id: \.element.id) { idx, option in
                                     routeOptionCard(option: option, index: idx)
@@ -206,7 +214,7 @@ struct RouteSimSheet: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         routeSimulator.stopSimulation()
-                        routeReady = false
+                        invalidateRoute()
                     }) {
                         Image(systemName: "stop.circle.fill")
                             .foregroundColor(.red)
@@ -246,7 +254,7 @@ struct RouteSimSheet: View {
                     if coords.count >= 2 {
                         waitingForCurrentStart = false
                         currentLocation.cancel()
-                        routeReady = false
+                        invalidateRoute()
                         // Use first and last as start/end
                         startCoord = coords.first
                         endCoord = coords.last
@@ -267,9 +275,19 @@ struct RouteSimSheet: View {
             }
         }
         .onAppear {
-            if !didInitializeStart && !routeSimulator.isSimulating {
+            if !didInitializeStart {
                 didInitializeStart = true
-                useCurrentStart()
+                if !routeSimulator.availableRoutes.isEmpty {
+                    startCoord = routeSimulator.routeStart
+                    endCoord = routeSimulator.routeEnd
+                    startText = "Route Start"
+                    endText = "Destination"
+                    selectedMode = routeSimulator.travelMode
+                    speedMultiplier = routeSimulator.currentSpeedMultiplier
+                    routeReady = true
+                } else if !routeSimulator.isSimulating {
+                    useCurrentStart()
+                }
             }
         }
         .onReceive(currentLocation.$location) { location in
@@ -277,101 +295,47 @@ struct RouteSimSheet: View {
             startCoord = CoordTransform.wgs84ToGcj02(location.coordinate)
             startText = "Current Location"
             waitingForCurrentStart = false
-            routeReady = false
+            invalidateRoute()
         }
     }
     
-    // MARK: - Route Option Card
-    private func routeOptionCard(option: RouteOption, index: Int) -> some View {
-        let isSelected = routeSimulator.selectedRouteIndex == index
-        let routeColors: [Color] = [.blue, .orange, .purple, .pink]
-        let color = routeColors[index % routeColors.count]
-        
-        return Button(action: {
-            routeSimulator.selectRoute(at: index)
-            // Show this route on map
-            showRouteOnMap()
-        }) {
-            HStack(spacing: 12) {
-                // Color indicator
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(color)
-                    .frame(width: 6, height: 50)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(option.name)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                        if index == 0 {
-                            Text("FASTEST")
-                                .font(.system(size: 9, weight: .bold))
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.green.opacity(0.2))
-                                .foregroundColor(.green)
-                                .cornerRadius(4)
-                        }
-                    }
-                    
-                    HStack(spacing: 16) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "ruler")
-                                .font(.caption2)
-                            Text(option.distanceText)
-                                .font(.caption)
-                        }
-                        .foregroundColor(.secondary)
-                        
-                        HStack(spacing: 4) {
-                            Image(systemName: "clock")
-                                .font(.caption2)
-                            Text(option.etaText)
-                                .font(.caption)
-                        }
-                        .foregroundColor(.secondary)
-                        
-                        HStack(spacing: 4) {
-                            Image(systemName: "point.3.connected.trianglepath.dotted")
-                                .font(.caption2)
-                            Text("\(option.route.polyline.pointCount) pts")
-                                .font(.caption)
-                        }
-                        .foregroundColor(.secondary)
-                    }
-                    
-                    // Simulated ETA with speed multiplier
-                    if speedMultiplier != 1.0 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "speedometer")
-                                .font(.caption2)
-                            Text("At \(String(format: "%.1f", speedMultiplier))x: \(routeSimulator.estimatedTime)")
-                                .font(.caption)
-                                .foregroundColor(.accentColor)
-                        }
-                    }
-                }
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.accentColor)
-                        .font(.title3)
-                }
-            }
-            .padding(12)
-            .background(.ultraThinMaterial)
-            .cornerRadius(14)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(isSelected ? color : Color.white.opacity(0.2), lineWidth: 2)
+    private var routePreview: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            CustomMapView(
+                tappedCoordinate: .constant(nil), moveToRegion: .constant(nil),
+                routePolyline: routeSimulator.routePolyline,
+                allRoutePolylines: routeSimulator.allRoutePolylines,
+                selectedRouteIndex: routeSimulator.selectedRouteIndex,
+                routeETAs: routeSimulator.availableRoutes.map(\.etaText),
+                allowsLocationSelection: false,
+                onSelectRoute: { routeSimulator.selectRoute(at: $0) },
+                fitsRoutes: true, showsUserLocation: false
             )
+            .frame(height: 340)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            Text("Tap a numbered route to select it. A is the start; B is the destination.")
+                .font(.caption).foregroundColor(.secondary)
         }
-        .foregroundColor(.primary)
         .padding(.horizontal)
     }
-    
+
+    // MARK: - Route Option Card
+    private func routeOptionCard(option: RouteOption, index: Int) -> some View {
+        RouteChoiceCard(
+            number: index + 1,
+            name: option.name,
+            roadName: option.route.name,
+            distance: option.distanceText,
+            roadETA: option.etaText,
+            simulationETA: option.simulationTimeText(mode: selectedMode, speedMultiplier: speedMultiplier),
+            speed: formattedSpeed,
+            isFastest: option.isFastest,
+            isSelected: routeSimulator.selectedRouteIndex == index,
+            select: { routeSimulator.selectRoute(at: index) }
+        )
+        .padding(.horizontal)
+    }
+
     // MARK: - Simulation Status Card
     private var simulationStatusCard: some View {
         VStack(spacing: 16) {
@@ -397,7 +361,7 @@ struct RouteSimSheet: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Text("ETA: \(routeSimulator.estimatedTime)")
+                    Text("Duration: \(routeSimulator.estimatedTime)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -516,8 +480,13 @@ struct RouteSimSheet: View {
         return mapRegion
     }
 
-    private func useCurrentStart() {
+    private func invalidateRoute() {
         routeReady = false
+        routeSimulator.clearCalculatedRoutes()
+    }
+
+    private func useCurrentStart() {
+        invalidateRoute()
         startCoord = nil
         startText = "Current Location"
         waitingForCurrentStart = true
@@ -535,7 +504,7 @@ struct RouteSimSheet: View {
             endText = place.name
         }
         recentPlaces.remember(place)
-        routeReady = false
+        invalidateRoute()
     }
 
     private func calculateRoute() {
@@ -552,22 +521,84 @@ struct RouteSimSheet: View {
     }
     
     private func showRouteOnMap() {
-        // Show all routes on map, zoom to fit
-        if let selectedPolyline = routeSimulator.routePolyline {
-            let rect = selectedPolyline.boundingMapRect
+        // Fit every alternative, including routes far outside the selected route.
+        let rect = routeSimulator.allRoutePolylines.reduce(MKMapRect.null) {
+            $0.union($1.boundingMapRect)
+        }
+        if !rect.isNull {
             let region = MKCoordinateRegion(rect.insetBy(dx: -rect.size.width * 0.2, dy: -rect.size.height * 0.2))
             mapRegion = region
         }
     }
     
     private func startRoute() {
+        guard routeReady && !routeSimulator.availableRoutes.isEmpty else { return }
         routeSimulator.startSimulation(altitude: 0.0)
-        
+        guard routeSimulator.isSimulating else { return }
+        isPresented = false
+
         AlertKitAPI.present(
             title: "Route Started!",
             icon: .done,
             style: .iOS17AppleMusic,
             haptic: .success
         )
+    }
+}
+
+// Shared by route setup and the isolated simulator visual check.
+struct RouteChoiceCard: View {
+    let number: Int
+    let name: String
+    let roadName: String
+    let distance: String
+    let roadETA: String
+    let simulationETA: String
+    let speed: String
+    let isFastest: Bool
+    let isSelected: Bool
+    let select: () -> Void
+
+    private var color: Color {
+        let colors: [Color] = [.blue, .orange, .purple, .pink]
+        return colors[(number - 1) % colors.count]
+    }
+
+    var body: some View {
+        Button(action: select) {
+            HStack(alignment: .top, spacing: 12) {
+                Text("\(number)")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundColor(.white)
+                    .frame(width: 28, height: 28)
+                    .background(color).clipShape(Circle())
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(name).font(.subheadline.weight(.semibold))
+                        Spacer(minLength: 4)
+                        if isSelected {
+                            Image(systemName: "checkmark.circle.fill").foregroundColor(color)
+                        }
+                    }
+                    if !roadName.isEmpty {
+                        Text(roadName).font(.caption).foregroundColor(.secondary).lineLimit(2)
+                    }
+                    Text("\(roadETA) \u{00B7} \(distance)\(isFastest ? " \u{00B7} Fastest" : "")")
+                        .font(.caption).foregroundColor(.secondary)
+                    Label("Simulation: \(simulationETA) at \(speed)", systemImage: "speedometer")
+                        .font(.caption).foregroundColor(.primary)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(UIColor.secondarySystemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(RoundedRectangle(cornerRadius: 14)
+                .stroke(isSelected ? color : Color(UIColor.separator), lineWidth: isSelected ? 2 : 1))
+            .contentShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Route \(number), \(name), \(roadETA), \(distance). Simulation \(simulationETA) at \(speed)")
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }

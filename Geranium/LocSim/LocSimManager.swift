@@ -8,6 +8,36 @@
 import Foundation
 import CoreLocation
 
+/// Creates the exact position and motion values of the simulated route model.
+/// This describes Core Location data; it does not create a Core Motion activity
+/// or control the activity/appearance that another app chooses to display.
+enum RouteLocationSample {
+    static func make(
+        coordinate: CLLocationCoordinate2D,
+        altitude: CLLocationDistance,
+        course: CLLocationDirection,
+        speed: CLLocationSpeed,
+        timestamp: Date
+    ) -> CLLocation {
+        let validSpeed = speed.isFinite && speed >= 0
+        let validCourse = course.isFinite && course >= 0 && course < 360
+        return CLLocation(
+            coordinate: coordinate,
+            altitude: altitude,
+            horizontalAccuracy: 5,
+            verticalAccuracy: 5,
+            course: validCourse ? course : -1,
+            // The route model has an exact bearing while moving. At rest retain
+            // the last numeric bearing, but do not describe it as a travel direction.
+            courseAccuracy: validSpeed && speed > 0 && validCourse ? 0 : -1,
+            speed: validSpeed ? speed : -1,
+            // These are deterministic simulation values, not sensor estimates.
+            // Negative accuracy means invalid to Core Location consumers.
+            speedAccuracy: validSpeed ? 0 : -1,
+            timestamp: timestamp
+        )
+    }
+}
 
 class LocSimManager {
     static let simManager = CLSimulationManager()

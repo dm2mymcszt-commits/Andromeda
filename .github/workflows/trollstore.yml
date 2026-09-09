@@ -45,6 +45,24 @@ jobs:
           test -s build/Geranium.tipa
           unzip -t build/Geranium.tipa
 
+      - name: Check simulated motion metadata
+        run: bash Tests/RouteMotion/check-location.sh
+
+      - name: Check route calculation and movement
+        run: bash Tests/RouteSimulation/check.sh
+
+      - name: Check route map and capture previews
+        run: bash Tests/RouteMap/check.sh
+
+      - name: Upload route map previews
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: route-map-preview-${{ github.run_id }}
+          path: build/route-map-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Upload TrollStore package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
