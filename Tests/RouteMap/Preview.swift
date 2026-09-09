@@ -68,6 +68,37 @@ private final class InsertionProbeMap: MKMapView {
         abs(a.latitude - b.latitude) < 0.000001 && abs(a.longitude - b.longitude) < 0.000001
     }
 
+    static func verifyHostedMap() throws {
+        func findMap(in view: UIView) -> MKMapView? {
+            if let map = view as? MKMapView { return map }
+            for child in view.subviews {
+                if let map = findMap(in: child) { return map }
+            }
+            return nil
+        }
+        let windows = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.flatMap(\.windows)
+        guard let map = windows.compactMap({ findMap(in: $0) }).first else {
+            throw CheckFailure(description: "The real SwiftUI preview did not host a map")
+        }
+        try require(abs(map.bounds.height - 340) < 1 && map.bounds.width > 300,
+                    "The real map preview lost its normal iPhone layout size")
+        let endpoints = map.annotations.compactMap { $0 as? RouteEndpointAnnotation }
+        try require(endpoints.count == 2, "Hosted preview is missing its endpoints")
+        for endpoint in endpoints {
+            try require(map.bounds.insetBy(dx: 12, dy: 12).contains(map.convert(endpoint.coordinate, toPointTo: map)),
+                        "Initial map fit left an endpoint outside the viewport")
+        }
+        let badges = map.annotations.compactMap { $0 as? RouteBadgeAnnotation }
+        try require(badges.count == 3, "Hosted preview is missing route badges")
+        for badge in badges {
+            guard let view = map.view(for: badge), !view.isHidden else {
+                throw CheckFailure(description: "A route badge is not visible in the initial map preview")
+            }
+            try require(map.bounds.contains(view.convert(view.bounds, to: map)),
+                        "A route badge is clipped by the initial map viewport")
+        }
+    }
+
     static func run() throws -> String {
         var location: EquatableCoordinate?
         var selections: [Int] = []
@@ -244,12 +275,19 @@ private struct RouteMapFixtureView: View {
                     .padding(16)
                 }
                 .task {
-                    let report: String
+                    var report: String
                     do { report = try RouteMapChecks.run() }
                     catch { report = "FAIL: \(error)" }
                     // Allow the map to lay out and its tiles to load before the capture signal.
                     try? await Task.sleep(nanoseconds: 8_000_000_000)
-                    if section == "cards" { reader.scrollTo("bottom", anchor: .bottom) }
+                    if report.hasPrefix("PASS:") {
+                        do { try RouteMapChecks.verifyHostedMap() }
+                        catch { report = "FAIL: \(error)" }
+                    }
+                    if section == "cards" {
+                        selected = 2
+                        reader.scrollTo("bottom", anchor: .bottom)
+                    }
                     try? await Task.sleep(nanoseconds: 2_000_000_000)
                     let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                     try? report.write(to: documents.appendingPathComponent("route-map-\(appearance)-\(section).txt"),
