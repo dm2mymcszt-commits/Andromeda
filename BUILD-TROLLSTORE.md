@@ -10,6 +10,25 @@ The Windows folder is a local Git checkout. `origin` points to your GitHub fork;
 
 ## Route preview and motion metadata update (2026-09-09)
 
+Verified package: `build/Andromeda-route-preview.tipa`, compiled from source
+`eef41cc7604fe67d1a59528c69107b6755ede8c9` in successful
+[Actions run 34380607926](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34380607926).
+SHA-256: `29810e8dfc71285d1c51f5f176a8089c612d878eaa9b6b8cb6f43418e4d1074a`.
+The ZIP, executable ARM64 app/helper/extension, and expected entitlements passed
+inspection. New route-map and motion-factory symbols were verified in the executable.
+The package reports version 2.5.2, build 1: the Xcode project version overrides the
+source plist's build value. Use the package filename/commit/checksum to distinguish
+this build from the older working packages, which are retained separately.
+
+All workflow checks passed. The Core Location runtime baseline measured the older
+initializer's `speedAccuracy = -1` and `courseAccuracy = -1`; the new factory tests
+verified explicit moving accuracy values and stationary/invalid-input handling.
+These measurements are from the macOS test runtime, not the user's iPhone.
+The actual map/card views passed iPhone 12 simulator interaction and initial-layout
+checks, and four dark/light screenshots in `build/route-map-preview/` were visually
+inspected. The synthetic fixtures are clearly labeled. This validates presentation
+and model behavior, not Snapchat's activity classifier or live route traffic accuracy.
+
 This update addresses the reported route display and duration defects. The Snapchat
 car/Actionmoji outcome is **not verified**: the earlier speed/course experiment did
 not solve it on the user's phone. A Google Maps navigation car or speed display
