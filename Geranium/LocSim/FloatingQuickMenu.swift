@@ -65,6 +65,7 @@ struct FloatingQuickMenu: View {
                 .accessibilityAddTraits(active ? [.isSelected] : [])
             }
         }
+        .frame(width: showLabels ? 132 : 44)
         .padding(6)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
         .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(UIColor.separator).opacity(0.4), lineWidth: 0.5))

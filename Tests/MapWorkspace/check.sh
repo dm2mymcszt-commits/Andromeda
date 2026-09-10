@@ -29,6 +29,7 @@ import plistlib, sys
 with open(sys.argv[1], 'wb') as f:
     plistlib.dump(dict(CFBundleIdentifier='local.andromeda.workspacepreview',
         CFBundleExecutable='MapWorkspacePreview', CFBundleName='MapWorkspacePreview',
+        CFBundleShortVersionString='2.5.2', CFBundleVersion='3',
         CFBundlePackageType='APPL', MinimumOSVersion='17.0', UIDeviceFamily=[1],
         UILaunchScreen={}, NSLocationWhenInUseUsageDescription='Preview the map.'), f)
 PY
@@ -39,12 +40,22 @@ xcrun simctl boot "$DEVICE"
 xcrun simctl bootstatus "$DEVICE" -b
 xcrun simctl status_bar "$DEVICE" override --time '9:41' --batteryState charged --batteryLevel 100
 xcrun simctl install "$DEVICE" "$PREVIEW_APP"
+CONTAINER=$(xcrun simctl get_app_container "$DEVICE" local.andromeda.workspacepreview data)
 for appearance in dark light; do
   xcrun simctl ui "$DEVICE" appearance "$appearance"
   for screen in map settings search; do
     xcrun simctl terminate "$DEVICE" local.andromeda.workspacepreview 2>/dev/null || true
     xcrun simctl launch "$DEVICE" local.andromeda.workspacepreview --screen "$screen" --appearance "$appearance"
     if test "$screen" = search; then sleep 20; else sleep 5; fi
+    if test "$screen" = map; then
+      python3 - "$CONTAINER/Documents/menu-width.txt" <<'PY'
+from pathlib import Path
+import sys
+result = Path(sys.argv[1]).read_text()
+assert result.startswith('PASS:'), result
+print(result)
+PY
+    fi
     xcrun simctl io "$DEVICE" screenshot "$QA_DIR/$screen-$appearance.png"
   done
 done

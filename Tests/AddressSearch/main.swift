@@ -6,6 +6,8 @@ func require(_ condition: @autoclosure () -> Bool, _ message: String) {
 }
 
 let query = "125 Cr Gambetta, 33400 Talence"
+require(RoutePlaceSearch.samePostalAddress("125 Cours Gambetta 33400 Talence", "125 Cours Gambetta, 33400 Talence, France"), "Same-address provider formatting should deduplicate")
+require(!RoutePlaceSearch.samePostalAddress("125 Cours Gambetta 33400 Talence", "125 Cours Gambetta 33000 Bordeaux"), "Different addresses must not deduplicate")
 require(FrenchAddressLookup.isAddress(query), "French abbreviated postal address not recognized")
 require(FrenchAddressLookup.normalized(query) == "125 Cours Gambetta, 33400 Talence", "Cours abbreviation")
 require(!FrenchAddressLookup.isAddress("10 Downing Street London"), "Worldwide address must stay with Apple")

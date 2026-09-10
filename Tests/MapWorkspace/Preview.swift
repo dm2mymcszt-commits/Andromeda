@@ -30,6 +30,17 @@ struct WorkspacePreview: View {
                 if action == .search { showSearch = true }
                 if action == .route { routeActive.toggle() }
             }, joystickActive: false, timerActive: false, routeActive: routeActive)
+                .background(GeometryReader { geometry in
+                    Color.clear.onAppear {
+                        let width = geometry.size.width
+                        let result = width <= 150 && width >= 140
+                            ? "PASS: map menu width is \(width) points"
+                            : "FAIL: map menu expanded to \(width) points"
+                        let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                            .appendingPathComponent("menu-width.txt")
+                        try? result.write(to: path, atomically: true, encoding: .utf8)
+                    }
+                })
                 .padding(.trailing, 12).padding(.top, 12)
         }
         .sheet(isPresented: $showSettings) { SettingsView() }

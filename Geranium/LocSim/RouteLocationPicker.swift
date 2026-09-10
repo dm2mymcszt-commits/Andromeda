@@ -345,11 +345,24 @@ final class RoutePlaceSearch: NSObject, ObservableObject, MKLocalSearchCompleter
             guard CLLocationCoordinate2DIsValid(place.coordinate) else { continue }
             if !unique.contains(where: {
                 $0.name.caseInsensitiveCompare(place.name) == .orderedSame
-                    && CLLocation(latitude: $0.latitude, longitude: $0.longitude).distance(
-                        from: CLLocation(latitude: place.latitude, longitude: place.longitude)) < 30
+                    && (Self.samePostalAddress($0.address, place.address)
+                        || CLLocation(latitude: $0.latitude, longitude: $0.longitude).distance(
+                            from: CLLocation(latitude: place.latitude, longitude: place.longitude)) < 30)
             }) { unique.append(place) }
         }
         results = Array(unique.prefix(12))
+    }
+
+    static func samePostalAddress(_ first: String, _ second: String) -> Bool {
+        guard FrenchAddressLookup.isAddress(first), FrenchAddressLookup.isAddress(second) else { return false }
+        func canonical(_ address: String) -> String {
+            FrenchAddressLookup.normalized(address).lowercased()
+                .replacingOccurrences(of: ",", with: " ")
+                .replacingOccurrences(of: #"\s+france\s*$"#, with: "", options: .regularExpression)
+                .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return canonical(first) == canonical(second)
     }
 
     private func finishLookup(failed: Bool) {
