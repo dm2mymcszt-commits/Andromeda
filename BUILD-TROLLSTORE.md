@@ -8,6 +8,10 @@ Both map search and route endpoint search now use the same picker. Empty Apple a
 
 Version is 2.5.2 (3). CI adds production-model address regression tests, a live exact-address search, and light/dark simulator screenshots of the map, Settings, and search alongside existing route and motion checks.
 
+Validated package: `build/Andromeda-map-only.tipa`, built from `62a40b04f64c8771e0157a9c2e7ec9daa6d7883e` by [successful run 34452095243](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34452095243). SHA-256: `d7e1ad82ac35b50e1a7616049eba078e279b37184300ea698b83630c8a1c5f4c`.
+
+All CI checks passed, including live Talence search, motion metadata, route movement, route overlays, recent places, and the on-screen menu-width check. Visually reviewed all six light/dark map, settings, and search screenshots. The exact Talence address appears once after merging Apple/IGN duplicates. Package inspection confirms build 3, ARM64 executable components, expected TrollStore entitlements, and absence of the removed feature classes. On-device acceptance of this new interface remains for the user; their prior package's Snapchat behavior was confirmed by the user.
+
 Reference: https://ignf.github.io/cartes.gouv.fr-documentation/fr/guides-utilisateur/utiliser-les-services-de-la-geoplateforme/geocodage/
 
 # Windows to TrollStore: route motion experiment
