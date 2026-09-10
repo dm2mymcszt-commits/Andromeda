@@ -21,11 +21,11 @@ struct GeraniumApp: App {
                 .sheet(isPresented: $appSettings.isFirstRun) {
                     if #available(iOS 16.0, *) {
                         NavigationStack {
-                            WelcomeView(loggingAllowed: $appSettings.loggingAllowed, updBypass: $appSettings.updBypass)
+                            WelcomeView()
                         }
                     } else {
                         NavigationView {
-                            WelcomeView(loggingAllowed: $appSettings.loggingAllowed, updBypass: $appSettings.updBypass)
+                            WelcomeView()
                         }
                     }
                 }
@@ -34,20 +34,14 @@ struct GeraniumApp: App {
 }
 
 class AppSettings: ObservableObject {
-    @AppStorage("TSBypass") var tsBypass: Bool = false
-    @AppStorage("UPDBypass") var updBypass: Bool = false
-    @AppStorage("isLoggingAllowed") var loggingAllowed: Bool = true
-    @AppStorage("isFirstRun") var isFirstRun: Bool = true
-    @AppStorage("minimSizeC") var minimSizeC: Double = 50.0
-    @AppStorage("keepCheckBoxesC") var keepCheckBoxesC: Bool = true
-    @AppStorage("LocSimAttempts") var locSimAttemptNB: Int = 1
-    @AppStorage("locSimMultipleAttempts") var locSimMultipleAttempts: Bool = false
-    @AppStorage("usrUUID") var usrUUID: String = UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
-    @AppStorage("languageCode") var languageCode: String = ""
-    @AppStorage("defaultTab") var defaultTab: Int = 1
-    @AppStorage("firstCleanerTime") var firstCleanerTime: Bool = true
-    @AppStorage("tmpClean") var tmpClean: Bool = true
-    @AppStorage("getSizes") var getSizes: Bool = false
+    @AppStorage("TSBypass") var tsBypass = false
+    @AppStorage("isFirstRun") var isFirstRun = true
+    @AppStorage("languageCode") var languageCode = ""
+    @AppStorage("mapAppearance") var mapAppearance = "system"
+    @AppStorage("mapStyle") var mapStyle = "standard"
+    @AppStorage("mapButtonLabels") var mapButtonLabels = true
+    @AppStorage("mapHaptics") var mapHaptics = true
+    @AppStorage("frenchAddressLookup") var frenchAddressLookup = true
 }
 
 var langaugee: String = {

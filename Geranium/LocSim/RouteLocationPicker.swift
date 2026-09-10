@@ -7,6 +7,7 @@ struct RoutePlace: Codable, Identifiable {
     let address: String
     let latitude: Double
     let longitude: Double
+    var source: String? = nil
 
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
@@ -128,10 +129,70 @@ final class RouteCurrentLocation: NSObject, ObservableObject, CLLocationManagerD
     }
 }
 
+enum FrenchAddressLookup {
+    static func isAddress(_ text: String) -> Bool {
+        text.range(of: #"\b\d{5}\b"#, options: .regularExpression) != nil
+            && text.range(of: #"\b(cr|crs|cours|rue|avenue|av|boulevard|bd|chemin|impasse|route|place|allée|allee|quai)\b"#,
+                          options: [.regularExpression, .caseInsensitive]) != nil
+    }
+
+    static func normalized(_ text: String) -> String {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard isAddress(trimmed) else { return trimmed }
+        return trimmed.replacingOccurrences(
+            of: #"^(\d+[a-z]?(?:\s+(?:bis|ter))?\s+)(?:cr|crs)\.?\s+"#,
+            with: "$1Cours ", options: [.regularExpression, .caseInsensitive])
+    }
+
+    static func url(for query: String) -> URL {
+        var components = URLComponents(string: "https://data.geopf.fr/geocodage/search")!
+        components.queryItems = [
+            URLQueryItem(name: "q", value: normalized(query)),
+            URLQueryItem(name: "index", value: "address"),
+            URLQueryItem(name: "limit", value: "5")
+        ]
+        return components.url!
+    }
+
+    private struct Response: Decodable {
+        struct Feature: Decodable {
+            struct Geometry: Decodable { let coordinates: [Double] }
+            struct Properties: Decodable {
+                let label: String
+                let name: String?
+                let score: Double?
+                let type: String?
+                let postcode: String?
+            }
+            let geometry: Geometry
+            let properties: Properties
+        }
+        let features: [Feature]
+    }
+
+    static func decode(_ data: Data, query: String) throws -> [RoutePlace] {
+        let response = try JSONDecoder().decode(Response.self, from: data)
+        let postcode = query.range(of: #"\b\d{5}\b"#, options: .regularExpression).map { String(query[$0]) }
+        return response.features.compactMap { feature in
+            let properties = feature.properties
+            let coordinates = feature.geometry.coordinates
+            guard coordinates.count == 2, (properties.score ?? 0) >= 0.5,
+                  postcode == nil || properties.postcode == postcode else { return nil }
+            let coordinate = CLLocationCoordinate2D(latitude: coordinates[1], longitude: coordinates[0])
+            guard CLLocationCoordinate2DIsValid(coordinate) else { return nil }
+            var place = RoutePlace(name: properties.name ?? properties.label,
+                                   address: properties.label, coordinate: coordinate)
+            place.source = properties.type == "housenumber" ? "IGN / BAN"
+                : "IGN / BAN · Area or street-level match"
+            return place
+        }
+    }
+}
+
 final class RoutePlaceSearch: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
     @Published var query = "" { didSet { updateSuggestions() } }
     @Published private(set) var suggestions: [MKLocalSearchCompletion] = []
-    @Published private(set) var results: [MKMapItem] = []
+    @Published private(set) var results: [RoutePlace] = []
     @Published private(set) var isSearching = false
     @Published private(set) var message: String?
     var region: MKCoordinateRegion?
@@ -139,14 +200,24 @@ final class RoutePlaceSearch: NSObject, ObservableObject, MKLocalSearchCompleter
     private var search: MKLocalSearch?
     private var debounce: DispatchWorkItem?
     private var generation = UUID()
+    private var addressTask: URLSessionDataTask?
+    private let geocoder = CLGeocoder()
+    private var pendingLookups = 0
+    private var lookupFailed = false
+    private var suggestionTimeout: DispatchWorkItem?
 
     func cancel() {
         generation = UUID()
         debounce?.cancel()
+        suggestionTimeout?.cancel()
         completer?.cancel()
         completer = nil
         search?.cancel()
         search = nil
+        addressTask?.cancel()
+        addressTask = nil
+        geocoder.cancelGeocode()
+        pendingLookups = 0
         isSearching = false
     }
 
@@ -160,64 +231,134 @@ final class RoutePlaceSearch: NSObject, ObservableObject, MKLocalSearchCompleter
         isSearching = true
         let work = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
+            // A complete postal address deserves a lookup, even without completions.
+            if FrenchAddressLookup.isAddress(fragment) {
+                self.searchAddress()
+                return
+            }
             let completer = MKLocalSearchCompleter()
             completer.delegate = self
             completer.resultTypes = [.address, .pointOfInterest]
             if let region = self.region { completer.region = region }
             self.completer = completer
             completer.queryFragment = fragment
+            let timeout = DispatchWorkItem { [weak self, weak completer] in
+                guard let self = self, let completer = completer,
+                      self.completer === completer else { return }
+                self.searchAddress()
+            }
+            self.suggestionTimeout = timeout
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10, execute: timeout)
         }
         debounce = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: work)
     }
 
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
         guard completer === self.completer else { return }
+        suggestionTimeout?.cancel()
         suggestions = completer.results
         isSearching = false
-        message = suggestions.isEmpty ? "No suggestions. Try a nearby town or choose on map." : nil
+        if suggestions.isEmpty { searchAddress() }
     }
 
     func completer(_ completer: MKLocalSearchCompleter, didFailWithError error: Error) {
         guard completer === self.completer else { return }
-        isSearching = false
-        message = "Search is unavailable. Check your connection or choose a recent place."
+        searchAddress()
     }
 
     func searchAddress() {
         let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         let request = MKLocalSearch.Request()
-        request.naturalLanguageQuery = text
-        perform(request, selection: nil)
+        request.naturalLanguageQuery = FrenchAddressLookup.normalized(text)
+        perform(request, text: text, selection: nil)
     }
 
     func resolve(_ suggestion: MKLocalSearchCompletion, selection: @escaping (RoutePlace) -> Void) {
-        perform(MKLocalSearch.Request(completion: suggestion), selection: selection)
+        perform(MKLocalSearch.Request(completion: suggestion),
+                text: suggestion.title + " " + suggestion.subtitle, selection: selection)
     }
 
-    private func perform(_ request: MKLocalSearch.Request, selection: ((RoutePlace) -> Void)?) {
+    private func perform(_ request: MKLocalSearch.Request, text: String, selection: ((RoutePlace) -> Void)?) {
         cancel()
         suggestions = []
         results = []
         message = nil
         isSearching = true
-        if let region = region { request.region = region }
+        lookupFailed = false
+        if !FrenchAddressLookup.isAddress(text), let region = region { request.region = region }
         let token = generation
+        let useFrench = FrenchAddressLookup.isAddress(text)
+            && (UserDefaults.standard.object(forKey: "frenchAddressLookup") as? Bool ?? true)
+        pendingLookups = useFrench ? 2 : 1
+        if useFrench { lookupFrenchAddress(text, token: token) }
         let search = MKLocalSearch(request: request)
         self.search = search
         search.start { [weak self] response, error in
             DispatchQueue.main.async {
                 guard let self = self, self.generation == token else { return }
-                self.isSearching = false
                 let items = response?.mapItems ?? []
                 if let selection = selection, let item = items.first {
+                    self.cancel()
                     selection(RoutePlace(item))
+                } else if !items.isEmpty {
+                    self.merge(items.map(RoutePlace.init))
+                    self.finishLookup(failed: false)
                 } else {
-                    self.results = items
-                    self.message = items.isEmpty ? "No places found. Try another search or choose on map." : nil
+                    // Geocoding handles complete addresses that place search misses.
+                    self.geocoder.geocodeAddressString(FrenchAddressLookup.normalized(text)) { [weak self] placemarks, geocodeError in
+                        DispatchQueue.main.async {
+                            guard let self = self, self.generation == token else { return }
+                            self.merge((placemarks ?? []).compactMap { placemark in
+                                guard let coordinate = placemark.location?.coordinate,
+                                      CLLocationCoordinate2DIsValid(coordinate) else { return nil }
+                                return RoutePlace(MKMapItem(placemark: MKPlacemark(placemark: placemark)))
+                            })
+                            self.finishLookup(failed: error != nil && geocodeError != nil)
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    private func lookupFrenchAddress(_ text: String, token: UUID) {
+        var request = URLRequest(url: FrenchAddressLookup.url(for: text))
+        request.timeoutInterval = 12
+        addressTask = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
+            let places = data.flatMap { try? FrenchAddressLookup.decode($0, query: text) }
+            DispatchQueue.main.async {
+                guard let self = self, self.generation == token else { return }
+                let valid = error == nil && (200..<300).contains(status) && places != nil
+                if valid { self.merge(places ?? [], prefer: true) }
+                self.finishLookup(failed: !valid)
+            }
+        }
+        addressTask?.resume()
+    }
+
+    private func merge(_ places: [RoutePlace], prefer: Bool = false) {
+        var unique: [RoutePlace] = []
+        for place in (prefer ? places + results : results + places) {
+            guard CLLocationCoordinate2DIsValid(place.coordinate) else { continue }
+            if !unique.contains(where: {
+                $0.name.caseInsensitiveCompare(place.name) == .orderedSame
+                    && CLLocation(latitude: $0.latitude, longitude: $0.longitude).distance(
+                        from: CLLocation(latitude: place.latitude, longitude: place.longitude)) < 30
+            }) { unique.append(place) }
+        }
+        results = Array(unique.prefix(12))
+    }
+
+    private func finishLookup(failed: Bool) {
+        lookupFailed = lookupFailed || failed
+        pendingLookups = max(0, pendingLookups - 1)
+        isSearching = pendingLookups > 0
+        if !isSearching && results.isEmpty {
+            message = lookupFailed ? "Search couldn't finish. Check your connection and try again."
+                : "No matching places. Check the street number and town, or choose on map."
         }
     }
 }
@@ -228,6 +369,7 @@ struct RouteLocationPicker: View {
     let selectedCoordinate: CLLocationCoordinate2D?
     @ObservedObject var recents: RouteRecentPlaces
     var useCurrentLocation: (() -> Void)?
+    var initialQuery: String = ""
     let select: (RoutePlace) -> Void
     @Environment(\.dismiss) private var dismiss
     @StateObject private var search = RoutePlaceSearch()
@@ -250,6 +392,12 @@ struct RouteLocationPicker: View {
                 }
                 if search.isSearching { ProgressView("Searching…") }
                 if let message = search.message { Text(message).foregroundColor(.secondary) }
+                if !search.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Button { search.searchAddress() } label: {
+                        Label("Search full address", systemImage: "magnifyingglass")
+                    }
+                    .disabled(search.isSearching)
+                }
                 if search.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     Section("Recent Places") {
                         if recents.places.isEmpty {
@@ -278,9 +426,9 @@ struct RouteLocationPicker: View {
                             placeRow(suggestion.title, subtitle: suggestion.subtitle, icon: "mappin.circle")
                         }
                     }
-                    ForEach(search.results, id: \.self) { item in
-                        Button { choose(RoutePlace(item)) } label: {
-                            placeRow(item.name ?? "Place", subtitle: item.placemark.title ?? "", icon: "mappin.circle")
+                    ForEach(search.results) { place in
+                        Button { choose(place) } label: {
+                            placeRow(place.name, subtitle: [place.address, place.source].compactMap { $0 }.joined(separator: "\n"), icon: "mappin.circle")
                         }
                     }
                 }
@@ -296,7 +444,10 @@ struct RouteLocationPicker: View {
                                select: choose)
             }
         }
-        .onAppear { search.region = region }
+        .onAppear {
+            search.region = region
+            if search.query.isEmpty && !initialQuery.isEmpty { search.query = initialQuery }
+        }
         .onDisappear { search.cancel() }
     }
 
@@ -361,12 +512,14 @@ struct RouteMapPicker: View {
 
 // This map only selects a coordinate. It never starts or changes location simulation.
 private struct RouteSelectionMap: UIViewRepresentable {
+    @AppStorage("mapStyle") private var mapStyle = "standard"
     let region: MKCoordinateRegion?
     let selectedCoordinate: CLLocationCoordinate2D?
     @Binding var point: EquatableCoordinate?
 
     func makeUIView(context: Context) -> MKMapView {
         let map = MKMapView()
+        map.mapType = mapStyle == "hybrid" ? .hybrid : .standard
         map.showsUserLocation = true
         if let coordinate = selectedCoordinate {
             map.setRegion(MKCoordinateRegion(center: coordinate,

@@ -20,6 +20,7 @@ struct CustomMapView: UIViewRepresentable {
     var onSelectRoute: ((Int) -> Void)?
     var fitsRoutes: Bool
     var showsUserLocation: Bool
+    var mapStyle: String
 
     init(tappedCoordinate: Binding<EquatableCoordinate?>,
          moveToRegion: Binding<MKCoordinateRegion?>,
@@ -31,7 +32,8 @@ struct CustomMapView: UIViewRepresentable {
          allowsLocationSelection: Bool = true,
          onSelectRoute: ((Int) -> Void)? = nil,
          fitsRoutes: Bool = false,
-         showsUserLocation: Bool = true) {
+         showsUserLocation: Bool = true,
+         mapStyle: String = "standard") {
         self._tappedCoordinate = tappedCoordinate
         self._moveToRegion = moveToRegion
         self.routePolyline = routePolyline
@@ -43,12 +45,15 @@ struct CustomMapView: UIViewRepresentable {
         self.onSelectRoute = onSelectRoute
         self.fitsRoutes = fitsRoutes
         self.showsUserLocation = showsUserLocation
+        self.mapStyle = mapStyle
     }
 
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         mapView.showsUserLocation = showsUserLocation
+        let desiredType: MKMapType = mapStyle == "hybrid" ? .hybrid : .standard
+        if mapView.mapType != desiredType { mapView.mapType = desiredType }
         mapView.isRotateEnabled = false
         mapView.isPitchEnabled = false
         mapView.layer.cornerRadius = 15
@@ -64,6 +69,8 @@ struct CustomMapView: UIViewRepresentable {
         // A representable is a value: delegates must use the latest bindings and callbacks.
         context.coordinator.parent = self
         mapView.showsUserLocation = showsUserLocation
+        let desiredType: MKMapType = mapStyle == "hybrid" ? .hybrid : .standard
+        if mapView.mapType != desiredType { mapView.mapType = desiredType }
         context.coordinator.updateRoutes(on: mapView)
         if let region = moveToRegion {
             mapView.setRegion(region, animated: true)

@@ -1,45 +1,27 @@
-//
-//  FloatingQuickMenu.swift
-//  Andromeda
-//
-//  Developed by son3ra1n.
-//
-
 import SwiftUI
 
 enum QuickMenuAction: String, CaseIterable {
     case search = "Search"
+    case route = "Route"
     case favorites = "Favorites"
     case appProfiles = "Apps"
     case joystick = "Joystick"
-    case route = "Route"
     case altitude = "Altitude"
     case timer = "Timer"
+    case settings = "Settings"
     case stop = "Stop"
-    
+
     var icon: String {
         switch self {
         case .search: return "magnifyingglass"
-        case .favorites: return "star.fill"
+        case .route: return "point.topleft.down.to.point.bottomright.curvepath"
+        case .favorites: return "star"
         case .appProfiles: return "apps.iphone"
-        case .joystick: return "gamecontroller.fill"
-        case .route: return "car.fill"
-        case .altitude: return "mountain.2.fill"
+        case .joystick: return "gamecontroller"
+        case .altitude: return "mountain.2"
         case .timer: return "timer"
-        case .stop: return "location.slash.fill"
-        }
-    }
-    
-    var color: Color {
-        switch self {
-        case .search: return .indigo
-        case .favorites: return .orange
-        case .appProfiles: return .cyan
-        case .joystick: return .green
-        case .route: return .blue
-        case .altitude: return .purple
-        case .timer: return .orange
-        case .stop: return .red
+        case .settings: return "gearshape"
+        case .stop: return "stop.fill"
         }
     }
 }
@@ -48,48 +30,44 @@ struct FloatingQuickMenu: View {
     let onAction: (QuickMenuAction) -> Void
     var joystickActive: Bool
     var timerActive: Bool
-    
-    private let actions = QuickMenuAction.allCases
-    
+    var routeActive: Bool = false
+    @AppStorage("mapButtonLabels") private var showLabels = true
+    @AppStorage("mapHaptics") private var haptics = true
+
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 8) {
-                ForEach(actions, id: \.self) { action in
-                    let isActive = (action == .joystick && joystickActive) || (action == .timer && timerActive)
-                    
-                    Button(action: {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        onAction(action)
-                    }) {
-                        HStack(spacing: 6) {
-                            Text(action.rawValue)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.9))
-                                .lineLimit(1)
-                            
-                            Image(systemName: action.icon)
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.white)
+        VStack(spacing: 2) {
+            ForEach(QuickMenuAction.allCases, id: \.self) { action in
+                if action == .stop { Divider().padding(.horizontal, 6) }
+                let active = (action == .joystick && joystickActive)
+                    || (action == .timer && timerActive) || (action == .route && routeActive)
+                Button {
+                    if haptics { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
+                    onAction(action)
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: action.icon)
+                            .font(.system(size: 18, weight: .semibold))
+                            .frame(width: 24)
+                        if showLabels {
+                            Text(action.rawValue).font(.subheadline.weight(.medium))
+                            Spacer(minLength: 0)
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .background(
-                            Capsule()
-                                .fill(isActive ? action.color : action.color.opacity(0.75))
-                                .shadow(color: action.color.opacity(isActive ? 0.5 : 0.25), radius: isActive ? 8 : 4, x: 0, y: 3)
-                        )
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white.opacity(isActive ? 0.4 : 0.15), lineWidth: 1)
-                        )
-                        .scaleEffect(isActive ? 1.05 : 1.0)
-                        .animation(.spring(response: 0.25), value: isActive)
                     }
+                    .foregroundColor(active ? .white : .indigo)
+                    .padding(.horizontal, 10)
+                    .frame(width: showLabels ? 132 : 44, height: 44)
+                    .background(active ? Color.indigo : Color.clear)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel(action.rawValue)
+                .accessibilityAddTraits(active ? [.isSelected] : [])
             }
-            .padding(.vertical, 4)
         }
-        .frame(maxHeight: 420)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(6)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .overlay(RoundedRectangle(cornerRadius: 18).stroke(Color(UIColor.separator).opacity(0.4), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.12), radius: 12, x: 0, y: 4)
     }
 }

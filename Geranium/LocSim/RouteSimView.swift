@@ -6,6 +6,7 @@ import MapKit
 import AlertKit
 
 struct RouteSimSheet: View {
+    @AppStorage("mapStyle") private var mapStyle = "standard"
     @ObservedObject var routeSimulator: RouteSimulator
     @Binding var mapRegion: MKCoordinateRegion?
     @Binding var isPresented: Bool
@@ -309,7 +310,7 @@ struct RouteSimSheet: View {
                 routeETAs: routeSimulator.availableRoutes.map(\.etaText),
                 allowsLocationSelection: false,
                 onSelectRoute: { routeSimulator.selectRoute(at: $0) },
-                fitsRoutes: true, showsUserLocation: false
+                fitsRoutes: true, showsUserLocation: false, mapStyle: mapStyle
             )
             .frame(height: 340)
             .clipShape(RoundedRectangle(cornerRadius: 16))

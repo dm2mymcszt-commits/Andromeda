@@ -1,3 +1,15 @@
+## Map-only update (2026-09-10)
+
+The user confirmed that starting a route now automatically shows the Snapchat car Bitmoji on their device. This update preserves the working route motion metadata.
+
+The app opens directly to the map. Home, Daemons, Cleaner, Supervise, and their Swift feature sources are removed from the build. A Settings button opens map appearance, satellite view, button labels, haptics, and address lookup preferences. All map controls share an indigo palette. Stop also stops the route timer so it cannot restart location injection.
+
+Both map search and route endpoint search now use the same picker. Empty Apple autocomplete results automatically fall back to full search and geocoding. French postal addresses also use IGN's current Geoplateforme / BAN endpoint, with abbreviation normalization, postcode and confidence filtering, explicit approximate-match labels, cancellation, and stale-response protection. Only the typed address is sent to IGN; no current-location coordinates. This supplement can be disabled in Settings. The exact screenshot query `125 Cr Gambetta, 33400 Talence` returned `125 Cours Gambetta 33400 Talence` at 44.817059, -0.585746 in a live service check. Apple and Google have different place catalogs; this does not promise every Google place exists in Apple search.
+
+Version is 2.5.2 (3). CI adds production-model address regression tests, a live exact-address search, and light/dark simulator screenshots of the map, Settings, and search alongside existing route and motion checks.
+
+Reference: https://ignf.github.io/cartes.gouv.fr-documentation/fr/guides-utilisateur/utiliser-les-services-de-la-geoplateforme/geocodage/
+
 # Windows to TrollStore: route motion experiment
 
 Fork: https://github.com/dm2mymcszt-commits/Andromeda

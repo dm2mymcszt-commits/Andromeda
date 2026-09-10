@@ -51,6 +51,9 @@ jobs:
       - name: Check route calculation and movement
         run: bash Tests/RouteSimulation/check.sh
 
+      - name: Check address lookup and live Talence result
+        run: bash Tests/AddressSearch/check.sh
+
       - name: Check route map and capture previews
         run: bash Tests/RouteMap/check.sh
 
@@ -70,6 +73,18 @@ jobs:
           path: build/Geranium.tipa
           if-no-files-found: error
           retention-days: 30
+
+      - name: Check map workspace and capture previews
+        run: bash Tests/MapWorkspace/check.sh
+
+      - name: Upload map workspace previews
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: map-workspace-preview
+          path: build/map-workspace-qa/*.png
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Upload build log
         if: always()
