@@ -7,7 +7,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | Item | Status | Verified implementation commit |
 |---|---|---|
 | 1. Remove Apps | done | `757f3fc` ? CI 34581730357 passed; menu screenshot reviewed |
-| 2. Remove Auto-Stop Timer | in progress | not yet committed |
+| 2. Remove Auto-Stop Timer | in progress | `5819554` (CI pending) |
 | 3. Safe map taps and confirmation | not started | ? |
 | 4. Favorites in every place picker | not started | ? |
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | not started | ? |
@@ -25,4 +25,4 @@ Done for item 2: removed the auto-stop menu entry, action sheet, countdown UI, s
 
 Left: native build and regression checks in CI.
 
-Exact next step: push the item-2 candidate, record its hash, wait for CI, and inspect the menu without Timer before beginning item 3.
+Exact next step: wait for CI for `5819554`, and inspect the menu without Timer before beginning item 3.
