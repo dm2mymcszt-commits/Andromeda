@@ -7,8 +7,8 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | Item | Status | Verified implementation commit |
 |---|---|---|
 | 1. Remove Apps | done | `757f3fc` ? CI 34581730357 passed; menu screenshot reviewed |
-| 2. Remove Auto-Stop Timer | in progress | `5819554` (CI pending) |
-| 3. Safe map taps and confirmation | not started | ? |
+| 2. Remove Auto-Stop Timer | done | `5819554` - CI 34583153529 passed; screenshot reviewed |
+| 3. Safe map taps and confirmation | in progress | not yet committed |
 | 4. Favorites in every place picker | not started | ? |
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | not started | ? |
 | 6. Simulation times and fastest-route ranking | not started | ? |
@@ -17,12 +17,14 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 9. Finish actions and notifications | not started | ? |
 | 10. Persistent automatic/custom altitude | not started | ? |
 
-## Item 2 in progress
+## Item 3 in progress
 
-Item 1 verified: all native build, motion, geometry, search, map, and picker checks passed in run 34581730357. Main-map screenshot confirms Apps is absent. No implementation references or storage keys remain.
+Item 2 verified: CI run 34583153529 passed all checks. The menu screenshot shows no Timer or Apps. The internal route movement timer and motion sample code remain unchanged.
 
-Done for item 2: removed the auto-stop menu entry, action sheet, countdown UI, state and methods, preview parameter, and README feature entry. Stop still calls RouteSimulator.stopSimulation and disables the joystick. RouteSimulator and RouteLocationSample are unchanged.
+Done for item 3: reviewed the main map's gesture path and Apple's gesture failure-ordering documentation. Route/badge selection precedes coordinate selection and can remain independent.
 
-Left: native build and regression checks in CI.
+Left: default-off setting and conditional confirmation setting; temporary pin and cancellable fast address lookup; confirmation warning during a route; double-tap suppression; toggle/confirmation and map regression tests; CI build and previews.
 
-Exact next step: wait for CI for `5819554`, and inspect the menu without Timer before beginning item 3.
+Exact next step: implement the map-move confirmation controller, Settings controls, main-map gating and temporary annotation, and single/double-tap failure ordering. Keep RouteSimulator unchanged.
+
+Choices to record: allow up to 600 ms for a reverse-geocoded address before showing a coordinates-only confirmation; use five decimal places for displayed coordinates.
