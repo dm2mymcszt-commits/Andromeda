@@ -30,6 +30,10 @@ for (original, expanded) in abbreviations {
 }
 require(AddressQuery.variants("St Pancras International").first == "St Pancras International", "POI input changed")
 require(AddressQuery.isAddress("10 Downing St, London SW1A 2AA, UK"), "Worldwide address must use unrestricted full search")
+require(AddressQuery.isAddress("Oshiage 1-1-2 Tokyo 131-0045"), "Compact block address misclassified as a place name")
+require(AddressQuery.matchesHouse("1-2", query: "1 Chome-1-2 Oshiage, Tokyo", address: "1-2, Oshiage 1-Chōme, Tokyo"), "Split district/block/building match")
+require(!AddressQuery.matchesHouse("1-2", query: "1 Chome-1-2 Oshiage, Tokyo", address: "1-2, Oshiage 2-Chōme, Tokyo"), "Wrong district accepted")
+require(!AddressQuery.matchesHouse("3-2", query: "1 Chome-1-2 Oshiage, Tokyo", address: "3-2, Oshiage 1-Chōme, Tokyo"), "Wrong block accepted")
 close(PlaceInput.coordinates("44.817059, -0.585746"), 44.817059, -0.585746, "Decimal")
 close(PlaceInput.coordinates("44°49'01.4\"N 0°35'08.7\"W"), 44.81705556, -0.58575, "DMS")
 close(PlaceInput.coordinates("44°49′01,4″N 0°35′08,7″W"), 44.81705556, -0.58575, "DMS typographic/comma")

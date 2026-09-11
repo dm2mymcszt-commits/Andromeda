@@ -172,7 +172,6 @@ struct MapPlaceLink {
     static func parse(_ input: URL) -> MapPlaceLink {
         let url = unwrapped(input)
         let text = url.absoluteString.removingPercentEncoding ?? url.absoluteString
-        let parameters = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
         func value(_ key: String) -> String? {
             // Decode form spaces before percent escapes: %2B is the plus-code
             // separator, whereas a literal + in a query means a space.

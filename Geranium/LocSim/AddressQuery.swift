@@ -3,7 +3,7 @@ import Foundation
 enum AddressQuery {
     static func isAddress(_ text: String) -> Bool {
         text.rangeOfCharacter(from: .decimalDigits) != nil &&
-            (text.contains(",") || text.range(of: #"\b(?:st|rd|cr|av|bd|pkwy|street|road|rue|str|avenue|chome)\b|丁目|番地|улица|شارع"#,
+            (text.contains(",") || text.range(of: #"\b\d+-\d+-\d+\b|\b(?:st|rd|cr|av|bd|pkwy|street|road|rue|str|avenue|chome)\b|丁目|番地|улица|شارع"#,
                                             options: [.regularExpression, .caseInsensitive]) != nil)
     }
 
@@ -68,5 +68,22 @@ enum AddressQuery {
         if let japanese = PlaceInput.captures(#"\b\d+(?:\s+Chome)?-\d+-(\d+)\b"#, text) { return japanese[0] }
         if let first = PlaceInput.captures(#"^\s*(\d+[a-z]?(?:\s+(?:bis|ter))?)\s+"#, text) { return first[0] }
         return PlaceInput.captures(#"(?:,\s*|\s)(\d+[a-z]?)\s*(?:,|\s+-)"#, text)?.first
+    }
+
+    static func matchesHouse(_ house: String?, query: String, address: String) -> Bool {
+        guard let house = house, let expected = houseNumber(query) else { return false }
+        let folded = query.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+        if let parts = PlaceInput.captures(#"\b(\d+)(?:\s+chome)?-(\d+)-(\d+)\b"#, folded) {
+            let actual = canonical(house)
+            if actual == parts.joined(separator: " ") { return true }
+            // Apple separates the chome (district) from its block-building
+            // subThoroughfare. Compare both, instead of discarding a valid pin.
+            let detail = address.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+            if actual == parts[1...2].joined(separator: " ") {
+                return detail.range(of: "\\b" + parts[0] + #"\s*[- ]?chome\b"#, options: .regularExpression) != nil
+                    || detail.contains(parts[0] + "丁目")
+            }
+        }
+        return canonical(house) == canonical(expected)
     }
 }

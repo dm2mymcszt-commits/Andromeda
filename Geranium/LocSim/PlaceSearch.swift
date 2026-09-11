@@ -9,8 +9,8 @@ struct PlaceMatch {
     init(place: RoutePlace, houseNumber: String?, query: String, exact: Bool, order: Int) {
         self.place = place
         self.order = order
-        if let expected = AddressQuery.houseNumber(query), AddressQuery.isAddress(query) {
-            let matches = houseNumber.map { AddressQuery.canonical($0) == AddressQuery.canonical(expected) } ?? false
+        if AddressQuery.houseNumber(query) != nil, AddressQuery.isAddress(query) {
+            let matches = AddressQuery.matchesHouse(houseNumber, query: query, address: place.address)
             quality = exact && matches ? 100 : 30
             self.place.approximate = quality < 100
         } else {
