@@ -173,7 +173,13 @@ struct MapPlaceLink {
         let url = unwrapped(input)
         let text = url.absoluteString.removingPercentEncoding ?? url.absoluteString
         let parameters = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        func value(_ key: String) -> String? { parameters.first { $0.name == key }?.value }
+        func value(_ key: String) -> String? {
+            // Decode form spaces before percent escapes: %2B is the plus-code
+            // separator, whereas a literal + in a query means a space.
+            guard let encoded = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .percentEncodedQueryItems?.first(where: { $0.name == key })?.value else { return nil }
+            return encoded.replacingOccurrences(of: "+", with: " ").removingPercentEncoding
+        }
         var result = MapPlaceLink()
         if let pair = PlaceInput.captures(#"!3d([+-]?\d+(?:\.\d+)?)!4d([+-]?\d+(?:\.\d+)?)"#, text),
            let lat = Double(pair[0]), let lon = Double(pair[1]) { result.coordinate = PlaceInput.valid(lat, lon) }
@@ -183,7 +189,6 @@ struct MapPlaceLink {
         if let pair = PlaceInput.captures(#"@([+-]?\d+(?:\.\d+)?),([+-]?\d+(?:\.\d+)?)"#, text),
            let lat = Double(pair[0]), let lon = Double(pair[1]) { result.camera = PlaceInput.valid(lat, lon) }
         result.query = [value("q"), value("query")].compactMap { $0 }
-            .map { $0.replacingOccurrences(of: "+", with: " ") }
             .first { !$0.isEmpty && PlaceInput.coordinates($0) == nil }
         if result.query == nil, let name = PlaceInput.captures(#"/maps/place/([^/]+)"#, text)?.first {
             result.query = name.replacingOccurrences(of: "+", with: " ")

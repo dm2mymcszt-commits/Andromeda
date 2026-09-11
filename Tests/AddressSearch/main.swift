@@ -46,6 +46,8 @@ consent.queryItems = [URLQueryItem(name: "continue", value: pinURL.absoluteStrin
 close(MapPlaceLink.parse(consent.url!).coordinate, 44.817059, -0.585746, "Consent continue URL")
 let textLink = MapPlaceLink.parse(URL(string: "https://www.google.com/maps?q=Name%2C%20address&ftid=example")!)
 require(textLink.coordinate == nil && textLink.query == "Name, address", "Name-only link lost its query")
+require(MapPlaceLink.parse(URL(string: "https://www.google.com/maps?q=8FVC9G8F%2B6X")!).query == "8FVC9G8F+6X", "Escaped plus code must retain its separator")
+require(MapPlaceLink.parse(URL(string: "https://www.google.com/maps?q=RQ88%2BR7+Talence")!).query == "RQ88+R7 Talence", "Form spaces must not erase a short plus code")
 let camera = MapPlaceLink.parse(URL(string: "https://www.google.com/maps/@44.817059,-0.585746,15z")!)
 require(camera.coordinate == nil, "Camera center must remain a last resort")
 close(camera.camera, 44.817059, -0.585746, "Camera fallback")
@@ -123,6 +125,7 @@ if ProcessInfo.processInfo.environment["LIVE_ADDRESS_LOOKUP"] == "1" {
                 let target = CLLocationCoordinate2D(latitude: lat, longitude: lon)
                 let meters = places.first.map { distance(CoordTransform.gcj02ToWgs84($0.coordinate), target) } ?? .infinity
                 print("LIVE \(query): first result \(Int(min(meters, 999999))) m; \(places.prefix(4).map { "\($0.name) [\($0.latitude),\($0.longitude)] approximate=\($0.isApproximate)" })")
+                fflush(stdout)
                 if meters > 50 { failures.append("\(query): \(meters) m") }
             }
         }

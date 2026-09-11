@@ -182,6 +182,12 @@ enum WorldwidePlaceSearch {
             matches = await PlaceProvider.apple(town, order: 90)
             for index in matches.indices { matches[index].place.approximate = true; matches[index].quality = 0 }
         }
+        if ProcessInfo.processInfo.environment["LIVE_ADDRESS_LOOKUP"] == "1" {
+            for match in matches {
+                print("MATCH \(text) | \(match.order)/\(match.quality) | \(match.place.name) | \(match.place.address) | \(match.place.latitude),\(match.place.longitude)")
+            }
+            fflush(stdout)
+        }
         return Task.isCancelled ? [] : merge(matches)
     }
 
