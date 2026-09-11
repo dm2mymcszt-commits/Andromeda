@@ -153,6 +153,8 @@ struct LocSimView: View {
     
     // MARK: - Quick Menu Handler
     private func handleQuickMenuAction(_ action: QuickMenuAction) {
+        // A pending map proposal must not appear over a newly opened tool.
+        mapMove.cancel()
         switch action {
         case .search:
             showSearchBar.toggle()
