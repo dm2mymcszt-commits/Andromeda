@@ -119,7 +119,7 @@ struct LocSimView: View {
         }
         .sheet(isPresented: $showFavorites) {
             FavoritesView(isPresented: $showFavorites, currentLat: lat, currentLong: long) { favLat, favLong, name in
-                let coord = CLLocationCoordinate2D(latitude: favLat, longitude: favLong)
+                let coord = CoordTransform.wgs84ToGcj02(CLLocationCoordinate2D(latitude: favLat, longitude: favLong))
                 let region = MKCoordinateRegion(center: coord, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
                 mapRegion = region
                 startSimulation(at: coord, altitude: Double(altitude) ?? 0.0)

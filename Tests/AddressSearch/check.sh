@@ -9,5 +9,6 @@ import sys
 source = Path('Geranium/LocSim/RouteLocationPicker.swift').read_text()
 Path(sys.argv[1]).write_text(source.split('struct RouteLocationPicker: View {')[0])
 PY
-xcrun swiftc "$QA_DIR/Models.swift" Tests/AddressSearch/main.swift -o "$QA_DIR/search-tests"
+xcrun swiftc "$QA_DIR/Models.swift" Geranium/LocSim/CoordTransform.swift \
+  Tests/AddressSearch/main.swift -o "$QA_DIR/search-tests"
 LIVE_ADDRESS_LOOKUP=1 "$QA_DIR/search-tests"

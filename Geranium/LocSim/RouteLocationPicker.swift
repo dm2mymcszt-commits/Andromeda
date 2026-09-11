@@ -26,6 +26,30 @@ struct RoutePlace: Codable, Identifiable {
     }
 }
 
+enum RouteFavoritePlaces {
+    static func places(from bookmarks: [[String: Any]]) -> [RoutePlace] {
+        bookmarks.compactMap { bookmark in
+            guard let latitude = bookmark["lat"] as? Double,
+                  let longitude = bookmark["long"] as? Double else { return nil }
+            let wgs = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+            guard CLLocationCoordinate2DIsValid(wgs) else { return nil }
+            let name = (bookmark["name"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            return RoutePlace(name: name.isEmpty ? "Favorite" : name,
+                              address: String(format: "%.5f, %.5f", latitude, longitude),
+                              coordinate: CoordTransform.wgs84ToGcj02(wgs))
+        }
+    }
+
+    static func matching(_ places: [RoutePlace], query: String) -> [RoutePlace] {
+        let text = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return places }
+        return places.filter {
+            $0.name.range(of: text, options: [.caseInsensitive, .diacriticInsensitive],
+                          locale: .current) != nil
+        }
+    }
+}
+
 final class RouteRecentPlaces: ObservableObject {
     @Published private(set) var places: [RoutePlace]
     private let defaults: UserDefaults
@@ -387,6 +411,11 @@ struct RouteLocationPicker: View {
     @Environment(\.dismiss) private var dismiss
     @StateObject private var search = RoutePlaceSearch()
     @State private var showMap = false
+    @State private var favorites: [RoutePlace] = []
+
+    private var matchingFavorites: [RoutePlace] {
+        RouteFavoritePlaces.matching(favorites, query: search.query)
+    }
 
     var body: some View {
         NavigationView {
@@ -402,6 +431,18 @@ struct RouteLocationPicker: View {
                         search.cancel()
                         showMap = true
                     } label: { Label("Choose on Map", systemImage: "map") }
+                }
+                if search.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !matchingFavorites.isEmpty {
+                    Section("Favorites") {
+                        if favorites.isEmpty {
+                            Text("Save places in Favorites to choose them here.").foregroundColor(.secondary)
+                        }
+                        ForEach(matchingFavorites) { place in
+                            Button { choose(place) } label: {
+                                placeRow(place.name, subtitle: place.address, icon: "star.fill")
+                            }
+                        }
+                    }
                 }
                 if search.isSearching { ProgressView("Searching…") }
                 if let message = search.message { Text(message).foregroundColor(.secondary) }
@@ -458,6 +499,7 @@ struct RouteLocationPicker: View {
             }
         }
         .onAppear {
+            favorites = RouteFavoritePlaces.places(from: BookMarkRetrieve())
             search.region = region
             if search.query.isEmpty && !initialQuery.isEmpty { search.query = initialQuery }
         }

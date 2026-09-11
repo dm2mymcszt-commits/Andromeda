@@ -18,11 +18,13 @@ print('PASS: full-screen map entry and unused feature sources removed from the b
 PY
 PREVIEW_APP="$QA_DIR/MapWorkspacePreview.app"
 mkdir -p "$PREVIEW_APP"
+python3 Tests/RoutePicker/bookmark-support.py "$QA_DIR/Bookmarks.swift"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
   Geranium/LocSim/CustomMapView.swift Geranium/LocSim/FloatingQuickMenu.swift \
   Geranium/LocSim/RouteLocationPicker.swift Geranium/SettingsView.swift \
   Geranium/LocSim/MapMoveConfirmation.swift \
+  Geranium/LocSim/CoordTransform.swift "$QA_DIR/Bookmarks.swift" \
   "$QA_DIR/AppSettings.swift" Tests/MapWorkspace/Preview.swift \
   -o "$PREVIEW_APP/MapWorkspacePreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'

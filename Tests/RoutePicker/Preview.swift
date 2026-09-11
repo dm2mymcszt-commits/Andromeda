@@ -10,7 +10,15 @@ struct EquatableCoordinate: Equatable {
 }
 
 @main struct RoutePickerPreview: App {
+    private var screen: String {
+        let args = ProcessInfo.processInfo.arguments
+        guard let index = args.firstIndex(of: "--screen"), args.indices.contains(index + 1) else { return "Destination" }
+        return args[index + 1]
+    }
     private let places: RouteRecentPlaces = {
+        UserDefaults(suiteName: sharedUserDefaultsSuiteName)?.removeObject(forKey: "bookmarks")
+        _ = BookMarkSave(lat: 44.817059, long: -0.585746, name: "Café préféré")
+        _ = BookMarkSave(lat: 48.8584, long: 2.2945, name: "Tour Eiffel")
         let defaults = UserDefaults(suiteName: "RoutePickerPreview")!
         defaults.removePersistentDomain(forName: "RoutePickerPreview")
         let places = RouteRecentPlaces(defaults: defaults)
@@ -22,10 +30,11 @@ struct EquatableCoordinate: Equatable {
     }()
     var body: some Scene {
         WindowGroup {
-            RouteLocationPicker(title: "Destination", region: MKCoordinateRegion(
+            RouteLocationPicker(title: screen == "Filtered" ? "Search" : screen, region: MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: 48.85, longitude: 2.35),
                 span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)),
-                selectedCoordinate: nil, recents: places, select: { _ in })
+                selectedCoordinate: nil, recents: places, useCurrentLocation: {},
+                initialQuery: screen == "Filtered" ? "cafe" : "", select: { _ in })
                 .preferredColorScheme(.dark)
         }
     }

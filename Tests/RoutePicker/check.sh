@@ -10,7 +10,9 @@ import sys
 source = Path('Geranium/LocSim/RouteLocationPicker.swift').read_text()
 Path(sys.argv[1]).write_text(source.split('struct RouteLocationPicker: View {')[0])
 PY
-xcrun swiftc "$QA_DIR/Models.swift" Tests/RoutePicker/main.swift -o "$QA_DIR/model-tests"
+python3 Tests/RoutePicker/bookmark-support.py "$QA_DIR/Bookmarks.swift"
+xcrun swiftc "$QA_DIR/Models.swift" "$QA_DIR/Bookmarks.swift" Geranium/LocSim/CoordTransform.swift \
+  Tests/RoutePicker/main.swift -o "$QA_DIR/model-tests"
 "$QA_DIR/model-tests"
 
 # Render the actual SwiftUI picker in an isolated iPhone simulator app.
@@ -18,7 +20,8 @@ PREVIEW_APP="$QA_DIR/RoutePickerPreview.app"
 mkdir -p "$PREVIEW_APP"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
-  Geranium/LocSim/RouteLocationPicker.swift Tests/RoutePicker/Preview.swift \
+  Geranium/LocSim/RouteLocationPicker.swift Geranium/LocSim/CoordTransform.swift \
+  "$QA_DIR/Bookmarks.swift" Tests/RoutePicker/Preview.swift \
   -o "$PREVIEW_APP/RoutePickerPreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'
 import plistlib, sys
@@ -35,6 +38,9 @@ xcrun simctl boot "$DEVICE"
 xcrun simctl bootstatus "$DEVICE" -b
 xcrun simctl status_bar "$DEVICE" override --time '9:41' --batteryState charged --batteryLevel 100
 xcrun simctl install "$DEVICE" "$PREVIEW_APP"
-xcrun simctl launch "$DEVICE" local.andromeda.routepickerpreview
-sleep 5
-xcrun simctl io "$DEVICE" screenshot "$QA_DIR/destination-picker.png"
+for screen in Destination Start Search Filtered; do
+  xcrun simctl terminate "$DEVICE" local.andromeda.routepickerpreview 2>/dev/null || true
+  xcrun simctl launch "$DEVICE" local.andromeda.routepickerpreview --screen "$screen"
+  sleep 5
+  xcrun simctl io "$DEVICE" screenshot "$QA_DIR/$screen-picker.png"
+done
