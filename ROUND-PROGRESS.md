@@ -6,7 +6,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 
 | Item | Status | Verified implementation commit |
 |---|---|---|
-| 1. Remove Apps | in progress | candidate pending CI |
+| 1. Remove Apps | in progress | `757f3fc` (CI pending) |
 | 2. Remove Auto-Stop Timer | not started | ? |
 | 3. Safe map taps and confirmation | not started | ? |
 | 4. Favorites in every place picker | not started | ? |
@@ -23,4 +23,4 @@ Done locally: removed the menu action, screen and storage model/key, main-map st
 
 Left: native build and existing regression/visual checks in CI.
 
-Exact next step: push the item-1 candidate, wait for its Actions run, inspect the menu preview, then record its verified commit hash and begin item 2.
+Exact next step: wait for the Actions run for `757f3fc`, inspect the menu preview, then record its verified commit hash and begin item 2.
