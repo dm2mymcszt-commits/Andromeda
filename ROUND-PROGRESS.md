@@ -8,7 +8,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 |---|---|---|
 | 1. Remove Apps | done | `757f3fc` ? CI 34581730357 passed; menu screenshot reviewed |
 | 2. Remove Auto-Stop Timer | done | `5819554` - CI 34583153529 passed; screenshot reviewed |
-| 3. Safe map taps and confirmation | in progress | not yet committed |
+| 3. Safe map taps and confirmation | in progress | `cdfb75c` (CI pending) |
 | 4. Favorites in every place picker | not started | ? |
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | not started | ? |
 | 6. Simulation times and fastest-route ranking | not started | ? |
@@ -25,6 +25,6 @@ Done for item 3: default-off main map selection, conditional default-on confirma
 
 Left: native build, scenario tests, map/picker regression checks and visual inspection in CI. Real double-tap zoom interaction still needs the user's phone after final delivery.
 
-Exact next step: push the item-3 candidate, record its hash and CI run, fix any native/test failures, then inspect screenshots before item 4.
+Exact next step: check CI for `cdfb75c` and fix any native/test failures, then inspect screenshots before item 4.
 
 Choices to record: allow up to 600 ms for a reverse-geocoded address before showing a coordinates-only confirmation; use five decimal places for displayed coordinates.
