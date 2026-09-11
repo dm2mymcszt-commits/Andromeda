@@ -6,6 +6,8 @@ struct SettingsView: View {
     @AppStorage("mapStyle") private var mapStyle = "standard"
     @AppStorage("mapButtonLabels") private var mapButtonLabels = true
     @AppStorage("mapHaptics") private var mapHaptics = true
+    @AppStorage("tapMapToSetLocation") private var tapMapToSetLocation = false
+    @AppStorage("askBeforeMoving") private var askBeforeMoving = true
     @AppStorage("frenchAddressLookup") private var frenchAddressLookup = true
 
     var body: some View {
@@ -23,6 +25,10 @@ struct SettingsView: View {
                     }
                     Toggle("Show button labels", isOn: $mapButtonLabels)
                     Toggle("Button haptics", isOn: $mapHaptics)
+                    Toggle("Tap map to set location", isOn: $tapMapToSetLocation)
+                    if tapMapToSetLocation {
+                        Toggle("Ask before moving", isOn: $askBeforeMoving)
+                    }
                 }
                 Section {
                     Toggle("French address lookup", isOn: $frenchAddressLookup)

@@ -21,6 +21,7 @@ struct CustomMapView: UIViewRepresentable {
     var fitsRoutes: Bool
     var showsUserLocation: Bool
     var mapStyle: String
+    var proposedPosition: CLLocationCoordinate2D?
 
     init(tappedCoordinate: Binding<EquatableCoordinate?>,
          moveToRegion: Binding<MKCoordinateRegion?>,
@@ -29,11 +30,12 @@ struct CustomMapView: UIViewRepresentable {
          selectedRouteIndex: Int = 0,
          movingPosition: CLLocationCoordinate2D? = nil,
          routeETAs: [String] = [],
-         allowsLocationSelection: Bool = true,
+         allowsLocationSelection: Bool = false,
          onSelectRoute: ((Int) -> Void)? = nil,
          fitsRoutes: Bool = false,
          showsUserLocation: Bool = true,
-         mapStyle: String = "standard") {
+         mapStyle: String = "standard",
+         proposedPosition: CLLocationCoordinate2D? = nil) {
         self._tappedCoordinate = tappedCoordinate
         self._moveToRegion = moveToRegion
         self.routePolyline = routePolyline
@@ -46,6 +48,7 @@ struct CustomMapView: UIViewRepresentable {
         self.fitsRoutes = fitsRoutes
         self.showsUserLocation = showsUserLocation
         self.mapStyle = mapStyle
+        self.proposedPosition = proposedPosition
     }
 
     func makeUIView(context: Context) -> MKMapView {
@@ -58,10 +61,7 @@ struct CustomMapView: UIViewRepresentable {
         mapView.isPitchEnabled = false
         mapView.layer.cornerRadius = 15
         mapView.layer.masksToBounds = true
-        let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
-        tap.delegate = context.coordinator
-        tap.cancelsTouchesInView = false
-        mapView.addGestureRecognizer(tap)
+        context.coordinator.installTapRecognizers(on: mapView)
         return mapView
     }
 
@@ -72,6 +72,7 @@ struct CustomMapView: UIViewRepresentable {
         let desiredType: MKMapType = mapStyle == "hybrid" ? .hybrid : .standard
         if mapView.mapType != desiredType { mapView.mapType = desiredType }
         context.coordinator.updateRoutes(on: mapView)
+        context.coordinator.updateProposedPosition(on: mapView)
         if let region = moveToRegion {
             mapView.setRegion(region, animated: true)
             DispatchQueue.main.async { self.moveToRegion = nil }
@@ -99,11 +100,60 @@ struct CustomMapView: UIViewRepresentable {
         var currentPolylines: [MKPolyline] = []
         var selectedIndex = 0
         var movingAnnotation: MovingAnnotation?
+        private(set) var proposedAnnotation: ProposedPositionAnnotation?
+        private(set) var singleTap: UITapGestureRecognizer?
+        private(set) var doubleTapGuard: UITapGestureRecognizer?
         private var currentETAs: [String] = []
         private var routeAnnotations: [MKAnnotation] = []
         private let routeColors: [UIColor] = [.systemBlue, .systemOrange, .systemPurple, .systemPink]
 
         init(_ parent: CustomMapView) { self.parent = parent }
+
+        func installTapRecognizers(on mapView: MKMapView) {
+            guard singleTap == nil else { return }
+            let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+            let doubleTap = UITapGestureRecognizer(target: self, action: #selector(ignoreDoubleTap(_:)))
+            doubleTap.numberOfTapsRequired = 2
+            for recognizer in [tap, doubleTap] {
+                recognizer.delegate = self
+                recognizer.cancelsTouchesInView = false
+                mapView.addGestureRecognizer(recognizer)
+            }
+            singleTap = tap
+            doubleTapGuard = doubleTap
+            tap.require(toFail: doubleTap)
+        }
+
+        // The guard protects even when MapKit creates its zoom recognizers lazily.
+        // Simultaneous recognition preserves MapKit's own double-tap zoom.
+        @objc private func ignoreDoubleTap(_ gesture: UITapGestureRecognizer) {}
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+            gestureRecognizer === doubleTapGuard || other === doubleTapGuard
+        }
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                               shouldRequireFailureOf other: UIGestureRecognizer) -> Bool {
+            guard gestureRecognizer === singleTap, let tap = other as? UITapGestureRecognizer else { return false }
+            return tap.numberOfTapsRequired >= 2
+        }
+
+        func updateProposedPosition(on mapView: MKMapView) {
+            guard let coordinate = parent.proposedPosition else {
+                if let annotation = proposedAnnotation { mapView.removeAnnotation(annotation) }
+                proposedAnnotation = nil
+                return
+            }
+            if let annotation = proposedAnnotation {
+                annotation.coordinate = coordinate
+            } else {
+                let annotation = ProposedPositionAnnotation()
+                annotation.coordinate = coordinate
+                proposedAnnotation = annotation
+                mapView.addAnnotation(annotation)
+            }
+        }
 
         func updateRoutes(on mapView: MKMapView) {
             let polylines = parent.allRoutePolylines.isEmpty
@@ -275,6 +325,19 @@ struct CustomMapView: UIViewRepresentable {
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation { return nil }
+            if annotation is ProposedPositionAnnotation {
+                let view = mapView.dequeueReusableAnnotationView(withIdentifier: "ProposedPosition") as? MKMarkerAnnotationView
+                    ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "ProposedPosition")
+                view.annotation = annotation
+                view.markerTintColor = .systemIndigo
+                view.glyphText = "?"
+                view.titleVisibility = .visible
+                view.displayPriority = .required
+                view.zPriority = .max
+                view.canShowCallout = false
+                view.accessibilityLabel = "Proposed location"
+                return view
+            }
             if let endpoint = annotation as? RouteEndpointAnnotation {
                 let identifier = "RouteEndpoint"
                 let view = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKMarkerAnnotationView
@@ -327,6 +390,11 @@ struct CustomMapView: UIViewRepresentable {
 class MovingAnnotation: NSObject, MKAnnotation {
     @objc dynamic var coordinate = CLLocationCoordinate2D()
     var title: String?
+}
+
+final class ProposedPositionAnnotation: NSObject, MKAnnotation {
+    @objc dynamic var coordinate = CLLocationCoordinate2D()
+    var title: String? { "Move here?" }
 }
 
 final class RouteEndpointAnnotation: NSObject, MKAnnotation {

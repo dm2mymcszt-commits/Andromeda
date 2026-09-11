@@ -11,6 +11,9 @@ import AlertKit
 
 struct LocSimView: View {
     @AppStorage("mapStyle") private var mapStyle = "standard"
+    @AppStorage("tapMapToSetLocation") private var tapMapToSetLocation = false
+    @AppStorage("askBeforeMoving") private var askBeforeMoving = true
+    @StateObject private var mapMove = MapMoveController()
     @StateObject private var routeSimulator = RouteSimulator()
     
     @State private var locationManager = CLLocationManager()
@@ -45,17 +48,24 @@ struct LocSimView: View {
                               selectedRouteIndex: routeSimulator.selectedRouteIndex,
                               movingPosition: routeSimulator.currentPosition,
                               routeETAs: routeSimulator.availableRoutes.map(\.etaText),
+                              allowsLocationSelection: tapMapToSetLocation,
                               onSelectRoute: { index in
                                   guard !routeSimulator.isSimulating else { return }
                                   routeSimulator.selectRoute(at: index)
-                              }, mapStyle: mapStyle)
+                              }, mapStyle: mapStyle,
+                              proposedPosition: mapMove.pendingRequest?.coordinate)
                     .onAppear {
                         CLLocationManager().requestAlwaysAuthorization()
                     }
                     .onChange(of: tappedCoordinate) { newCoord in
                         guard let coord = newCoord else { return }
-                        let altitudeValue = Double(altitude) ?? 0.0
-                        startSimulation(at: coord.coordinate, altitude: altitudeValue)
+                        tappedCoordinate = nil
+                        mapMove.request(coord.coordinate,
+                            displayCoordinate: CoordTransform.gcj02ToWgs84(coord.coordinate),
+                            enabled: tapMapToSetLocation, ask: askBeforeMoving,
+                            routeRunning: routeSimulator.isSimulating) { coordinate in
+                            startSimulation(at: coordinate, altitude: Double(altitude) ?? 0)
+                        }
                     }
                     .ignoresSafeArea()
                 
@@ -87,6 +97,9 @@ struct LocSimView: View {
             }
             
         }
+        .modifier(MapMoveConfirmation(controller: mapMove))
+        .onChange(of: tapMapToSetLocation) { _ in mapMove.cancel() }
+        .onChange(of: askBeforeMoving) { _ in mapMove.cancel() }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(isPresented: $showSearchBar) {
             RouteLocationPicker(title: "Find a place", region: mapRegion,
@@ -117,6 +130,7 @@ struct LocSimView: View {
     }
     
     private func startSimulation(at gcjCoordinate: CLLocationCoordinate2D, altitude: Double) {
+        mapMove.cancel()
         if routeSimulator.isSimulating { routeSimulator.stopSimulation() }
         joystickActive = false
         let wgsCoordinate = CoordTransform.gcj02ToWgs84(gcjCoordinate)
@@ -181,6 +195,7 @@ struct LocSimView: View {
     }
     
     private func stopSimulation() {
+        mapMove.cancel()
         routeSimulator.stopSimulation()
         joystickActive = false
         AlertKitAPI.present(title: "Stopped!", icon: .done, style: .iOS17AppleMusic, haptic: .success)

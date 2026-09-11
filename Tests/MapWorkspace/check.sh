@@ -22,6 +22,7 @@ xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
   Geranium/LocSim/CustomMapView.swift Geranium/LocSim/FloatingQuickMenu.swift \
   Geranium/LocSim/RouteLocationPicker.swift Geranium/SettingsView.swift \
+  Geranium/LocSim/MapMoveConfirmation.swift \
   "$QA_DIR/AppSettings.swift" Tests/MapWorkspace/Preview.swift \
   -o "$PREVIEW_APP/MapWorkspacePreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'
@@ -43,7 +44,7 @@ xcrun simctl install "$DEVICE" "$PREVIEW_APP"
 CONTAINER=$(xcrun simctl get_app_container "$DEVICE" local.andromeda.workspacepreview data)
 for appearance in dark light; do
   xcrun simctl ui "$DEVICE" appearance "$appearance"
-  for screen in map settings search; do
+  for screen in map settings settings-enabled confirmation search; do
     xcrun simctl terminate "$DEVICE" local.andromeda.workspacepreview 2>/dev/null || true
     xcrun simctl launch "$DEVICE" local.andromeda.workspacepreview --screen "$screen" --appearance "$appearance"
     if test "$screen" = search; then sleep 20; else sleep 5; fi

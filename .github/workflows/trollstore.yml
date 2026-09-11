@@ -51,6 +51,9 @@ jobs:
       - name: Check route calculation and movement
         run: bash Tests/RouteSimulation/check.sh
 
+      - name: Check safe map moves and confirmation
+        run: bash Tests/MapMoveSafety/check.sh
+
       - name: Check address lookup and live Talence result
         run: bash Tests/AddressSearch/check.sh
 

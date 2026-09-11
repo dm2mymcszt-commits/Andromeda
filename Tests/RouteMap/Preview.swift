@@ -112,6 +112,15 @@ private final class InsertionProbeMap: MKMapView {
         )
         let map = InsertionProbeMap(frame: CGRect(x: 0, y: 0, width: 358, height: 340))
         let coordinator = parent.makeCoordinator()
+        coordinator.installTapRecognizers(on: map)
+        let mapKitDoubleTap = UITapGestureRecognizer()
+        mapKitDoubleTap.numberOfTapsRequired = 2
+        try require(coordinator.singleTap?.numberOfTapsRequired == 1 && coordinator.doubleTapGuard?.numberOfTapsRequired == 2,
+                    "Single/double tap guard was not installed")
+        try require(coordinator.gestureRecognizer(coordinator.singleTap!, shouldRequireFailureOf: mapKitDoubleTap),
+                    "Single tap does not wait for MapKit double tap failure")
+        try require(coordinator.gestureRecognizer(coordinator.doubleTapGuard!, shouldRecognizeSimultaneouslyWith: mapKitDoubleTap),
+                    "Double tap guard would block map zoom")
         map.delegate = coordinator
         coordinator.updateRoutes(on: map)
         try assertRoutes(map, coordinator: coordinator, routes: originalRoutes, selected: 1)
@@ -170,6 +179,23 @@ private final class InsertionProbeMap: MKMapView {
         try require(map.overlays.isEmpty, "Clearing routes left stale map lines")
         try require(map.annotations.filter { !($0 is MKUserLocation) }.isEmpty,
                     "Clearing routes left stale markers")
+        // Main-map safety is the default; opt-in coordinate selection remains available.
+        let defaults = CustomMapView(tappedCoordinate: .constant(nil), moveToRegion: .constant(nil))
+        try require(!defaults.allowsLocationSelection, "Map taps must be disabled by default")
+        parent.allowsLocationSelection = true
+        coordinator.parent = parent
+        coordinator.handleMapTap(at: CGPoint(x: 20, y: 20), on: map)
+        try require(location != nil, "Explicit map-tap opt-in failed")
+        location = nil
+        parent.proposedPosition = CLLocationCoordinate2D(latitude: 44.84, longitude: -0.58)
+        coordinator.parent = parent
+        coordinator.updateProposedPosition(on: map)
+        try require(map.annotations.contains { $0 is ProposedPositionAnnotation }, "Proposed move pin missing")
+        try require(location == nil, "Showing a proposed pin changed location")
+        parent.proposedPosition = nil
+        coordinator.parent = parent
+        coordinator.updateProposedPosition(on: map)
+        try require(!map.annotations.contains { $0 is ProposedPositionAnnotation }, "Cancel left a proposed pin")
         return "PASS: initial renderer colors, selected overlay ordering, A/B endpoints, numbered ETA badges, selection changes, same-count geometry replacement, ETA refresh, badge/line taps, location protection, and route clearing."
     }
 

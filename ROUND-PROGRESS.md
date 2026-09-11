@@ -21,10 +21,10 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 
 Item 2 verified: CI run 34583153529 passed all checks. The menu screenshot shows no Timer or Apps. The internal route movement timer and motion sample code remain unchanged.
 
-Done for item 3: reviewed the main map's gesture path and Apple's gesture failure-ordering documentation. Route/badge selection precedes coordinate selection and can remain independent.
+Done for item 3: default-off main map selection, conditional default-on confirmation toggle, proposed pin, coordinates and fast reverse-geocoded address, explicit route-stop warning, cancellation and stale-response protection, and double-tap failure ordering. Added production-controller scenario tests, map gesture/pin regression checks, and enabled/disabled Settings plus confirmation screenshots.
 
-Left: default-off setting and conditional confirmation setting; temporary pin and cancellable fast address lookup; confirmation warning during a route; double-tap suppression; toggle/confirmation and map regression tests; CI build and previews.
+Left: native build, scenario tests, map/picker regression checks and visual inspection in CI. Real double-tap zoom interaction still needs the user's phone after final delivery.
 
-Exact next step: implement the map-move confirmation controller, Settings controls, main-map gating and temporary annotation, and single/double-tap failure ordering. Keep RouteSimulator unchanged.
+Exact next step: push the item-3 candidate, record its hash and CI run, fix any native/test failures, then inspect screenshots before item 4.
 
 Choices to record: allow up to 600 ms for a reverse-geocoded address before showing a coordinates-only confirmation; use five decimal places for displayed coordinates.
