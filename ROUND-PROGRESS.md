@@ -6,7 +6,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 
 | Item | Status | Verified implementation commit |
 |---|---|---|
-| 1. Remove Apps | not started | ? |
+| 1. Remove Apps | in progress | candidate pending CI |
 | 2. Remove Auto-Stop Timer | not started | ? |
 | 3. Safe map taps and confirmation | not started | ? |
 | 4. Favorites in every place picker | not started | ? |
@@ -17,6 +17,10 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 9. Finish actions and notifications | not started | ? |
 | 10. Persistent automatic/custom altitude | not started | ? |
 
-## Next step
+## Item 1 in progress
 
-Start item 1: remove the Apps feature, its storage model, project entries, and all executable references. Build and test in CI before marking it done.
+Done locally: removed the menu action, screen and storage model/key, main-map state/sheet, Xcode references, and README feature entry. Repository search has no feature references outside the preserved request.
+
+Left: native build and existing regression/visual checks in CI.
+
+Exact next step: push the item-1 candidate, wait for its Actions run, inspect the menu preview, then record its verified commit hash and begin item 2.

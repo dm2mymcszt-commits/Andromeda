@@ -22,7 +22,6 @@
 - **🕹️ Real-time Joystick** — Move your GPS instantly with 4 speed modes (Walk, Run, Bike, Car)
 - **🛣️ Route Simulation** — Follow paths automatically with speed multipliers
 - **📂 GPX Support** — Import your own route files for automated movement
-- **📱 App Profiles** — Custom location presets per app (Tinder, PoGo, etc.)
 - **🎛️ Quick Menu** — New sidebar for instant tool access
 - **⭐ Favorites v2** — One-tap location saving
 - **⏱️ Auto-Stop Timer** — Automatically turn off LocSim (15m to 2h)

@@ -32,9 +32,6 @@ struct LocSimView: View {
     // Favorites
     @State private var showFavorites: Bool = false
     
-    // App Profiles
-    @State private var showAppProfiles: Bool = false
-    
     // Timer
     @State private var showTimerPicker: Bool = false
     @State private var timerRemaining: Int = 0
@@ -157,15 +154,7 @@ struct LocSimView: View {
                 .cancel()
             ])
         }
-        .sheet(isPresented: $showAppProfiles) {
-            AppProfilesView(isPresented: $showAppProfiles, currentLat: lat, currentLong: long) { profLat, profLong, name in
-                let coord = CLLocationCoordinate2D(latitude: profLat, longitude: profLong)
-                let region = MKCoordinateRegion(center: coord, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-                mapRegion = region
-                startSimulation(at: coord, altitude: Double(altitude) ?? 0.0)
-                AlertKitAPI.present(title: name, icon: .done, style: .iOS17AppleMusic, haptic: .success)
-            }
-        }
+
     }
     
     private func startSimulation(at gcjCoordinate: CLLocationCoordinate2D, altitude: Double) {
@@ -227,8 +216,6 @@ struct LocSimView: View {
             showSearchBar.toggle()
         case .favorites:
             showFavorites.toggle()
-        case .appProfiles:
-            showAppProfiles.toggle()
         case .joystick:
             if !joystickActive && routeSimulator.isSimulating {
                 if let position = routeSimulator.currentPosition {

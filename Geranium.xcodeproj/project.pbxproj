@@ -41,7 +41,6 @@
 		BB110001000000010000AA01 /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110001000000010000BB01 /* FavoritesView.swift */; };
 		BB110002000000020000AA02 /* JoystickView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110002000000020000BB02 /* JoystickView.swift */; };
 		BB110004000000040000AA04 /* GPXParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110004000000040000BB04 /* GPXParser.swift */; };
-		BB110005000000050000AA05 /* AppProfilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110005000000050000BB05 /* AppProfilesView.swift */; };
 		BB110007000000070000AA07 /* FloatingQuickMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110007000000070000BB07 /* FloatingQuickMenu.swift */; };
 /* End PBXBuildFile section */
 
@@ -147,7 +146,6 @@
 		BB110001000000010000BB01 /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/FavoritesView.swift"; sourceTree = SOURCE_ROOT; };
 		BB110002000000020000BB02 /* JoystickView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/JoystickView.swift"; sourceTree = SOURCE_ROOT; };
 		BB110004000000040000BB04 /* GPXParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/GPXParser.swift"; sourceTree = SOURCE_ROOT; };
-		BB110005000000050000BB05 /* AppProfilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/AppProfilesView.swift"; sourceTree = SOURCE_ROOT; };
 		BB110007000000070000BB07 /* FloatingQuickMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/FloatingQuickMenu.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -540,7 +538,6 @@
 				BB110001000000010000AA01 /* FavoritesView.swift in Sources */,
 				BB110002000000020000AA02 /* JoystickView.swift in Sources */,
 				BB110004000000040000AA04 /* GPXParser.swift in Sources */,
-				BB110005000000050000AA05 /* AppProfilesView.swift in Sources */,
 				BB110007000000070000AA07 /* FloatingQuickMenu.swift in Sources */,
 
 			);
