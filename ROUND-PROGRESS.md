@@ -21,8 +21,8 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 
 Item 1 verified: all native build, motion, geometry, search, map, and picker checks passed in run 34581730357. Main-map screenshot confirms Apps is absent. No implementation references or storage keys remain.
 
-Done for item 2: identified the auto-stop UI and countdown code; the movement timer in RouteSimulator is separate and must stay intact.
+Done for item 2: removed the auto-stop menu entry, action sheet, countdown UI, state and methods, preview parameter, and README feature entry. Stop still calls RouteSimulator.stopSimulation and disables the joystick. RouteSimulator and RouteLocationSample are unchanged.
 
-Left: remove auto-stop menu/action sheet/countdown/state/helper methods and the menu preview parameter; remove its README entry; validate build and tests.
+Left: native build and regression checks in CI.
 
-Exact next step: edit FloatingQuickMenu, LocSimView, Tests/MapWorkspace/Preview.swift, and README for item 2 only, then push a candidate for CI.
+Exact next step: push the item-2 candidate, record its hash, wait for CI, and inspect the menu without Timer before beginning item 3.

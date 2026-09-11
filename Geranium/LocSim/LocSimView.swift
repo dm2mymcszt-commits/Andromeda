@@ -32,11 +32,6 @@ struct LocSimView: View {
     // Favorites
     @State private var showFavorites: Bool = false
     
-    // Timer
-    @State private var showTimerPicker: Bool = false
-    @State private var timerRemaining: Int = 0
-    @State private var timerActive: Bool = false
-    @State private var simTimer: Timer? = nil
     var body: some View {
         LocSimMainView()
     }
@@ -70,7 +65,6 @@ struct LocSimView: View {
                     handleQuickMenuAction(action)
                 },
                 joystickActive: joystickActive,
-                timerActive: timerActive,
                 routeActive: routeSimulator.isSimulating
             )
             .padding(.trailing, 12)
@@ -92,32 +86,6 @@ struct LocSimView: View {
                 .transition(.opacity.combined(with: .scale(scale: 0.8)))
             }
             
-            // MARK: - Timer Countdown
-            if timerActive {
-                VStack {
-                    Spacer()
-                    HStack {
-                        HStack(spacing: 8) {
-                            Image(systemName: "timer")
-                                .foregroundColor(.orange)
-                            Text(timerString())
-                                .font(.system(size: 14, weight: .bold, design: .monospaced))
-                            Button(action: { cancelTimer() }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.red.opacity(0.8))
-                            }
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(20)
-                        .shadow(color: .black.opacity(0.15), radius: 8)
-                        Spacer()
-                    }
-                    .padding(.leading, 16)
-                    .padding(.bottom, 20)
-                }
-            }
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(isPresented: $showSearchBar) {
@@ -145,15 +113,6 @@ struct LocSimView: View {
                 AlertKitAPI.present(title: "📍 \(name)", icon: .done, style: .iOS17AppleMusic, haptic: .success)
             }
         }
-        .actionSheet(isPresented: $showTimerPicker) {
-            ActionSheet(title: Text("Auto-Stop Timer"), message: Text("LocSim will stop automatically after:"), buttons: [
-                .default(Text("15 minutes")) { startTimer(minutes: 15) },
-                .default(Text("30 minutes")) { startTimer(minutes: 30) },
-                .default(Text("1 hour")) { startTimer(minutes: 60) },
-                .default(Text("2 hours")) { startTimer(minutes: 120) },
-                .cancel()
-            ])
-        }
 
     }
     
@@ -176,37 +135,6 @@ struct LocSimView: View {
             style: .iOS17AppleMusic,
             haptic: .success
         )
-    }
-    
-    // MARK: - Timer
-    private func startTimer(minutes: Int) {
-        timerRemaining = minutes * 60
-        timerActive = true
-        simTimer?.invalidate()
-        simTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if timerRemaining > 0 {
-                timerRemaining -= 1
-            } else {
-                stopSimulation()
-                cancelTimer()
-            }
-        }
-        AlertKitAPI.present(title: "Timer: \(minutes)m", icon: .done, style: .iOS17AppleMusic, haptic: .success)
-    }
-    
-    private func cancelTimer() {
-        simTimer?.invalidate()
-        simTimer = nil
-        timerActive = false
-        timerRemaining = 0
-    }
-    
-    private func timerString() -> String {
-        let h = timerRemaining / 3600
-        let m = (timerRemaining % 3600) / 60
-        let s = timerRemaining % 60
-        if h > 0 { return String(format: "%d:%02d:%02d", h, m, s) }
-        return String(format: "%02d:%02d", m, s)
     }
     
     // MARK: - Quick Menu Handler
@@ -247,8 +175,6 @@ struct LocSimView: View {
             }
         case .settings:
             showSettings = true
-        case .timer:
-            showTimerPicker = true
         case .stop:
             stopSimulation()
         }
@@ -257,7 +183,6 @@ struct LocSimView: View {
     private func stopSimulation() {
         routeSimulator.stopSimulation()
         joystickActive = false
-        cancelTimer()
         AlertKitAPI.present(title: "Stopped!", icon: .done, style: .iOS17AppleMusic, haptic: .success)
     }
     

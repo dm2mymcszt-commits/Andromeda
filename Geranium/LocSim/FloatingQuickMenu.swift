@@ -6,7 +6,6 @@ enum QuickMenuAction: String, CaseIterable {
     case favorites = "Favorites"
     case joystick = "Joystick"
     case altitude = "Altitude"
-    case timer = "Timer"
     case settings = "Settings"
     case stop = "Stop"
 
@@ -17,7 +16,6 @@ enum QuickMenuAction: String, CaseIterable {
         case .favorites: return "star"
         case .joystick: return "gamecontroller"
         case .altitude: return "mountain.2"
-        case .timer: return "timer"
         case .settings: return "gearshape"
         case .stop: return "stop.fill"
         }
@@ -27,7 +25,6 @@ enum QuickMenuAction: String, CaseIterable {
 struct FloatingQuickMenu: View {
     let onAction: (QuickMenuAction) -> Void
     var joystickActive: Bool
-    var timerActive: Bool
     var routeActive: Bool = false
     @AppStorage("mapButtonLabels") private var showLabels = true
     @AppStorage("mapHaptics") private var haptics = true
@@ -37,7 +34,7 @@ struct FloatingQuickMenu: View {
             ForEach(QuickMenuAction.allCases, id: \.self) { action in
                 if action == .stop { Divider().padding(.horizontal, 6) }
                 let active = (action == .joystick && joystickActive)
-                    || (action == .timer && timerActive) || (action == .route && routeActive)
+                    || (action == .route && routeActive)
                 Button {
                     if haptics { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
                     onAction(action)

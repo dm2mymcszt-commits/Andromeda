@@ -29,7 +29,7 @@ struct WorkspacePreview: View {
                 if action == .settings { showSettings = true }
                 if action == .search { showSearch = true }
                 if action == .route { routeActive.toggle() }
-            }, joystickActive: false, timerActive: false, routeActive: routeActive)
+            }, joystickActive: false, routeActive: routeActive)
                 .background(GeometryReader { geometry in
                     Color.clear.onAppear {
                         let width = geometry.size.width

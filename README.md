@@ -24,7 +24,6 @@
 - **📂 GPX Support** — Import your own route files for automated movement
 - **🎛️ Quick Menu** — New sidebar for instant tool access
 - **⭐ Favorites v2** — One-tap location saving
-- **⏱️ Auto-Stop Timer** — Automatically turn off LocSim (15m to 2h)
 
 ### 🧹 Cleaner & Analyzer
 - **📊 Storage Dashboard** — Beautiful interactive donut chart for storage breakdown
