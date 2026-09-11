@@ -41,7 +41,6 @@ class AppSettings: ObservableObject {
     @AppStorage("mapStyle") var mapStyle = "standard"
     @AppStorage("mapButtonLabels") var mapButtonLabels = true
     @AppStorage("mapHaptics") var mapHaptics = true
-    @AppStorage("frenchAddressLookup") var frenchAddressLookup = true
 }
 
 var langaugee: String = {

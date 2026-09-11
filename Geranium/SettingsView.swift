@@ -8,7 +8,6 @@ struct SettingsView: View {
     @AppStorage("mapHaptics") private var mapHaptics = true
     @AppStorage("tapMapToSetLocation") private var tapMapToSetLocation = false
     @AppStorage("askBeforeMoving") private var askBeforeMoving = true
-    @AppStorage("frenchAddressLookup") private var frenchAddressLookup = true
 
     var body: some View {
         NavigationView {
@@ -31,13 +30,6 @@ struct SettingsView: View {
                     }
                 }
                 Section {
-                    Toggle("French address lookup", isOn: $frenchAddressLookup)
-                } header: {
-                    Text("Search")
-                } footer: {
-                    Text("Adds French address results from IGN / Base Adresse Nationale. Address searches are sent to this service; your current location is not. Apple Maps remains available for worldwide places.")
-                }
-                Section {
                     Button("Location permissions") {
                         if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                     }
@@ -54,7 +46,8 @@ struct SettingsView: View {
                     Link("Source code", destination: URL(string: "https://github.com/dm2mymcszt-commits/Andromeda")!)
                     Text("Based on Andromeda by son3ra1n and Geranium by c22dev. GPL-3.0.")
                         .font(.caption).foregroundColor(.secondary)
-                    Link("French address data: IGN / BAN", destination: URL(string: "https://geoservices.ign.fr/services-geoplateforme-geocodage")!)
+                    Text("Data sources: [Apple Maps](https://www.apple.com/maps/), [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), [IGN](https://geoservices.ign.fr/services-geoplateforme-geocodage). [Open Location Code and licenses](https://github.com/dm2mymcszt-commits/Andromeda/blob/experiment/route-motion/THIRD-PARTY-NOTICES.md).")
+                        .font(.caption).foregroundColor(.secondary)
                 }
             }
             .navigationTitle("Settings")

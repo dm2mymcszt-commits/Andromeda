@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BBDA11005000000000000041 /* PlaceSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000042 /* PlaceSearch.swift */; };
+		BBDA11005000000000000031 /* AddressQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000032 /* AddressQuery.swift */; };
+		BBDA11005000000000000021 /* PlaceInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000022 /* PlaceInput.swift */; };
+		BBDA11005000000000000011 /* PlaceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000012 /* PlaceModels.swift */; };
 		BDA110030000000000000001 /* MapMoveConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110030000000000000002 /* MapMoveConfirmation.swift */; };
 		BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA080010000000000000002 /* RouteLocationPicker.swift */; };
 		AA222222222222220000BEEF /* GeraniumRootHelper in Resources */ = {isa = PBXBuildFile; fileRef = AA111111111111110000CAFE /* GeraniumRootHelper */; };
@@ -103,6 +107,10 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BBDA11005000000000000042 /* PlaceSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/PlaceSearch.swift"; sourceTree = SOURCE_ROOT; };
+		BBDA11005000000000000032 /* AddressQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/AddressQuery.swift"; sourceTree = SOURCE_ROOT; };
+		BBDA11005000000000000022 /* PlaceInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/PlaceInput.swift"; sourceTree = SOURCE_ROOT; };
+		BBDA11005000000000000012 /* PlaceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/PlaceModels.swift"; sourceTree = SOURCE_ROOT; };
 		BDA110030000000000000002 /* MapMoveConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/MapMoveConfirmation.swift"; sourceTree = SOURCE_ROOT; };
 		BDA080010000000000000002 /* RouteLocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteLocationPicker.swift; sourceTree = "<group>"; };
 		790301BA2B37747A0044E30A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -538,6 +546,10 @@
 				F82C58082E37790100F76DFA /* RouteSimView.swift in Sources */,
 				BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */,
 				BDA110030000000000000001 /* MapMoveConfirmation.swift in Sources */,
+				BBDA11005000000000000041 /* PlaceSearch.swift in Sources */,
+				BBDA11005000000000000031 /* AddressQuery.swift in Sources */,
+				BBDA11005000000000000021 /* PlaceInput.swift in Sources */,
+				BBDA11005000000000000011 /* PlaceModels.swift in Sources */,
 				BB110001000000010000AA01 /* FavoritesView.swift in Sources */,
 				BB110002000000020000AA02 /* JoystickView.swift in Sources */,
 				BB110004000000040000AA04 /* GPXParser.swift in Sources */,

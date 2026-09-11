@@ -22,7 +22,7 @@ python3 Tests/RoutePicker/bookmark-support.py "$QA_DIR/Bookmarks.swift"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
   Geranium/LocSim/CustomMapView.swift Geranium/LocSim/FloatingQuickMenu.swift \
-  Geranium/LocSim/RouteLocationPicker.swift Geranium/SettingsView.swift \
+  Geranium/LocSim/RouteLocationPicker.swift Geranium/LocSim/PlaceModels.swift Geranium/LocSim/PlaceInput.swift Geranium/LocSim/AddressQuery.swift Geranium/LocSim/PlaceSearch.swift Geranium/SettingsView.swift \
   Geranium/LocSim/MapMoveConfirmation.swift \
   Geranium/LocSim/CoordTransform.swift "$QA_DIR/Bookmarks.swift" \
   "$QA_DIR/AppSettings.swift" Tests/MapWorkspace/Preview.swift \

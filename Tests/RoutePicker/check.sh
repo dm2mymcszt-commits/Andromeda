@@ -3,15 +3,8 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 QA_DIR="$PWD/build/route-picker-qa"
 mkdir -p "$QA_DIR"
-# Compile the exact production models on macOS, excluding the iOS-only views.
-python3 - "$QA_DIR/Models.swift" <<'PY'
-from pathlib import Path
-import sys
-source = Path('Geranium/LocSim/RouteLocationPicker.swift').read_text()
-Path(sys.argv[1]).write_text(source.split('struct RouteLocationPicker: View {')[0])
-PY
 python3 Tests/RoutePicker/bookmark-support.py "$QA_DIR/Bookmarks.swift"
-xcrun swiftc "$QA_DIR/Models.swift" "$QA_DIR/Bookmarks.swift" Geranium/LocSim/CoordTransform.swift \
+xcrun swiftc Geranium/LocSim/PlaceModels.swift Geranium/LocSim/PlaceInput.swift Geranium/LocSim/AddressQuery.swift Geranium/LocSim/PlaceSearch.swift "$QA_DIR/Bookmarks.swift" Geranium/LocSim/CoordTransform.swift \
   Tests/RoutePicker/main.swift -o "$QA_DIR/model-tests"
 "$QA_DIR/model-tests"
 
@@ -20,7 +13,7 @@ PREVIEW_APP="$QA_DIR/RoutePickerPreview.app"
 mkdir -p "$PREVIEW_APP"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
-  Geranium/LocSim/RouteLocationPicker.swift Geranium/LocSim/CoordTransform.swift \
+  Geranium/LocSim/RouteLocationPicker.swift Geranium/LocSim/PlaceModels.swift Geranium/LocSim/PlaceInput.swift Geranium/LocSim/AddressQuery.swift Geranium/LocSim/PlaceSearch.swift Geranium/LocSim/CoordTransform.swift \
   "$QA_DIR/Bookmarks.swift" Tests/RoutePicker/Preview.swift \
   -o "$PREVIEW_APP/RoutePickerPreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'

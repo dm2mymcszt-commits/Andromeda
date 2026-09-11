@@ -54,7 +54,7 @@ jobs:
       - name: Check safe map moves and confirmation
         run: bash Tests/MapMoveSafety/check.sh
 
-      - name: Check address lookup and live Talence result
+      - name: Check location parsers and seven worldwide addresses
         run: bash Tests/AddressSearch/check.sh
 
       - name: Check route map and capture previews
