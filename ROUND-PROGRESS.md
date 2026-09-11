@@ -6,31 +6,25 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 
 | Item | Status | Verified implementation commit |
 |---|---|---|
-| 1. Remove Apps | done | `757f3fc` ? CI 34581730357 passed; menu screenshot reviewed |
+| 1. Remove Apps | done | `757f3fc` - CI 34581730357 passed; menu screenshot reviewed |
 | 2. Remove Auto-Stop Timer | done | `5819554` - CI 34583153529 passed; screenshot reviewed |
-| 3. Safe map taps and confirmation | in progress | `cdfb75c` + `b848fed` (CI pending) |
+| 3. Safe map taps and confirmation | done | `cdfb75c` + `b848fed` - CI 34609171515 passed; dark/light screenshots reviewed |
 | 4. Favorites in every place picker | in progress | `57b343f` (CI pending) |
-| 5. Worldwide search, links, coordinates, plus codes, and sharing | not started | ? |
-| 6. Simulation times and fastest-route ranking | not started | ? |
-| 7. Per-mode speeds, mode routes, and swap | not started | ? |
-| 8. Main-map route controls, seeking, and live speed | not started | ? |
-| 9. Finish actions and notifications | not started | ? |
-| 10. Persistent automatic/custom altitude | not started | ? |
+| 5. Worldwide search, links, coordinates, plus codes, and sharing | not started | - |
+| 6. Simulation times and fastest-route ranking | not started | - |
+| 7. Per-mode speeds, mode routes, and swap | not started | - |
+| 8. Main-map route controls, seeking, and live speed | not started | - |
+| 9. Finish actions and notifications | not started | - |
+| 10. Persistent automatic/custom altitude | not started | - |
 
-## Item 3 in progress
+## Items 1-3 verified
 
-Item 2 verified: CI run 34583153529 passed all checks. The menu screenshot shows no Timer or Apps. The internal route movement timer and motion sample code remain unchanged.
-
-Done for item 3: default-off main map selection, conditional default-on confirmation toggle, proposed pin, coordinates and fast reverse-geocoded address, explicit route-stop warning, cancellation and stale-response protection, and double-tap failure ordering. Added production-controller scenario tests, map gesture/pin regression checks, and enabled/disabled Settings plus confirmation screenshots.
-
-Native build, motion tests and map-move scenario tests passed for cdfb75c. Follow-up b848fed cancels a pending map proposal whenever another menu tool is opened, preventing a late prompt over a new sheet. Left: final CI, map/picker regression checks and visual inspection. Real double-tap zoom interaction still needs the user's phone after final delivery.
-
-CI 34608469914 passed all checks; the dark/light default Settings, enabled Settings and confirmation screenshots were inspected. Follow-up b848fed passed native build, motion, route and map-move tests; its final regression run 34609171515 is still finishing. Exact next step: confirm that run and the item 4 candidate CI for 57b343f, then inspect Favorites screenshots before item 5.
-
-Choices to record: allow up to 600 ms for a reverse-geocoded address before showing a coordinates-only confirmation; use five decimal places for displayed coordinates.
+Item 3: CI 34608469914 and final follow-up CI 34609171515 passed every check. Reviewed default/conditional Settings and running-route confirmation in dark and light simulator screenshots. Real double-tap-to-zoom interaction still needs the user's phone. Chosen details: 600 ms maximum address wait, five decimal places, pending proposals cancel when another tool opens.
 
 ## Item 4 candidate pushed
 
 Favorites now appear above Recent Places in the shared picker, read from BookMarkRetrieve(), filter by name, and convert saved WGS-84 coordinates into map coordinates. The direct Favorites action uses the same conversion. Added real bookmark-storage and coordinate round-trip tests, with Start/Destination/Search and filtered screenshots. Local diff and shell checks pass. Native checks are still required.
 
 Choices to record: preserve Favorites order; match names ignoring case and accents; use five-decimal coordinates below the name; unnamed legacy entries display Favorite; invalid saved coordinates are omitted.
+
+Exact next step: check item 4 CI 34610371414, fix failures, inspect all four picker screenshots, mark item 4 done, then implement item 5.
