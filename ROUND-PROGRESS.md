@@ -6,8 +6,8 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 
 | Item | Status | Verified implementation commit |
 |---|---|---|
-| 1. Remove Apps | in progress | `757f3fc` (CI pending) |
-| 2. Remove Auto-Stop Timer | not started | ? |
+| 1. Remove Apps | done | `757f3fc` ? CI 34581730357 passed; menu screenshot reviewed |
+| 2. Remove Auto-Stop Timer | in progress | not yet committed |
 | 3. Safe map taps and confirmation | not started | ? |
 | 4. Favorites in every place picker | not started | ? |
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | not started | ? |
@@ -17,10 +17,12 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 9. Finish actions and notifications | not started | ? |
 | 10. Persistent automatic/custom altitude | not started | ? |
 
-## Item 1 in progress
+## Item 2 in progress
 
-Done locally: removed the menu action, screen and storage model/key, main-map state/sheet, Xcode references, and README feature entry. Repository search has no feature references outside the preserved request.
+Item 1 verified: all native build, motion, geometry, search, map, and picker checks passed in run 34581730357. Main-map screenshot confirms Apps is absent. No implementation references or storage keys remain.
 
-Left: native build and existing regression/visual checks in CI.
+Done for item 2: identified the auto-stop UI and countdown code; the movement timer in RouteSimulator is separate and must stay intact.
 
-Exact next step: wait for the Actions run for `757f3fc`, inspect the menu preview, then record its verified commit hash and begin item 2.
+Left: remove auto-stop menu/action sheet/countdown/state/helper methods and the menu preview parameter; remove its README entry; validate build and tests.
+
+Exact next step: edit FloatingQuickMenu, LocSimView, Tests/MapWorkspace/Preview.swift, and README for item 2 only, then push a candidate for CI.
