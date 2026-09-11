@@ -8,7 +8,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 |---|---|---|
 | 1. Remove Apps | done | `757f3fc` ? CI 34581730357 passed; menu screenshot reviewed |
 | 2. Remove Auto-Stop Timer | done | `5819554` - CI 34583153529 passed; screenshot reviewed |
-| 3. Safe map taps and confirmation | in progress | `cdfb75c` (CI pending) |
+| 3. Safe map taps and confirmation | in progress | `cdfb75c` + `b848fed` (CI pending) |
 | 4. Favorites in every place picker | not started | ? |
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | not started | ? |
 | 6. Simulation times and fastest-route ranking | not started | ? |
@@ -23,8 +23,8 @@ Item 2 verified: CI run 34583153529 passed all checks. The menu screenshot shows
 
 Done for item 3: default-off main map selection, conditional default-on confirmation toggle, proposed pin, coordinates and fast reverse-geocoded address, explicit route-stop warning, cancellation and stale-response protection, and double-tap failure ordering. Added production-controller scenario tests, map gesture/pin regression checks, and enabled/disabled Settings plus confirmation screenshots.
 
-Left: native build, scenario tests, map/picker regression checks and visual inspection in CI. Real double-tap zoom interaction still needs the user's phone after final delivery.
+Native build, motion tests and map-move scenario tests passed for cdfb75c. Follow-up b848fed cancels a pending map proposal whenever another menu tool is opened, preventing a late prompt over a new sheet. Left: final CI, map/picker regression checks and visual inspection. Real double-tap zoom interaction still needs the user's phone after final delivery.
 
-Exact next step: check CI for `cdfb75c` and fix any native/test failures, then inspect screenshots before item 4.
+Exact next step: check CI for `b848fed` (and screenshots from `cdfb75c`) and fix any native/test failures, then inspect screenshots before item 4.
 
 Choices to record: allow up to 600 ms for a reverse-geocoded address before showing a coordinates-only confirmation; use five decimal places for displayed coordinates.
