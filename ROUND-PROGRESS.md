@@ -33,6 +33,8 @@ Candidate aa311f9 pushed: generic Apple/original/expanded + rate-limited cached 
 
 Left: native CI and parser/live checks (fix any failures), share extension's four actions and main-app handoff, final search/share UI verification and documentation cleanup. No item 6 work yet.
 
-Exact next step: inspect CI for aa311f9, resolve native/parser/live failures, then complete share extension and main-app incoming-place handling. If free providers cannot meet a required address, report that limit rather than weakening the check.
+aa311f9 builds and passes offline parser/motion tests, but CI 34650005610 failed the Tokyo address at 123.7 m; the other six met 50 m. Follow-up 9f69143 preserves percent-escaped plus codes in URL queries and prints detailed live matches to diagnose ranking.
+
+Exact next step: inspect CI for 9f69143 to diagnose Tokyo match ranking, then complete share extension and main-app incoming-place handling. If free providers cannot meet a required address, report that limit rather than weakening the check.
 
 Choices: debounce normal typing 650 ms; one Photon request per 1.25 seconds across pickers with a 128-query / 24-hour in-memory cache; five-decimal pasted coordinates; prefer a place pin over query coordinates, and use a camera center only as an approximate fallback after text lookup. Open Location Code adaptation has Apache-2.0 license and upstream test vectors. Data credits are a single About entry.
