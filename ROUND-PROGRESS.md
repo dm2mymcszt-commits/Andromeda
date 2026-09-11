@@ -10,7 +10,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 2. Remove Auto-Stop Timer | done | `5819554` - CI 34583153529 passed; screenshot reviewed |
 | 3. Safe map taps and confirmation | done | `cdfb75c` + `b848fed` - CI 34609171515 passed; dark/light screenshots reviewed |
 | 4. Favorites in every place picker | done | `57b343f` - CI 34610371414 passed; four picker screenshots reviewed |
-| 5. Worldwide search, links, coordinates, plus codes, and sharing | in progress | - |
+| 5. Worldwide search, links, coordinates, plus codes, and sharing | in progress | `aa311f9` (candidate) |
 | 6. Simulation times and fastest-route ranking | not started | - |
 | 7. Per-mode speeds, mode routes, and swap | not started | - |
 | 8. Main-map route controls, seeking, and live speed | not started | - |
@@ -29,8 +29,10 @@ Choices to record: preserve Favorites order; match names ignoring case and accen
 
 ## Item 5 in progress
 
-Done: provider-policy research and read-only feasibility checks. Photon permits moderate search-as-you-type; Nominatim public autocomplete is prohibited, so use Photon. Original/expanded address probes find Talence, London, Berlin, Barcelona, Sao Paulo; Japanese block-format normalization finds Skytree. Actual production merged search must still pass all seven 50 m checks.
+Candidate aa311f9 pushed: generic Apple/original/expanded + rate-limited cached Photon + national address providers; neutral Settings/About; decimal, DMS, full/short plus codes; Google/Apple links and HEAD-only redirects/consent handling; paste integration. Models moved to PlaceModels.swift, search to PlaceSearch.swift, parsers to PlaceInput.swift, normalization to AddressQuery.swift. Added upstream OLC vectors and first-result 50 m checks for all seven requested addresses.
 
-Left: generic provider layer, abbreviation/coordinate/DMS/plus-code/link parsing, paste integration, neutral Settings/About, offline and live tests, share extension with four actions and main-app handoff. No Google HTML scraping or paid keys.
+Left: native CI and parser/live checks (fix any failures), share extension's four actions and main-app handoff, final search/share UI verification and documentation cleanup. No item 6 work yet.
 
-Exact next step: implement generic search and parsers, test all seven addresses through the production engine, then implement and verify sharing. Do not advance to item 6 until item 5 meets the requested scope.
+Exact next step: inspect CI for aa311f9, resolve native/parser/live failures, then complete share extension and main-app incoming-place handling. If free providers cannot meet a required address, report that limit rather than weakening the check.
+
+Choices: debounce normal typing 650 ms; one Photon request per 1.25 seconds across pickers with a 128-query / 24-hour in-memory cache; five-decimal pasted coordinates; prefer a place pin over query coordinates, and use a camera center only as an approximate fallback after text lookup. Open Location Code adaptation has Apache-2.0 license and upstream test vectors. Data credits are a single About entry.
