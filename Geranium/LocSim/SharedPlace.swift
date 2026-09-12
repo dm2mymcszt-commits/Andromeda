@@ -118,7 +118,7 @@ struct IncomingPlaceView: View {
             Form {
                 Section("Shared place") {
                     Text(request.name).font(.headline)
-                    if !request.address.isEmpty { Text(request.address) }
+                    if !request.address.isEmpty && PlaceInput.coordinates(request.address) == nil { Text(request.address) }
                     Text(String(format: "%.5f, %.5f", request.latitude, request.longitude)).foregroundColor(.secondary)
                     if request.approximate { Text("Approximate").foregroundColor(.secondary) }
                 }
