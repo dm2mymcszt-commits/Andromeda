@@ -12,7 +12,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 4. Favorites in every place picker | done | `57b343f` - CI 34610371414 passed; four picker screenshots reviewed |
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | done | `4bf3731` - CI 34684236479 passed every check; final search/share screenshots reviewed |
 | 6. Simulation times and fastest-route ranking | done | `71cd400` - CI 34696753573 passed every check; route map/cards reviewed |
-| 7. Per-mode speeds, mode routes, and swap | in progress | local preparation; ready for native CI candidate |
+| 7. Per-mode speeds, mode routes, and swap | in progress | `191ecf8` - native CI pending |
 | 8. Main-map route controls, seeking, and live speed | not started | - |
 | 9. Finish actions and notifications | not started | - |
 | 10. Persistent automatic/custom altitude | not started | - |
@@ -61,10 +61,10 @@ Candidate 71cd400 pushed: shortest-distance ranking; simulated headline times on
 
 Native build, motion, route-math, live search, shared-place, and route-map checks passed in CI 34696753573. Dark map and light cards inspected: 7.9 km at 500 km/h shows 57s; shortest 7.5 km shows 54s and Fastest. Workspace/picker regression steps also passed; final CI is success. Choices: round partial seconds up; retain real traffic as small secondary text; stable distance ranking.
 
-## Item 7 local preparation
+## Item 7 in progress
 
 Prepared per-mode persisted km/h (5/20/50 defaults, 1-500 range), cached routes/selections and duration tabs, automatic swap including resolved Current Location, and independent errors when a mode is unavailable. Replaced the old Cycling-as-Walking request with actual worldwide OSRM bicycle directions. Added a provider-independent route representation, 1.1-second request reservations, required map credits/fix-map links, parser/live bicycle checks, saved-speed/cache/swap regressions, and mode-control screenshots. One direct bicycle API check returned a valid 2,876 m / 149-vertex route. Provider policy: https://routing.openstreetmap.de/about.html.
 
-Exact next: commit/push item 7 and validate native build/tests/screens. Item 7 is not native-verified yet. Items 8-10 untouched.
+Candidate 191ecf8 pushed. Exact next: check its native CI, fix failures and inspect mode-control screenshots before marking done. Item 8 preparation starts while this builds; no item 8 commit until item 7 verifies. Items 9-10 untouched.
 
 Choices: keep successful modes if one cannot route; show No route with retry via Calculate; preserve each mode's alternative selection; use Typical travel for walking/cycling estimates and Real traffic for driving; speed slider with one-km/h +/- buttons; cycling failure is explicit, never substituted with walking.
