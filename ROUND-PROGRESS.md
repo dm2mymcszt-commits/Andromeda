@@ -11,7 +11,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 3. Safe map taps and confirmation | done | `cdfb75c` + `b848fed` - CI 34609171515 passed; dark/light screenshots reviewed |
 | 4. Favorites in every place picker | done | `57b343f` - CI 34610371414 passed; four picker screenshots reviewed |
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | in progress | `15e507b` search verified; `4fbe7b9` sharing candidate |
-| 6. Simulation times and fastest-route ranking | not started | - |
+| 6. Simulation times and fastest-route ranking | in progress | local preparation; not committed yet |
 | 7. Per-mode speeds, mode routes, and swap | not started | - |
 | 8. Main-map route controls, seeking, and live speed | not started | - |
 | 9. Finish actions and notifications | not started | - |
@@ -54,3 +54,9 @@ Choices: debounce normal typing 650 ms; one Photon request per 1.25 seconds acro
 Sharing choices: use the documented app-group fallback instead of unsupported app launching; save favorites directly in the extension; editable shared place name; Cancel discards that queued action, swipe dismissal keeps it for next activation; shared route endpoints do not interrupt an active trip.
 
 Package check: 4fbe7b9 app/helper/extension are ARM64 with expected signed entitlements. Share entry is Andromeda, principal controller exists, URL/text activation is configured, and the old storyboard is absent. Package is only an item-5 candidate, not final round delivery.
+
+## Item 6 prepared while final item 5 CI runs
+
+Local, uncommitted changes: shortest-distance ranking; simulated headline times on cards and both maps; published speed changes refresh all badges; real traffic is secondary; sub-minute formatting uses seconds. Updated the obsolete provider-ETA ranking test and synthetic 500 km/h map/card fixtures, including an ETA-only geometry-preservation check. Motion sample/injection logic remains unchanged.
+
+Next: finish item 5 validation first. Then commit/push the six item-6 files, run native CI and inspect its route-map/card screenshots. No item 7-10 implementation has started.
