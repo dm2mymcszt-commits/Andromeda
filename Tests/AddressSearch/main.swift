@@ -95,7 +95,7 @@ let fixture = """
  {"geometry":{"coordinates":[400,200]},"properties":{"label":"Invalid","score":0.9,"type":"housenumber","postcode":"33400"}}
 ]}
 """.data(using: .utf8)!
-let decoded = try PlaceProvider.decode(fixture, query: "125 Cours Gambetta, 33400 Talence", national: true)
+let decoded = try PlaceProvider.decode(fixture, query: "125 Cours Gambetta, 33400 Talence", national: true, order: 0)
 require(decoded.count == 2 && !decoded[0].place.isApproximate && decoded[1].place.isApproximate, "Precision/postcode filtering")
 require(WorldwidePlaceSearch.merge(decoded + decoded).count == 2, "Cross-provider duplicates")
 let buildingEntrance = PlaceMatch(place: RoutePlace(name: "125 Cours Gambetta", address: "125 Cours Gambetta, 33400 Talence, France", coordinate: CLLocationCoordinate2D(latitude: 44.81, longitude: -0.5808)), houseNumber: "125", query: "125 Cours Gambetta, 33400 Talence", exact: true, order: 10)
