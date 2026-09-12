@@ -45,7 +45,9 @@ ac8cdb3 builds and passes live addresses, production short-link resolution, pars
 
 427f2bd builds; CI 34683820596 found the new regression fixture used the generic priority 20 instead of the national provider priority 0, so it expected the wrong retained pin. Fixture correction dd350ed uses the production priority; the check still requires one highest-ranked building pin.
 
-Exact next step: inspect CI for dd350ed and the Share/Incoming/Pasted screenshots; fix any failures before marking item 5 complete. Items 6-10 remain untouched.
+Sharing CI 34683257730 and precision CI 34683402836 both passed every check. Inspected Share and Incoming screenshots: all four actions fit, incoming Go warns that it stops the route. Small visual follow-up 4bf3731 avoids repeating coordinates when the address field itself is coordinates.
+
+Exact next step: wait for final CI for 4bf3731 (includes dd350ed fixture correction), inspect final Incoming/Pasted and de-duplicated search screenshots, then mark item 5 done and begin item 6. Items 6-10 remain untouched.
 
 Choices: debounce normal typing 650 ms; one Photon request per 1.25 seconds across pickers with a 128-query / 24-hour in-memory cache; five-decimal pasted coordinates; prefer a place pin over query coordinates, and use a camera center only as an approximate fallback after text lookup. Open Location Code adaptation has Apache-2.0 license and upstream test vectors. Data credits are a single About entry.
 
