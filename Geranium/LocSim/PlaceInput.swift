@@ -189,8 +189,10 @@ struct MapPlaceLink {
            let lat = Double(pair[0]), let lon = Double(pair[1]) { result.camera = PlaceInput.valid(lat, lon) }
         result.query = [value("q"), value("query")].compactMap { $0 }
             .first { !$0.isEmpty && PlaceInput.coordinates($0) == nil }
-        if result.query == nil, let name = PlaceInput.captures(#"/maps/place/([^/]+)"#, text)?.first {
-            result.query = name.replacingOccurrences(of: "+", with: " ")
+        if result.query == nil,
+           let path = URLComponents(url: url, resolvingAgainstBaseURL: false)?.percentEncodedPath,
+           let name = PlaceInput.captures(#"/maps/place/([^/]+)"#, path)?.first {
+            result.query = name.replacingOccurrences(of: "+", with: " ").removingPercentEncoding
         }
         return result
     }

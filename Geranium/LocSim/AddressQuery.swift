@@ -86,4 +86,19 @@ enum AddressQuery {
         }
         return canonical(house) == canonical(expected)
     }
+
+    static func matchesAddressText(query: String, result: String) -> Bool {
+        // A matching house number on a different street is still approximate.
+        // Compare the street component across original/expanded spellings.
+        guard query.contains(","), let first = query.split(separator: ",").first else { return true }
+        let street = String(first)
+        func words(_ value: String) -> Set<String> {
+            Set(canonical(value).split(separator: " ").map(String.init)
+                .filter { $0.rangeOfCharacter(from: .letters) != nil })
+        }
+        let candidates = variants(result).map(words)
+        return variants(street).map(words).contains { expected in
+            expected.isEmpty || candidates.contains { expected.isSubset(of: $0) }
+        }
+    }
 }

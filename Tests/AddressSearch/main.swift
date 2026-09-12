@@ -34,6 +34,9 @@ require(AddressQuery.isAddress("Oshiage 1-1-2 Tokyo 131-0045"), "Compact block a
 require(AddressQuery.matchesHouse("1-2", query: "1 Chome-1-2 Oshiage, Tokyo", address: "1-2, Oshiage 1-Chōme, Tokyo"), "Split district/block/building match")
 require(!AddressQuery.matchesHouse("1-2", query: "1 Chome-1-2 Oshiage, Tokyo", address: "1-2, Oshiage 2-Chōme, Tokyo"), "Wrong district accepted")
 require(!AddressQuery.matchesHouse("3-2", query: "1 Chome-1-2 Oshiage, Tokyo", address: "3-2, Oshiage 1-Chōme, Tokyo"), "Wrong block accepted")
+require(!AddressQuery.matchesAddressText(query: "10 Downing St, London", result: "10 Pentland Street, London"), "Same number on a different street must be approximate")
+require(AddressQuery.matchesAddressText(query: "10 Downing St, London", result: "10 Downing Street, London"), "Street suffix expansion comparison")
+require(AddressQuery.matchesAddressText(query: "1 Chome-1-2 Oshiage, Tokyo", result: "1-2, Oshiage 1-Chōme, Tokyo"), "Split block text comparison")
 close(PlaceInput.coordinates("44.817059, -0.585746"), 44.817059, -0.585746, "Decimal")
 close(PlaceInput.coordinates("44°49'01.4\"N 0°35'08.7\"W"), 44.81705556, -0.58575, "DMS")
 close(PlaceInput.coordinates("44°49′01,4″N 0°35′08,7″W"), 44.81705556, -0.58575, "DMS typographic/comma")
@@ -52,6 +55,7 @@ let textLink = MapPlaceLink.parse(URL(string: "https://www.google.com/maps?q=Nam
 require(textLink.coordinate == nil && textLink.query == "Name, address", "Name-only link lost its query")
 require(MapPlaceLink.parse(URL(string: "https://www.google.com/maps?q=8FVC9G8F%2B6X")!).query == "8FVC9G8F+6X", "Escaped plus code must retain its separator")
 require(MapPlaceLink.parse(URL(string: "https://www.google.com/maps?q=RQ88%2BR7+Talence")!).query == "RQ88+R7 Talence", "Form spaces must not erase a short plus code")
+require(MapPlaceLink.parse(URL(string: "https://www.google.com/maps/place/8FVC9G8F%2B6X/")!).query == "8FVC9G8F+6X", "Path plus code must retain its separator")
 let camera = MapPlaceLink.parse(URL(string: "https://www.google.com/maps/@44.817059,-0.585746,15z")!)
 require(camera.coordinate == nil, "Camera center must remain a last resort")
 close(camera.camera, 44.817059, -0.585746, "Camera fallback")
@@ -133,6 +137,16 @@ if ProcessInfo.processInfo.environment["LIVE_ADDRESS_LOOKUP"] == "1" {
                 if meters > 50 { failures.append("\(query): \(meters) m") }
             }
         }
+        do {
+            // Real short URL published by Tokyo Skytree's official access page.
+            // Production resolver issues HEAD requests only, never Google HTML.
+            let shared = try await WorldwidePlaceSearch.resolve(.link(URL(string: "https://maps.app.goo.gl/NS5hFF6WctREcTmV9")!))
+            let meters = shared.first.map { distance($0.coordinate, CLLocationCoordinate2D(latitude: 35.710063, longitude: 139.8107)) } ?? .infinity
+            await MainActor.run {
+                if meters > 50 { failures.append("Official Google short link: \(meters) m") }
+                print("LIVE official Google short link: \(meters) m"); fflush(stdout)
+            }
+        } catch { await MainActor.run { failures.append("Official Google short link: \(error)") } }
         await MainActor.run { finished = true }
     }
     let deadline = Date().addingTimeInterval(240)

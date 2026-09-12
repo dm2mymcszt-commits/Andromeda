@@ -11,7 +11,8 @@ struct PlaceMatch {
         self.order = order
         if AddressQuery.houseNumber(query) != nil, AddressQuery.isAddress(query) {
             let matches = AddressQuery.matchesHouse(houseNumber, query: query, address: place.address)
-            quality = exact && matches ? 100 : 30
+            let addressMatches = AddressQuery.matchesAddressText(query: query, result: place.name + ", " + place.address)
+            quality = exact && matches && addressMatches ? 100 : 30
             self.place.approximate = quality < 100
         } else {
             quality = exact ? 80 : 30
