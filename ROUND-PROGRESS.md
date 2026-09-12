@@ -39,7 +39,9 @@ aa311f9 builds and passes offline parser/motion tests, but CI 34650005610 failed
 
 Sharing candidate 4fbe7b9 pushed: extension renamed Andromeda, legacy storyboard removed, four actions, direct Favorites saving, atomic per-request app-group inbox, main-app review on activation, route endpoint draft preserving both points. Added production inbox/draft/Favorites tests and Share/Incoming simulator screens. Updated obsolete country-specific documentation.
 
-Exact next step: inspect native CI for 4fbe7b9, fix build/test failures, inspect Share/Incoming screenshots. Review remaining search precision and real short-link redirect behavior before marking item 5 complete. Items 6-10 remain untouched.
+4fbe7b9 app/extension native build passed in CI 34683257730; subsequent tests/screens pending. Follow-up search commit ac8cdb3 adds wrong-street approximation, preserves plus codes in URL paths, and tests the production resolver against the official Skytree short link (HEAD-only redirect manually verified).
+
+Exact next step: inspect CI for the latest search/share state, fix test failures and inspect Share/Incoming screenshots before marking item 5 complete. Items 6-10 remain untouched.
 
 Choices: debounce normal typing 650 ms; one Photon request per 1.25 seconds across pickers with a 128-query / 24-hour in-memory cache; five-decimal pasted coordinates; prefer a place pin over query coordinates, and use a camera center only as an approximate fallback after text lookup. Open Location Code adaptation has Apache-2.0 license and upstream test vectors. Data credits are a single About entry.
 
