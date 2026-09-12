@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BDA110050000000000000305 /* CoordTransform.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = F82C58032E37786D00F76DFA /* CoordTransform.swift */; };
+		BDA110050000000000000304 /* PlaceSearch.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000042 /* PlaceSearch.swift */; };
+		BDA110050000000000000303 /* AddressQuery.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000032 /* AddressQuery.swift */; };
+		BDA110050000000000000302 /* PlaceInput.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000022 /* PlaceInput.swift */; };
+		BDA110050000000000000301 /* PlaceModels.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000012 /* PlaceModels.swift */; };
+		BDA110050000000000000300 /* SharedPlace.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BDA110050000000000000101 /* SharedPlace.swift */; };
+		BDA110050000000000000202 /* SharePlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110050000000000000102 /* SharePlaceView.swift */; };
+		BDA110050000000000000201 /* SharedPlace.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110050000000000000101 /* SharedPlace.swift */; };
 		BBDA11005000000000000041 /* PlaceSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000042 /* PlaceSearch.swift */; };
 		BBDA11005000000000000031 /* AddressQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000032 /* AddressQuery.swift */; };
 		BBDA11005000000000000021 /* PlaceInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000022 /* PlaceInput.swift */; };
@@ -22,7 +30,6 @@
 		796072E02B4F4FAE00737B5D /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 796072DF2B4F4FAE00737B5D /* UniformTypeIdentifiers.framework */; };
 		796072E32B4F4FAE00737B5D /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 796072E22B4F4FAE00737B5D /* Media.xcassets */; };
 		796072E52B4F4FAE00737B5D /* ActionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796072E42B4F4FAE00737B5D /* ActionViewController.swift */; };
-		796072E82B4F4FAE00737B5D /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 796072E62B4F4FAE00737B5D /* MainInterface.storyboard */; };
 		796072EC2B4F4FAE00737B5D /* Bookmark Location in Geranium.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 796072DE2B4F4FAE00737B5D /* Bookmark Location in Geranium.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7969F91A2B5E57DE0010DBE5 /* AlertKit in Frameworks */ = {isa = PBXBuildFile; productRef = 7969F9192B5E57DE0010DBE5 /* AlertKit */; };
 		7989FD032B347EEA00FBAB8D /* LocSimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7989FD022B347EEA00FBAB8D /* LocSimView.swift */; };
@@ -107,6 +114,8 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BDA110050000000000000102 /* SharePlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/SharePlaceView.swift"; sourceTree = SOURCE_ROOT; };
+		BDA110050000000000000101 /* SharedPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/SharedPlace.swift"; sourceTree = SOURCE_ROOT; };
 		BBDA11005000000000000042 /* PlaceSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/PlaceSearch.swift"; sourceTree = SOURCE_ROOT; };
 		BBDA11005000000000000032 /* AddressQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/AddressQuery.swift"; sourceTree = SOURCE_ROOT; };
 		BBDA11005000000000000022 /* PlaceInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/PlaceInput.swift"; sourceTree = SOURCE_ROOT; };
@@ -123,7 +132,6 @@
 		796072DF2B4F4FAE00737B5D /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		796072E22B4F4FAE00737B5D /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
 		796072E42B4F4FAE00737B5D /* ActionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionViewController.swift; sourceTree = "<group>"; };
-		796072E72B4F4FAE00737B5D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
 		796072E92B4F4FAE00737B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		796072F12B4F5A7A00737B5D /* Geranium.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Geranium.entitlements; sourceTree = "<group>"; };
 		796072F22B4F616B00737B5D /* Bookmark Location in Geranium.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Bookmark Location in Geranium.entitlements"; sourceTree = "<group>"; };
@@ -220,7 +228,6 @@
 				796072F22B4F616B00737B5D /* Bookmark Location in Geranium.entitlements */,
 				796072E22B4F4FAE00737B5D /* Media.xcassets */,
 				796072E42B4F4FAE00737B5D /* ActionViewController.swift */,
-				796072E62B4F4FAE00737B5D /* MainInterface.storyboard */,
 				796072E92B4F4FAE00737B5D /* Info.plist */,
 			);
 			path = "Bookmark Location in Geranium";
@@ -482,7 +489,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				796072E32B4F4FAE00737B5D /* Media.xcassets in Resources */,
-				796072E82B4F4FAE00737B5D /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -522,6 +528,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				796072E52B4F4FAE00737B5D /* ActionViewController.swift in Sources */,
+				BDA110050000000000000305 /* CoordTransform.swift in Extension Sources */,
+				BDA110050000000000000304 /* PlaceSearch.swift in Extension Sources */,
+				BDA110050000000000000303 /* AddressQuery.swift in Extension Sources */,
+				BDA110050000000000000302 /* PlaceInput.swift in Extension Sources */,
+				BDA110050000000000000301 /* PlaceModels.swift in Extension Sources */,
+				BDA110050000000000000300 /* SharedPlace.swift in Extension Sources */,
+				BDA110050000000000000202 /* SharePlaceView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -544,6 +557,7 @@
 				79BA958A2B30D91600380D83 /* RootHelperMan.swift in Sources */,
 				F82C58062E37790000F76DFA /* RouteSimulator.swift in Sources */,
 				F82C58082E37790100F76DFA /* RouteSimView.swift in Sources */,
+				BDA110050000000000000201 /* SharedPlace.swift in Sources */,
 				BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */,
 				BDA110030000000000000001 /* MapMoveConfirmation.swift in Sources */,
 				BBDA11005000000000000041 /* PlaceSearch.swift in Sources */,
@@ -593,14 +607,6 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		796072E62B4F4FAE00737B5D /* MainInterface.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				796072E72B4F4FAE00737B5D /* Base */,
-			);
-			name = MainInterface.storyboard;
-			sourceTree = "<group>";
-		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -614,7 +620,7 @@
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Bookmark Location in Geranium/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Andromeda Bookmark";
+				INFOPLIST_KEY_CFBundleDisplayName = "Andromeda";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -642,7 +648,7 @@
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Bookmark Location in Geranium/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Andromeda Bookmark";
+				INFOPLIST_KEY_CFBundleDisplayName = "Andromeda";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (

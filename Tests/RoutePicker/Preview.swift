@@ -30,12 +30,19 @@ struct EquatableCoordinate: Equatable {
     }()
     var body: some Scene {
         WindowGroup {
+            Group {
+            if screen == "Share" {
+                SharePlaceView(initialPlace: RoutePlace(name: "Shared place", address: "44.81706, -0.58575", coordinate: CLLocationCoordinate2D(latitude: 44.817059, longitude: -0.585746)), load: { [] }, done: {})
+            } else if screen == "Incoming" {
+                IncomingPlaceView(request: SharedPlaceRequest(place: RoutePlace(name: "Shared place", address: "44.81706, -0.58575", coordinate: CLLocationCoordinate2D(latitude: 44.817059, longitude: -0.585746)), action: .go), routeRunning: true, accept: {}, cancel: {})
+            } else {
             RouteLocationPicker(title: screen == "Filtered" ? "Search" : screen, region: MKCoordinateRegion(
                 center: CLLocationCoordinate2D(latitude: 48.85, longitude: 2.35),
                 span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)),
                 selectedCoordinate: nil, recents: places, useCurrentLocation: {},
                 initialQuery: screen == "Filtered" ? "cafe" : "", select: { _ in })
-                .preferredColorScheme(.dark)
+            }
+            }.tint(.indigo).preferredColorScheme(.dark)
         }
     }
 }

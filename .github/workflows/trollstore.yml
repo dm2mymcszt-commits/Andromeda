@@ -57,6 +57,9 @@ jobs:
       - name: Check location parsers and seven worldwide addresses
         run: bash Tests/AddressSearch/check.sh
 
+      - name: Check shared places and route endpoint handoff
+        run: bash Tests/SharedPlace/check.sh
+
       - name: Check route map and capture previews
         run: bash Tests/RouteMap/check.sh
 

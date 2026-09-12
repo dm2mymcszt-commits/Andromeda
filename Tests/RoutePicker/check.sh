@@ -14,6 +14,7 @@ mkdir -p "$PREVIEW_APP"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
   Geranium/LocSim/RouteLocationPicker.swift Geranium/LocSim/PlaceModels.swift Geranium/LocSim/PlaceInput.swift Geranium/LocSim/AddressQuery.swift Geranium/LocSim/PlaceSearch.swift Geranium/LocSim/CoordTransform.swift \
+  Geranium/LocSim/SharedPlace.swift Geranium/LocSim/SharePlaceView.swift \
   "$QA_DIR/Bookmarks.swift" Tests/RoutePicker/Preview.swift \
   -o "$PREVIEW_APP/RoutePickerPreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'
@@ -31,7 +32,7 @@ xcrun simctl boot "$DEVICE"
 xcrun simctl bootstatus "$DEVICE" -b
 xcrun simctl status_bar "$DEVICE" override --time '9:41' --batteryState charged --batteryLevel 100
 xcrun simctl install "$DEVICE" "$PREVIEW_APP"
-for screen in Destination Start Search Filtered; do
+for screen in Destination Start Search Filtered Share Incoming; do
   xcrun simctl terminate "$DEVICE" local.andromeda.routepickerpreview 2>/dev/null || true
   xcrun simctl launch "$DEVICE" local.andromeda.routepickerpreview --screen "$screen"
   sleep 5

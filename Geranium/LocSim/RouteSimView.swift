@@ -8,6 +8,7 @@ import AlertKit
 struct RouteSimSheet: View {
     @AppStorage("mapStyle") private var mapStyle = "standard"
     @ObservedObject var routeSimulator: RouteSimulator
+    @ObservedObject var draft: RouteDraft
     @Binding var mapRegion: MKCoordinateRegion?
     @Binding var isPresented: Bool
     
@@ -278,7 +279,19 @@ struct RouteSimSheet: View {
         .onAppear {
             if !didInitializeStart {
                 didInitializeStart = true
-                if !routeSimulator.availableRoutes.isEmpty {
+                if draft.start != nil || draft.destination != nil {
+                    startCoord = draft.start?.coordinate
+                    startText = draft.start?.name ?? ""
+                    endCoord = draft.destination?.coordinate
+                    endText = draft.destination?.name ?? ""
+                    selectedMode = routeSimulator.travelMode
+                    speedMultiplier = routeSimulator.currentSpeedMultiplier
+                    if draft.needsRecalculation && !routeSimulator.isSimulating {
+                        invalidateRoute()
+                        draft.needsRecalculation = false
+                    } else { routeReady = !routeSimulator.availableRoutes.isEmpty }
+                    if startCoord == nil && !routeSimulator.isSimulating { useCurrentStart() }
+                } else if !routeSimulator.availableRoutes.isEmpty {
                     startCoord = routeSimulator.routeStart
                     endCoord = routeSimulator.routeEnd
                     startText = "Route Start"
@@ -290,6 +303,18 @@ struct RouteSimSheet: View {
                     useCurrentStart()
                 }
             }
+        }
+        .onChange(of: routeSimulator.isSimulating) { running in
+            if !running && draft.needsRecalculation {
+                invalidateRoute()
+                draft.needsRecalculation = false
+                if startCoord == nil { useCurrentStart() }
+            }
+        }
+        .onDisappear {
+            currentLocation.cancel()
+            draft.start = startCoord.map { RoutePlace(name: startText, coordinate: $0) }
+            draft.destination = endCoord.map { RoutePlace(name: endText, coordinate: $0) }
         }
         .onReceive(currentLocation.$location) { location in
             guard waitingForCurrentStart, let location = location else { return }

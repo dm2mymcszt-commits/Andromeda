@@ -1,84 +1,46 @@
 import UIKit
 import SwiftUI
-import MobileCoreServices
 import UniformTypeIdentifiers
 
-class ActionViewController: UIViewController {
-
-    @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var textField: UITextField!
-    var latitudeDouble: Double = 0.0
-    var longitudeDouble: Double = 0.0
+final class ActionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-    }
-
-    // Helper method to extract query parameters from URL
-    private func getParameter(from url: URL, key: String) -> String? {
-        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: true),
-              let queryItems = components.queryItems else {
-            return nil
-        }
-        
-        return queryItems.first { $0.name == key }?.value
-    }
-
-    @IBAction func saveButtonPressed(_ sender: UIButton) {
-        if let sharedItems = extensionContext?.inputItems as? [NSExtensionItem],
-           let firstItem = sharedItems.first,
-           let attachments = firstItem.attachments {
-            
-            for provider in attachments {
-                if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier as String) {
-                    provider.loadItem(forTypeIdentifier: UTType.url.identifier as String, options: nil, completionHandler: { (url, error) in
-                        if let url = url as? URL {
-                            if let latitude = self.getParameter(from: url, key: "ll")?.components(separatedBy: ",").first,
-                               let longitude = self.getParameter(from: url, key: "ll")?.components(separatedBy: ",").last,
-                               let latitudeDouble = Double(latitude),
-                               let longitudeDouble = Double(longitude) {
-                                DispatchQueue.main.async {
-                                    let bookmarkName = self.textField.text
-                                    print(self.BookMarkSave(lat: latitudeDouble, long: longitudeDouble, name: bookmarkName ?? ""))
-                                    self.done()
-                                }
-                            }
+        let content = SharePlaceView(load: { [weak self] in
+            guard let items = self?.extensionContext?.inputItems as? [NSExtensionItem] else {
+                throw SearchError.message("No location was shared.")
+            }
+            // Prefer a URL attachment to display text supplied alongside it.
+            for type in [UTType.url.identifier, UTType.plainText.identifier] {
+                for item in items {
+                    for provider in item.attachments ?? [] where provider.hasItemConformingToTypeIdentifier(type) {
+                        let value = try await provider.loadItem(forTypeIdentifier: type, options: nil)
+                        let text: String?
+                        if let url = value as? URL { text = url.absoluteString }
+                        else if let string = value as? String { text = string }
+                        else if let attributed = value as? NSAttributedString { text = attributed.string }
+                        else if let data = value as? Data { text = String(data: data, encoding: .utf8) }
+                        else { text = nil }
+                        if let text = text, !text.isEmpty {
+                            return try await WorldwidePlaceSearch.resolve(PlaceInput.parse(text))
                         }
-                    })
+                    }
                 }
             }
-        }
-        dismiss(animated: true) {
-        }
+            if let text = items.compactMap(\.attributedContentText?.string).first, !text.isEmpty {
+                return try await WorldwidePlaceSearch.resolve(PlaceInput.parse(text))
+            }
+            throw SearchError.message("Share a Maps link, address, coordinates or plus code.")
+        }, done: { [weak self] in self?.extensionContext?.completeRequest(returningItems: nil) })
+        let host = UIHostingController(rootView: content.tint(.indigo))
+        addChild(host)
+        view.addSubview(host.view)
+        host.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            host.view.topAnchor.constraint(equalTo: view.topAnchor),
+            host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        host.didMove(toParent: self)
     }
-
-    @IBAction func done() {
-        self.extensionContext?.completeRequest(returningItems: self.extensionContext!.inputItems, completionHandler: nil)
-    }
-    
-    let sharedUserDefaultsSuiteName = "group.live.cclerc.geraniumBookmarks"
-
-    func BookMarkSave(lat: Double, long: Double, name: String) -> Bool {
-        let bookmark: [String: Any] = ["name": name, "lat": lat, "long": long]
-        var bookmarks = BookMarkRetrieve()
-        bookmarks.append(bookmark)
-        let sharedUserDefaults = UserDefaults(suiteName: sharedUserDefaultsSuiteName)
-        sharedUserDefaults?.set(bookmarks, forKey: "bookmarks")
-        successVibrate()
-        return true
-    }
-
-    func BookMarkRetrieve() -> [[String: Any]] {
-        let sharedUserDefaults = UserDefaults(suiteName: sharedUserDefaultsSuiteName)
-        if let bookmarks = sharedUserDefaults?.array(forKey: "bookmarks") as? [[String: Any]] {
-            return bookmarks
-        } else {
-            return []
-        }
-    }
-}
-
-// shortened vibrate object
-func successVibrate() {
-    let generator = UINotificationFeedbackGenerator()
-    generator.notificationOccurred(.success)
 }

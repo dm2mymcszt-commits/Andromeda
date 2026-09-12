@@ -2,9 +2,9 @@
 
 The user confirmed that starting a route now automatically shows the Snapchat car Bitmoji on their device. This update preserves the working route motion metadata.
 
-The app opens directly to the map. Home, Daemons, Cleaner, Supervise, and their Swift feature sources are removed from the build. A Settings button opens map appearance, satellite view, button labels, haptics, and address lookup preferences. All map controls share an indigo palette. Stop also stops the route timer so it cannot restart location injection.
+The app opens directly to the map. Home, Daemons, Cleaner, Supervise, and their Swift feature sources are removed from the build. A Settings button opens map appearance, satellite view, button labels, and haptics. All map controls share an indigo palette. Stop also stops the route timer so it cannot restart location injection.
 
-Both map search and route endpoint search now use the same picker. Empty Apple autocomplete results automatically fall back to full search and geocoding. French postal addresses also use IGN's current Geoplateforme / BAN endpoint, with abbreviation normalization, postcode and confidence filtering, explicit approximate-match labels, cancellation, and stale-response protection. Only the typed address is sent to IGN; no current-location coordinates. This supplement can be disabled in Settings. The exact screenshot query `125 Cr Gambetta, 33400 Talence` returned `125 Cours Gambetta 33400 Talence` at 44.817059, -0.585746 in a live service check. Apple and Google have different place catalogs; this does not promise every Google place exists in Apple search.
+Search and route endpoints share one worldwide place picker, with Favorites, addresses, Maps links, decimal/DMS coordinates and plus codes. Free data sources are credited together in About. The share-sheet action is named Andromeda and offers moving, setting either route endpoint, or saving a favorite. Open Andromeda to review queued actions; saving a favorite happens directly in the extension.
 
 Version is 2.5.2 (3). CI adds production-model address regression tests, a live exact-address search, and light/dark simulator screenshots of the map, Settings, and search alongside existing route and motion checks.
 
@@ -12,7 +12,6 @@ Validated package: `build/Andromeda-map-only.tipa`, built from `62a40b04f64c8771
 
 All CI checks passed, including live Talence search, motion metadata, route movement, route overlays, recent places, and the on-screen menu-width check. Visually reviewed all six light/dark map, settings, and search screenshots. The exact Talence address appears once after merging Apple/IGN duplicates. Package inspection confirms build 3, ARM64 executable components, expected TrollStore entitlements, and absence of the removed feature classes. On-device acceptance of this new interface remains for the user; their prior package's Snapchat behavior was confirmed by the user.
 
-Reference: https://ignf.github.io/cartes.gouv.fr-documentation/fr/guides-utilisateur/utiliser-les-services-de-la-geoplateforme/geocodage/
 
 # Windows to TrollStore: route motion experiment
 

@@ -10,6 +10,11 @@ import MapKit
 import AlertKit
 
 struct LocSimView: View {
+    @Environment(\.scenePhase) private var scenePhase
+    @StateObject private var routeDraft = RouteDraft()
+    @State private var incomingPlace: SharedPlaceRequest?
+    @State private var openSharedRoute = false
+    @State private var sharedPlaceError: String?
     @AppStorage("mapStyle") private var mapStyle = "standard"
     @AppStorage("tapMapToSetLocation") private var tapMapToSetLocation = false
     @AppStorage("askBeforeMoving") private var askBeforeMoving = true
@@ -100,8 +105,10 @@ struct LocSimView: View {
         .modifier(MapMoveConfirmation(controller: mapMove))
         .onChange(of: tapMapToSetLocation) { _ in mapMove.cancel() }
         .onChange(of: askBeforeMoving) { _ in mapMove.cancel() }
-        .sheet(isPresented: $showSettings) { SettingsView() }
-        .sheet(isPresented: $showSearchBar) {
+        .onAppear(perform: offerSharedPlace)
+        .onChange(of: scenePhase) { phase in if phase == .active { offerSharedPlace() } }
+        .sheet(isPresented: $showSettings, onDismiss: offerSharedPlace) { SettingsView() }
+        .sheet(isPresented: $showSearchBar, onDismiss: offerSharedPlace) {
             RouteLocationPicker(title: "Find a place", region: mapRegion,
                 selectedCoordinate: nil, recents: recentPlaces) { place in
                 recentPlaces.remember(place)
@@ -111,13 +118,13 @@ struct LocSimView: View {
                 startSimulation(at: coordinate, altitude: Double(altitude) ?? 0)
             }
         }
-        .sheet(isPresented: $bookmarkSheetToggle) {
+        .sheet(isPresented: $bookmarkSheetToggle, onDismiss: offerSharedPlace) {
             BookMarkSlider(lat: $lat, long: $long)
         }
-        .sheet(isPresented: $showRouteSheet) {
-            RouteSimSheet(routeSimulator: routeSimulator, mapRegion: $mapRegion, isPresented: $showRouteSheet)
+        .sheet(isPresented: $showRouteSheet, onDismiss: offerSharedPlace) {
+            RouteSimSheet(routeSimulator: routeSimulator, draft: routeDraft, mapRegion: $mapRegion, isPresented: $showRouteSheet)
         }
-        .sheet(isPresented: $showFavorites) {
+        .sheet(isPresented: $showFavorites, onDismiss: offerSharedPlace) {
             FavoritesView(isPresented: $showFavorites, currentLat: lat, currentLong: long) { favLat, favLong, name in
                 let coord = CoordTransform.wgs84ToGcj02(CLLocationCoordinate2D(latitude: favLat, longitude: favLong))
                 let region = MKCoordinateRegion(center: coord, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
@@ -126,7 +133,53 @@ struct LocSimView: View {
                 AlertKitAPI.present(title: "📍 \(name)", icon: .done, style: .iOS17AppleMusic, haptic: .success)
             }
         }
+        .sheet(item: $incomingPlace, onDismiss: {
+            if openSharedRoute { openSharedRoute = false; showRouteSheet = true }
+        }) { request in
+            IncomingPlaceView(request: request, routeRunning: routeSimulator.isSimulating,
+                accept: { handleSharedPlace(request, accept: true) },
+                cancel: { handleSharedPlace(request, accept: false) })
+        }
+        .alert("Shared location", isPresented: Binding(get: { sharedPlaceError != nil }, set: { if !$0 { sharedPlaceError = nil } })) {
+            Button("OK", role: .cancel) { sharedPlaceError = nil }
+        } message: { Text(sharedPlaceError ?? "") }
 
+    }
+
+    private func offerSharedPlace() {
+        guard scenePhase == .active, incomingPlace == nil,
+              let request = SharedPlaceInbox().pending().first else { return }
+        mapMove.cancel()
+        if showSettings || showSearchBar || bookmarkSheetToggle || showRouteSheet || showFavorites {
+            showSettings = false; showSearchBar = false; bookmarkSheetToggle = false
+            showRouteSheet = false; showFavorites = false
+            return // onDismiss offers it after the current sheet has closed.
+        }
+        incomingPlace = request
+    }
+
+    private func handleSharedPlace(_ request: SharedPlaceRequest, accept: Bool) {
+        do {
+            // Remove before applying so activation cannot repeat an accepted move.
+            try SharedPlaceInbox().remove(request)
+            incomingPlace = nil
+            guard accept, let place = request.place else { return }
+            recentPlaces.remember(place)
+            switch request.action {
+            case .go:
+                mapRegion = MKCoordinateRegion(center: place.coordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+                startSimulation(at: place.coordinate, altitude: Double(altitude) ?? 0)
+            case .start, .destination:
+                routeDraft.accept(request)
+                openSharedRoute = true
+            case .favorite:
+                try SharedPlaceInbox.saveFavorite(place)
+            }
+        } catch {
+            incomingPlace = nil
+            sharedPlaceError = error.localizedDescription
+        }
     }
     
     private func startSimulation(at gcjCoordinate: CLLocationCoordinate2D, altitude: Double) {
