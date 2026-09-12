@@ -12,8 +12,8 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 4. Favorites in every place picker | done | `57b343f` - CI 34610371414 passed; four picker screenshots reviewed |
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | done | `4bf3731` - CI 34684236479 passed every check; final search/share screenshots reviewed |
 | 6. Simulation times and fastest-route ranking | done | `71cd400` - CI 34696753573 passed every check; route map/cards reviewed |
-| 7. Per-mode speeds, mode routes, and swap | in progress | `191ecf8` - native CI pending |
-| 8. Main-map route controls, seeking, and live speed | not started | - |
+| 7. Per-mode speeds, mode routes, and swap | done | `191ecf8` - CI 34697693135 passed every check; dark/light mode controls reviewed |
+| 8. Main-map route controls, seeking, and live speed | in progress | local changes; not committed/native-verified yet |
 | 9. Finish actions and notifications | not started | - |
 | 10. Persistent automatic/custom altitude | not started | - |
 
@@ -61,10 +61,18 @@ Candidate 71cd400 pushed: shortest-distance ranking; simulated headline times on
 
 Native build, motion, route-math, live search, shared-place, and route-map checks passed in CI 34696753573. Dark map and light cards inspected: 7.9 km at 500 km/h shows 57s; shortest 7.5 km shows 54s and Fastest. Workspace/picker regression steps also passed; final CI is success. Choices: round partial seconds up; retain real traffic as small secondary text; stable distance ranking.
 
-## Item 7 in progress
+## Item 7 verified
 
 Prepared per-mode persisted km/h (5/20/50 defaults, 1-500 range), cached routes/selections and duration tabs, automatic swap including resolved Current Location, and independent errors when a mode is unavailable. Replaced the old Cycling-as-Walking request with actual worldwide OSRM bicycle directions. Added a provider-independent route representation, 1.1-second request reservations, required map credits/fix-map links, parser/live bicycle checks, saved-speed/cache/swap regressions, and mode-control screenshots. One direct bicycle API check returned a valid 2,876 m / 149-vertex route. Provider policy: https://routing.openstreetmap.de/about.html.
 
-Candidate 191ecf8 pushed. Exact next: check its native CI, fix failures and inspect mode-control screenshots before marking done. Item 8 preparation starts while this builds; no item 8 commit until item 7 verifies. Items 9-10 untouched.
+CI 34697693135 for 191ecf8 passed every check, including live cycling, saved-speed/cache/swap regressions, and all existing search/motion checks. Dark/light mode-control screenshots reviewed. Items 9-10 untouched.
 
 Choices: keep successful modes if one cannot route; show No route with retry via Calculate; preserve each mode's alternative selection; use Typical travel for walking/cycling estimates and Real traffic for driving; speed slider with one-km/h +/- buttons; cycling failure is explicit, never substituted with walking.
+
+## Item 8 in progress
+
+Local changes replace pre-sampled point indexing with a WGS-84 distance track and elapsed-time journey. Added live trip-only speed, seek preview and release, pause/stop/end metadata, a collapsible main-map panel, and a scrollable side menu above the panel. Removed unused point counts, interpolation, stored ETA and last-sample fields. Updated movement tests and added expanded/collapsed playback screenshots with a layout non-overlap assertion.
+
+Exact next: finish local review of engine/gesture integration and tests, commit/push item 8 candidate, then verify native CI and inspect playback screenshots. No item 9 or 10 work yet.
+
+Choices: advance every 250 ms using monotonic elapsed time; distance/bearing measured in WGS-84; freeze and inject zero speed while scrubbing; releasing preserves prior pause state; cancelled gestures resume without moving; elapsed means actual moving time (excluding pause/scrub), seeking does not fabricate elapsed time; live +/- controls change one km/h without saving mode defaults; VoiceOver adjusts progress by five percent.
