@@ -11,7 +11,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 3. Safe map taps and confirmation | done | `cdfb75c` + `b848fed` - CI 34609171515 passed; dark/light screenshots reviewed |
 | 4. Favorites in every place picker | done | `57b343f` - CI 34610371414 passed; four picker screenshots reviewed |
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | done | `4bf3731` - CI 34684236479 passed every check; final search/share screenshots reviewed |
-| 6. Simulation times and fastest-route ranking | in progress | local preparation; not committed yet |
+| 6. Simulation times and fastest-route ranking | in progress | `71cd400` - CI 34696753573 running |
 | 7. Per-mode speeds, mode routes, and swap | not started | - |
 | 8. Main-map route controls, seeking, and live speed | not started | - |
 | 9. Finish actions and notifications | not started | - |
@@ -55,8 +55,8 @@ Sharing choices: use the documented app-group fallback instead of unsupported ap
 
 Package check: 4fbe7b9 app/helper/extension are ARM64 with expected signed entitlements. Share entry is Andromeda, principal controller exists, URL/text activation is configured, and the old storyboard is absent. Package is only an item-5 candidate, not final round delivery.
 
-## Item 6 prepared while final item 5 CI runs
+## Item 6 in progress
 
-Local, uncommitted changes: shortest-distance ranking; simulated headline times on cards and both maps; published speed changes refresh all badges; real traffic is secondary; sub-minute formatting uses seconds. Updated the obsolete provider-ETA ranking test and synthetic 500 km/h map/card fixtures, including an ETA-only geometry-preservation check. Motion sample/injection logic remains unchanged.
+Candidate 71cd400 pushed: shortest-distance ranking; simulated headline times on cards and both maps; published speed changes refresh all badges; real traffic is secondary; sub-minute formatting uses seconds. Updated the obsolete provider-ETA ranking test and synthetic 500 km/h map/card fixtures, including an ETA-only geometry-preservation check. Motion sample/injection logic remains unchanged.
 
-Next: commit/push the six item-6 files, run native CI and inspect its route-map/card screenshots. No item 7-10 implementation has started.
+Next: check CI 34696753573 and inspect route-map/card screenshots; fix any failures before marking done. Item 7 design review is underway: the current Cycling option requests walking directions, so genuine bicycle routing must accompany the mode comparison. No item 7-10 implementation has started.
