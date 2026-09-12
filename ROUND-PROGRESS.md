@@ -10,7 +10,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 2. Remove Auto-Stop Timer | done | `5819554` - CI 34583153529 passed; screenshot reviewed |
 | 3. Safe map taps and confirmation | done | `cdfb75c` + `b848fed` - CI 34609171515 passed; dark/light screenshots reviewed |
 | 4. Favorites in every place picker | done | `57b343f` - CI 34610371414 passed; four picker screenshots reviewed |
-| 5. Worldwide search, links, coordinates, plus codes, and sharing | in progress | `15e507b` search verified; `4fbe7b9` sharing candidate |
+| 5. Worldwide search, links, coordinates, plus codes, and sharing | done | `4bf3731` - CI 34684236479 passed every check; final search/share screenshots reviewed |
 | 6. Simulation times and fastest-route ranking | in progress | local preparation; not committed yet |
 | 7. Per-mode speeds, mode routes, and swap | not started | - |
 | 8. Main-map route controls, seeking, and live speed | not started | - |
@@ -27,11 +27,11 @@ Favorites now appear above Recent Places in the shared picker, read from BookMar
 
 Choices to record: preserve Favorites order; match names ignoring case and accents; use five-decimal coordinates below the name; unnamed legacy entries display Favorite; invalid saved coordinates are omitted.
 
-## Item 5 in progress
+## Item 5 verified
 
 Candidate aa311f9 pushed: generic Apple/original/expanded + rate-limited cached Photon + national address providers; neutral Settings/About; decimal, DMS, full/short plus codes; Google/Apple links and HEAD-only redirects/consent handling; paste integration. Models moved to PlaceModels.swift, search to PlaceSearch.swift, parsers to PlaceInput.swift, normalization to AddressQuery.swift. Added upstream OLC vectors and first-result 50 m checks for all seven requested addresses.
 
-Left: native CI and parser/live checks (fix any failures), share extension's four actions and main-app handoff, final search/share UI verification and documentation cleanup. No item 6 work yet.
+The implementation history and verification below are retained for continuity.
 
 aa311f9 builds and passes offline parser/motion tests, but CI 34650005610 failed the Tokyo address at 123.7 m; the other six met 50 m. Follow-up 9f69143 preserves percent-escaped plus codes in URL queries and prints detailed live matches to diagnose ranking.
 
@@ -47,7 +47,7 @@ ac8cdb3 builds and passes live addresses, production short-link resolution, pars
 
 Sharing CI 34683257730 and precision CI 34683402836 both passed every check. Inspected Share and Incoming screenshots: all four actions fit, incoming Go warns that it stops the route. Small visual follow-up 4bf3731 avoids repeating coordinates when the address field itself is coordinates.
 
-Exact next step: wait for final CI for 4bf3731 (includes dd350ed fixture correction), inspect final Incoming/Pasted and de-duplicated search screenshots, then mark item 5 done and begin item 6. Items 6-10 remain untouched.
+Final CI 34684236479 for 4bf3731 passed every step. Final Incoming, Pasted, and Talence search screenshots were inspected: one coordinate row, one pasted pin, one numbered building result with separately named businesses preserved. Item 5 is done. Real share-sheet activation and installed-app interactions still require the phone.
 
 Choices: debounce normal typing 650 ms; one Photon request per 1.25 seconds across pickers with a 128-query / 24-hour in-memory cache; five-decimal pasted coordinates; prefer a place pin over query coordinates, and use a camera center only as an approximate fallback after text lookup. Open Location Code adaptation has Apache-2.0 license and upstream test vectors. Data credits are a single About entry.
 
@@ -59,4 +59,4 @@ Package check: 4fbe7b9 app/helper/extension are ARM64 with expected signed entit
 
 Local, uncommitted changes: shortest-distance ranking; simulated headline times on cards and both maps; published speed changes refresh all badges; real traffic is secondary; sub-minute formatting uses seconds. Updated the obsolete provider-ETA ranking test and synthetic 500 km/h map/card fixtures, including an ETA-only geometry-preservation check. Motion sample/injection logic remains unchanged.
 
-Next: finish item 5 validation first. Then commit/push the six item-6 files, run native CI and inspect its route-map/card screenshots. No item 7-10 implementation has started.
+Next: commit/push the six item-6 files, run native CI and inspect its route-map/card screenshots. No item 7-10 implementation has started.
