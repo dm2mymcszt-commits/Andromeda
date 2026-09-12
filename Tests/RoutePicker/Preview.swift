@@ -40,7 +40,7 @@ struct EquatableCoordinate: Equatable {
                 center: CLLocationCoordinate2D(latitude: 48.85, longitude: 2.35),
                 span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)),
                 selectedCoordinate: nil, recents: places, useCurrentLocation: {},
-                initialQuery: screen == "Filtered" ? "cafe" : "", select: { _ in })
+                initialQuery: screen == "Filtered" ? "cafe" : (screen == "Pasted" ? "44.817059, -0.585746" : ""), select: { _ in })
             }
             }.tint(.indigo).preferredColorScheme(.dark)
         }

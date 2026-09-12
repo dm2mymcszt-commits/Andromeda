@@ -150,8 +150,12 @@ enum WorldwidePlaceSearch {
             let duplicate = unique.contains { other in
                 let distance = CLLocation(latitude: place.latitude, longitude: place.longitude)
                     .distance(from: CLLocation(latitude: other.latitude, longitude: other.longitude))
-                return distance < 30 && (AddressQuery.canonical(place.name) == AddressQuery.canonical(other.name)
-                    || AddressQuery.canonical(place.address) == AddressQuery.canonical(other.address))
+                let sameName = AddressQuery.canonical(place.name) == AddressQuery.canonical(other.name)
+                // Providers may pin opposite sides of the same numbered building.
+                // Keep the highest-ranked pin without merging nearby businesses.
+                let sameNumberedAddress = sameName && AddressQuery.houseNumber(place.name) != nil
+                return (distance < 100 && sameNumberedAddress)
+                    || (distance < 30 && (sameName || AddressQuery.canonical(place.address) == AddressQuery.canonical(other.address)))
             }
             if !duplicate { unique.append(place) }
         }

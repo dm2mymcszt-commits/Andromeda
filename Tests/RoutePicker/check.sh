@@ -32,7 +32,7 @@ xcrun simctl boot "$DEVICE"
 xcrun simctl bootstatus "$DEVICE" -b
 xcrun simctl status_bar "$DEVICE" override --time '9:41' --batteryState charged --batteryLevel 100
 xcrun simctl install "$DEVICE" "$PREVIEW_APP"
-for screen in Destination Start Search Filtered Share Incoming; do
+for screen in Destination Start Search Filtered Share Incoming Pasted; do
   xcrun simctl terminate "$DEVICE" local.andromeda.routepickerpreview 2>/dev/null || true
   xcrun simctl launch "$DEVICE" local.andromeda.routepickerpreview --screen "$screen"
   sleep 5
