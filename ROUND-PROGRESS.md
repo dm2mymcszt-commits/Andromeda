@@ -13,8 +13,8 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | done | `4bf3731` - CI 34684236479 passed every check; final search/share screenshots reviewed |
 | 6. Simulation times and fastest-route ranking | done | `71cd400` - CI 34696753573 passed every check; route map/cards reviewed |
 | 7. Per-mode speeds, mode routes, and swap | done | `191ecf8` - CI 34697693135 passed every check; dark/light mode controls reviewed |
-| 8. Main-map route controls, seeking, and live speed | in progress | `b6a1244` - native CI pending |
-| 9. Finish actions and notifications | not started | - |
+| 8. Main-map route controls, seeking, and live speed | in progress | `b6a1244` - CI 34713045215 running; build/motion/playback checks passed |
+| 9. Finish actions and notifications | in progress | local preparation; no commit yet |
 | 10. Persistent automatic/custom altitude | not started | - |
 
 ## Items 1-3 verified
@@ -73,6 +73,14 @@ Choices: keep successful modes if one cannot route; show No route with retry via
 
 Candidate b6a1244 pushed: replaces pre-sampled point indexing with a WGS-84 distance track and elapsed-time journey. Added live trip-only speed, seek preview and release, pause/stop/end metadata, a collapsible main-map panel, and a scrollable side menu above the panel. Removed unused point counts, interpolation, stored ETA and last-sample fields. Updated movement tests and added expanded/collapsed playback screenshots with a layout non-overlap assertion.
 
-Exact next: verify b6a1244 native CI, fix failures, and inspect expanded/collapsed playback screenshots and non-overlap checks. Item 9 preparation follows while it builds; no item 9 commit until item 8 verifies. Item 10 untouched.
+CI 34713045215 passed native build, motion/seek/live-speed models, live addresses, sharing, and playback screenshot/non-overlap checks. Expanded dark and collapsed light playback screenshots inspected. Exact next: await remaining workspace/picker checks, then mark item 8 done. Item 9 remains local until then. Item 10 untouched.
 
 Choices: advance every 250 ms using monotonic elapsed time; distance/bearing measured in WGS-84; freeze and inject zero speed while scrubbing; releasing preserves prior pause state; cancelled gestures resume without moving; elapsed means actual moving time (excluding pause/scrub), seeking does not fabricate elapsed time; live +/- controls change one km/h without saving mode defaults; VoiceOver adjusts progress by five percent.
+
+## Item 9 local preparation
+
+Added RouteFinish.swift with six persisted actions, a WGS-84 saved destination, repeat/reverse leg state, and foreground/background local notifications. Settings uses the existing place picker; first route start requests notification permission before movement begins. Engine snapshots finish settings at trip start, uses the same finish path for natural arrival and seeking, preserves timer/background/location updates across repeated legs, reverses the same geometry, and carries delayed elapsed time across legs. Added policy, notification-count, reverse seek/speed, and persistence regressions.
+
+Exact next: finish item 8 validation, review/commit/push item 9, verify native build/tests and Settings screenshot. No item 10 implementation yet.
+
+Choices: changing finish settings affects the next trip, stated in Settings; canceling a required Go-to-place picker keeps the previous option; reject starting an invalid Go-to-place configuration; loop/repeat notifications only on first arrival; elapsed resets for each leg; delayed repeat legs are counted without replaying every missed update; map shows the active leg with correctly oriented endpoints while running.
