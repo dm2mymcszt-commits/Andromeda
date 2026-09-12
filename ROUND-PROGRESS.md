@@ -13,7 +13,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | done | `4bf3731` - CI 34684236479 passed every check; final search/share screenshots reviewed |
 | 6. Simulation times and fastest-route ranking | done | `71cd400` - CI 34696753573 passed every check; route map/cards reviewed |
 | 7. Per-mode speeds, mode routes, and swap | done | `191ecf8` - CI 34697693135 passed every check; dark/light mode controls reviewed |
-| 8. Main-map route controls, seeking, and live speed | in progress | `b6a1244` - CI 34713045215 running; build/motion/playback checks passed |
+| 8. Main-map route controls, seeking, and live speed | done | `b6a1244` - CI 34713045215 passed every check; expanded/collapsed playback reviewed |
 | 9. Finish actions and notifications | in progress | local preparation; no commit yet |
 | 10. Persistent automatic/custom altitude | not started | - |
 
@@ -69,11 +69,11 @@ CI 34697693135 for 191ecf8 passed every check, including live cycling, saved-spe
 
 Choices: keep successful modes if one cannot route; show No route with retry via Calculate; preserve each mode's alternative selection; use Typical travel for walking/cycling estimates and Real traffic for driving; speed slider with one-km/h +/- buttons; cycling failure is explicit, never substituted with walking.
 
-## Item 8 in progress
+## Item 8 verified
 
 Candidate b6a1244 pushed: replaces pre-sampled point indexing with a WGS-84 distance track and elapsed-time journey. Added live trip-only speed, seek preview and release, pause/stop/end metadata, a collapsible main-map panel, and a scrollable side menu above the panel. Removed unused point counts, interpolation, stored ETA and last-sample fields. Updated movement tests and added expanded/collapsed playback screenshots with a layout non-overlap assertion.
 
-CI 34713045215 passed native build, motion/seek/live-speed models, live addresses, sharing, and playback screenshot/non-overlap checks. Expanded dark and collapsed light playback screenshots inspected. Exact next: await remaining workspace/picker checks, then mark item 8 done. Item 9 remains local until then. Item 10 untouched.
+CI 34713045215 passed every check, including native build, motion/seek/live-speed models, live addresses, sharing, playback screenshot/non-overlap, workspace, and picker regressions. Expanded dark and collapsed light playback screenshots inspected. Exact next: commit and push the reviewed item 9 candidate, then verify its native CI. Item 10 untouched.
 
 Choices: advance every 250 ms using monotonic elapsed time; distance/bearing measured in WGS-84; freeze and inject zero speed while scrubbing; releasing preserves prior pause state; cancelled gestures resume without moving; elapsed means actual moving time (excluding pause/scrub), seeking does not fabricate elapsed time; live +/- controls change one km/h without saving mode defaults; VoiceOver adjusts progress by five percent.
 
