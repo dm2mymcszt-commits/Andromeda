@@ -13,7 +13,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 5. Worldwide search, links, coordinates, plus codes, and sharing | done | `4bf3731` - CI 34684236479 passed every check; final search/share screenshots reviewed |
 | 6. Simulation times and fastest-route ranking | done | `71cd400` - CI 34696753573 passed every check; route map/cards reviewed |
 | 7. Per-mode speeds, mode routes, and swap | done | `191ecf8` - CI 34697693135 passed every check; dark/light mode controls reviewed |
-| 8. Main-map route controls, seeking, and live speed | in progress | local changes; not committed/native-verified yet |
+| 8. Main-map route controls, seeking, and live speed | in progress | `b6a1244` - native CI pending |
 | 9. Finish actions and notifications | not started | - |
 | 10. Persistent automatic/custom altitude | not started | - |
 
@@ -71,8 +71,8 @@ Choices: keep successful modes if one cannot route; show No route with retry via
 
 ## Item 8 in progress
 
-Local changes replace pre-sampled point indexing with a WGS-84 distance track and elapsed-time journey. Added live trip-only speed, seek preview and release, pause/stop/end metadata, a collapsible main-map panel, and a scrollable side menu above the panel. Removed unused point counts, interpolation, stored ETA and last-sample fields. Updated movement tests and added expanded/collapsed playback screenshots with a layout non-overlap assertion.
+Candidate b6a1244 pushed: replaces pre-sampled point indexing with a WGS-84 distance track and elapsed-time journey. Added live trip-only speed, seek preview and release, pause/stop/end metadata, a collapsible main-map panel, and a scrollable side menu above the panel. Removed unused point counts, interpolation, stored ETA and last-sample fields. Updated movement tests and added expanded/collapsed playback screenshots with a layout non-overlap assertion.
 
-Exact next: finish local review of engine/gesture integration and tests, commit/push item 8 candidate, then verify native CI and inspect playback screenshots. No item 9 or 10 work yet.
+Exact next: verify b6a1244 native CI, fix failures, and inspect expanded/collapsed playback screenshots and non-overlap checks. Item 9 preparation follows while it builds; no item 9 commit until item 8 verifies. Item 10 untouched.
 
 Choices: advance every 250 ms using monotonic elapsed time; distance/bearing measured in WGS-84; freeze and inject zero speed while scrubbing; releasing preserves prior pause state; cancelled gestures resume without moving; elapsed means actual moving time (excluding pause/scrub), seeking does not fabricate elapsed time; live +/- controls change one km/h without saving mode defaults; VoiceOver adjusts progress by five percent.
