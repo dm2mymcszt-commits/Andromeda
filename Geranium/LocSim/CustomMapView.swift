@@ -22,6 +22,7 @@ struct CustomMapView: UIViewRepresentable {
     var showsUserLocation: Bool
     var mapStyle: String
     var proposedPosition: CLLocationCoordinate2D?
+    var proposalIsRoutePreview: Bool
 
     init(tappedCoordinate: Binding<EquatableCoordinate?>,
          moveToRegion: Binding<MKCoordinateRegion?>,
@@ -35,7 +36,8 @@ struct CustomMapView: UIViewRepresentable {
          fitsRoutes: Bool = false,
          showsUserLocation: Bool = true,
          mapStyle: String = "standard",
-         proposedPosition: CLLocationCoordinate2D? = nil) {
+         proposedPosition: CLLocationCoordinate2D? = nil,
+         proposalIsRoutePreview: Bool = false) {
         self._tappedCoordinate = tappedCoordinate
         self._moveToRegion = moveToRegion
         self.routePolyline = routePolyline
@@ -49,6 +51,7 @@ struct CustomMapView: UIViewRepresentable {
         self.showsUserLocation = showsUserLocation
         self.mapStyle = mapStyle
         self.proposedPosition = proposedPosition
+        self.proposalIsRoutePreview = proposalIsRoutePreview
     }
 
     func makeUIView(context: Context) -> MKMapView {
@@ -79,7 +82,9 @@ struct CustomMapView: UIViewRepresentable {
         }
         if let position = movingPosition {
             if let annotation = context.coordinator.movingAnnotation {
-                UIView.animate(withDuration: 0.8) { annotation.coordinate = position }
+                UIView.animate(withDuration: 0.2, delay: 0, options: [.beginFromCurrentState, .allowUserInteraction]) {
+                    annotation.coordinate = position
+                }
             } else {
                 let annotation = MovingAnnotation()
                 annotation.coordinate = position
@@ -145,10 +150,14 @@ struct CustomMapView: UIViewRepresentable {
                 proposedAnnotation = nil
                 return
             }
+            if let annotation = proposedAnnotation, annotation.isRoutePreview != parent.proposalIsRoutePreview {
+                mapView.removeAnnotation(annotation)
+                proposedAnnotation = nil
+            }
             if let annotation = proposedAnnotation {
                 annotation.coordinate = coordinate
             } else {
-                let annotation = ProposedPositionAnnotation()
+                let annotation = ProposedPositionAnnotation(isRoutePreview: parent.proposalIsRoutePreview)
                 annotation.coordinate = coordinate
                 proposedAnnotation = annotation
                 mapView.addAnnotation(annotation)
@@ -325,17 +334,18 @@ struct CustomMapView: UIViewRepresentable {
 
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             if annotation is MKUserLocation { return nil }
-            if annotation is ProposedPositionAnnotation {
+            if let annotation = annotation as? ProposedPositionAnnotation {
                 let view = mapView.dequeueReusableAnnotationView(withIdentifier: "ProposedPosition") as? MKMarkerAnnotationView
                     ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "ProposedPosition")
                 view.annotation = annotation
                 view.markerTintColor = .systemIndigo
-                view.glyphText = "?"
+                view.glyphText = annotation.isRoutePreview ? nil : "?"
+                view.glyphImage = annotation.isRoutePreview ? UIImage(systemName: "play.fill") : nil
                 view.titleVisibility = .visible
                 view.displayPriority = .required
                 view.zPriority = .max
                 view.canShowCallout = false
-                view.accessibilityLabel = "Proposed location"
+                view.accessibilityLabel = annotation.isRoutePreview ? "Route seek preview" : "Proposed location"
                 return view
             }
             if let endpoint = annotation as? RouteEndpointAnnotation {
@@ -394,7 +404,9 @@ class MovingAnnotation: NSObject, MKAnnotation {
 
 final class ProposedPositionAnnotation: NSObject, MKAnnotation {
     @objc dynamic var coordinate = CLLocationCoordinate2D()
-    var title: String? { "Move here?" }
+    let isRoutePreview: Bool
+    init(isRoutePreview: Bool = false) { self.isRoutePreview = isRoutePreview }
+    var title: String? { isRoutePreview ? "Preview" : "Move here?" }
 }
 
 final class RouteEndpointAnnotation: NSObject, MKAnnotation {

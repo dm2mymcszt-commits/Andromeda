@@ -275,6 +275,9 @@ private struct RouteMapFixtureView: View {
     var body: some View {
         let appearance = argument("--appearance", fallback: "dark")
         let section = argument("--section", fallback: "map")
+        let displaySpeed = section == "modes" ? modeSpeeds[mode]! : 500
+        let distances = fixtureDistances(section == "modes" ? mode : .driving)
+        let etas = distances.map { RouteSimulationMath.durationText($0 / (displaySpeed / 3.6)) }
         NavigationStack {
             ScrollViewReader { reader in
                 ScrollView {
@@ -282,7 +285,7 @@ private struct RouteMapFixtureView: View {
                         if section == "modes" {
                             RouteModeControls(selectedMode: mode, duration: { mode in
                                 RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(
-                                    distance: mode == .walking ? 5_000 : mode == .cycling ? 6_000 : 7_500,
+                                    distance: fixtureDistances(mode)[0],
                                     speed: modeSpeeds[mode]! / 3.6))
                             }, speedKmh: Binding(get: { modeSpeeds[mode]! }, set: { modeSpeeds[mode] = $0 }), select: { mode = $0 })
                         }
@@ -294,7 +297,7 @@ private struct RouteMapFixtureView: View {
                         CustomMapView(
                             tappedCoordinate: .constant(nil), moveToRegion: .constant(nil),
                             allRoutePolylines: routes, selectedRouteIndex: selected,
-                            routeETAs: BordeauxFixture.simulations, allowsLocationSelection: false,
+                            routeETAs: etas, allowsLocationSelection: false,
                             onSelectRoute: { selected = $0 }, fitsRoutes: true, showsUserLocation: false
                         )
                         .frame(height: 340)
@@ -305,9 +308,9 @@ private struct RouteMapFixtureView: View {
                             RouteChoiceCard(
                                 number: index + 1,
                                 name: index == 0 ? "Fastest Route" : "Alternative \(index)",
-                                roadName: BordeauxFixture.roads[index], distance: BordeauxFixture.distances[index],
-                                roadETA: BordeauxFixture.trafficETAs[index], simulationETA: BordeauxFixture.simulations[index],
-                                speed: "500 km/h", isSelected: selected == index,
+                                roadName: BordeauxFixture.roads[index], distance: String(format: "%.1f km", distances[index] / 1000),
+                                roadETA: BordeauxFixture.trafficETAs[index], simulationETA: etas[index],
+                                speed: "\(Int(displaySpeed)) km/h", isSelected: selected == index,
                                 select: { selected = index }
                             )
                         }
@@ -341,10 +344,109 @@ private struct RouteMapFixtureView: View {
         }
         .preferredColorScheme(appearance == "dark" ? .dark : .light)
     }
+
+    private func fixtureDistances(_ mode: TravelMode) -> [Double] {
+        switch mode {
+        case .walking: return [5_000, 5_500, 5_900]
+        case .cycling: return [6_000, 6_500, 7_000]
+        case .driving: return [7_500, 7_800, 7_900]
+        }
+    }
+}
+
+private struct PlaybackFrames: PreferenceKey {
+    static var defaultValue: [String: CGRect] = [:]
+    static func reduce(value: inout [String: CGRect], nextValue: () -> [String: CGRect]) {
+        value.merge(nextValue(), uniquingKeysWith: { _, next in next })
+    }
+}
+
+private struct PlaybackFixture: View {
+    let appearance: String
+    let section: String
+    @State private var collapsed: Bool
+    @State private var paused = false
+    @State private var trip: RouteJourney
+    @State private var previewPosition: CLLocationCoordinate2D?
+    @State private var frames: [String: CGRect] = [:]
+    private let routes = BordeauxFixture.routes()
+
+    init(appearance: String, section: String) {
+        self.appearance = appearance
+        self.section = section
+        _collapsed = State(initialValue: section == "collapsed")
+        let polyline = BordeauxFixture.routes()[0]
+        var coords = [CLLocationCoordinate2D](repeating: CLLocationCoordinate2D(), count: polyline.pointCount)
+        polyline.getCoordinates(&coords, range: NSRange(location: 0, length: coords.count))
+        var trip = RouteJourney(track: RouteTrack(coordinates: coords)!, speedKmh: 120)
+        trip.advance(seconds: 60)
+        trip.seek(0.46)
+        _trip = State(initialValue: trip)
+    }
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            CustomMapView(tappedCoordinate: .constant(nil), moveToRegion: .constant(nil),
+                allRoutePolylines: routes, movingPosition: trip.motion(paused: paused).coordinate,
+                routeETAs: routes.map { line in
+                    var coords = [CLLocationCoordinate2D](repeating: CLLocationCoordinate2D(), count: line.pointCount)
+                    line.getCoordinates(&coords, range: NSRange(location: 0, length: coords.count))
+                    return RouteSimulationMath.durationText(RouteTrack(coordinates: coords)!.length / (trip.speedKmh / 3.6))
+                }, allowsLocationSelection: false,
+                fitsRoutes: true, showsUserLocation: false, proposedPosition: previewPosition,
+                proposalIsRoutePreview: previewPosition != nil)
+                .ignoresSafeArea()
+            ScrollView(showsIndicators: false) {
+                FloatingQuickMenu(onAction: { _ in }, joystickActive: false, routeActive: true)
+                    .padding(.trailing, 12).padding(.top, 12)
+            }.frame(width: 156)
+                .background(GeometryReader { geometry in
+                    Color.clear.preference(key: PlaybackFrames.self, value: ["menu": geometry.frame(in: .global)])
+                })
+        }
+        .safeAreaInset(edge: .bottom) {
+            RoutePlaybackPanel(progress: trip.progress,
+                elapsed: RouteSimulationMath.durationText(trip.elapsed),
+                remaining: RouteSimulationMath.durationText(trip.remainingSeconds),
+                remainingDistance: String(format: "%.1f km", trip.remainingDistance / 1000), isPaused: paused,
+                speedKmh: Binding(get: { trip.speedKmh }, set: { trip.changeSpeed($0) }),
+                collapsed: $collapsed,
+                preview: { previewPosition = trip.track.position(at: trip.track.length * $0).coordinate },
+                seek: { trip.seek($0); previewPosition = nil }, cancelSeek: { previewPosition = nil },
+                pause: { paused.toggle() }, stop: { paused = true })
+                .padding(.horizontal, 12).padding(.bottom, 6)
+                .background(GeometryReader { geometry in
+                    Color.clear.preference(key: PlaybackFrames.self, value: ["panel": geometry.frame(in: .global)])
+                })
+        }
+        .onPreferenceChange(PlaybackFrames.self) { frames = $0 }
+        .preferredColorScheme(appearance == "dark" ? .dark : .light)
+        .tint(.indigo)
+        .task {
+            try? await Task.sleep(nanoseconds: 8_000_000_000)
+            let report: String
+            if let menu = frames["menu"], let panel = frames["panel"],
+               menu.height > 0, panel.height > 0, menu.maxY <= panel.minY + 1 {
+                report = "PASS: main-map route controls and side menu do not overlap (\(section))"
+            } else { report = "FAIL: route control/menu geometry \(frames)" }
+            let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            try? report.write(to: documents.appendingPathComponent("route-map-\(appearance)-\(section).txt"), atomically: true, encoding: .utf8)
+        }
+    }
 }
 
 @main struct RouteMapPreview: App {
+    private func argument(_ key: String, fallback: String) -> String {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: key), args.indices.contains(i + 1) else { return fallback }
+        return args[i + 1]
+    }
     var body: some Scene {
-        WindowGroup { RouteMapFixtureView() }
+        WindowGroup {
+            let section = argument("--section", fallback: "map")
+            if section == "playback" || section == "collapsed" {
+                PlaybackFixture(appearance: argument("--appearance", fallback: "dark"), section: section)
+            } else { RouteMapFixtureView() }
+        }
     }
 }

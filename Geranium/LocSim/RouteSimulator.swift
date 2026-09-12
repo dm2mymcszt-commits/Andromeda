@@ -41,45 +41,90 @@ enum RouteSimulationMath {
         }
     }
 
-    static func interpolate(coords: [CLLocationCoordinate2D], speed: Double, interval: TimeInterval) -> [CLLocationCoordinate2D] {
-        let stepDistance = speed * interval
-        guard speed.isFinite, speed > 0, interval.isFinite, interval > 0,
-              stepDistance.isFinite, stepDistance > 0,
-              coords.allSatisfy({ CLLocationCoordinate2DIsValid($0) }) else { return [] }
-        guard coords.count >= 2 else { return coords }
-        var result = [coords[0]]
-        var distanceUntilNextSample = stepDistance
 
-        for index in 1..<coords.count {
-            let from = coords[index - 1]
-            let to = coords[index]
-            let segmentDistance = distance(from, to)
-            guard segmentDistance > 0 else { continue }
-            var covered = 0.0
-            while distanceUntilNextSample <= segmentDistance - covered {
-                covered += distanceUntilNextSample
-                let fraction = covered / segmentDistance
-                // Take the short direction if a route crosses the date line.
-                let longitudeDelta = (to.longitude - from.longitude + 540)
-                    .truncatingRemainder(dividingBy: 360) - 180
-                let longitude = (from.longitude + longitudeDelta * fraction + 540)
-                    .truncatingRemainder(dividingBy: 360) - 180
-                result.append(CLLocationCoordinate2D(
-                    latitude: from.latitude + (to.latitude - from.latitude) * fraction,
-                    longitude: longitude))
-                distanceUntilNextSample = stepDistance
-            }
-            distanceUntilNextSample -= segmentDistance - covered
-        }
-        // Avoid a duplicate destination (and a spurious extra second) at exact step boundaries.
-        if let last = coords.last, let sampledLast = result.last {
-            if distance(sampledLast, last) > 0.001 {
-                result.append(last)
-            } else {
-                result[result.count - 1] = last
+}
+
+// Distances and bearings are measured in WGS-84. The map conversion happens
+// only at the boundary, so motion metadata describes the injected coordinates.
+struct RouteTrack {
+    let coordinates: [CLLocationCoordinate2D]
+    let cumulative: [Double]
+    var length: Double { cumulative.last ?? 0 }
+
+    init?(coordinates: [CLLocationCoordinate2D]) {
+        guard coordinates.count >= 2, coordinates.allSatisfy(CLLocationCoordinate2DIsValid) else { return nil }
+        var points = [coordinates[0]]
+        var distances = [0.0]
+        for point in coordinates.dropFirst() {
+            let distance = RouteSimulationMath.distance(points.last!, point)
+            if distance > 0.001 {
+                points.append(point)
+                distances.append(distances.last! + distance)
             }
         }
-        return result
+        guard points.count >= 2 else { return nil }
+        self.coordinates = points
+        cumulative = distances
+    }
+
+    func position(at distance: Double) -> (coordinate: CLLocationCoordinate2D, course: Double) {
+        let distance = min(length, max(0, distance.isFinite ? distance : 0))
+        var low = 1, high = cumulative.count - 1
+        while low < high {
+            let middle = (low + high) / 2
+            if cumulative[middle] <= distance { low = middle + 1 } else { high = middle }
+        }
+        let from = coordinates[low - 1], to = coordinates[low]
+        let fraction = (distance - cumulative[low - 1]) / (cumulative[low] - cumulative[low - 1])
+        let delta = (to.longitude - from.longitude + 540).truncatingRemainder(dividingBy: 360) - 180
+        let longitude = (from.longitude + delta * fraction + 540).truncatingRemainder(dividingBy: 360) - 180
+        let coordinate = distance == length ? coordinates.last! : CLLocationCoordinate2D(
+            latitude: from.latitude + (to.latitude - from.latitude) * fraction, longitude: longitude)
+        let lat1 = coordinate.latitude * .pi / 180, lat2 = to.latitude * .pi / 180
+        let dlon = (to.longitude - coordinate.longitude) * .pi / 180
+        // At the exact destination retain the final segment's bearing.
+        let origin = distance == length ? from : coordinate
+        let originLat = distance == length ? from.latitude * .pi / 180 : lat1
+        let bearingLon = distance == length ? (to.longitude - origin.longitude) * .pi / 180 : dlon
+        let course = (atan2(sin(bearingLon) * cos(lat2), cos(originLat) * sin(lat2)
+            - sin(originLat) * cos(lat2) * cos(bearingLon)) * 180 / .pi + 360).truncatingRemainder(dividingBy: 360)
+        return (coordinate, course)
+    }
+}
+
+struct RouteJourney {
+    let track: RouteTrack
+    private(set) var distance = 0.0
+    private(set) var elapsed = 0.0
+    private(set) var speedKmh: Double
+    var progress: Double { distance / track.length }
+    var remainingDistance: Double { max(0, track.length - distance) }
+    var remainingSeconds: Double { remainingDistance / (speedKmh / 3.6) }
+    var isFinished: Bool { distance >= track.length }
+
+    init(track: RouteTrack, speedKmh: Double) {
+        self.track = track
+        self.speedKmh = speedKmh.isFinite ? min(500, max(1, speedKmh)) : 50
+    }
+    mutating func advance(seconds: Double) {
+        guard seconds.isFinite, seconds > 0 else { return }
+        let remaining = remainingSeconds
+        let used = min(seconds, remaining)
+        elapsed += used
+        distance = min(track.length, distance + speedKmh / 3.6 * used)
+        if used == remaining { distance = track.length }
+    }
+    mutating func seek(_ fraction: Double) {
+        guard fraction.isFinite else { return }
+        distance = min(1, max(0, fraction)) * track.length
+    }
+    mutating func changeSpeed(_ kmh: Double) {
+        guard kmh.isFinite else { return }
+        speedKmh = min(500, max(1, kmh))
+    }
+    func motion(paused: Bool) -> (coordinate: CLLocationCoordinate2D, course: Double, speed: Double) {
+        let point = track.position(at: distance)
+        return (point.coordinate, point.course, paused || isFinished ? 0 : speedKmh / 3.6)
     }
 }
 
@@ -286,13 +331,10 @@ class RouteOption: Identifiable, ObservableObject {
 class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var isSimulating: Bool = false
     @Published var isPaused: Bool = false
-    @Published var currentPointIndex: Int = 0
-    @Published var totalPoints: Int = 0
     @Published var routePolyline: MKPolyline? = nil
     @Published var currentPosition: CLLocationCoordinate2D? = nil
     @Published var progress: Double = 0.0
     @Published var isCalculatingRoute: Bool = false
-    @Published var estimatedTime: String = ""
     @Published var travelMode: TravelMode = .driving
     
     @Published var availableRoutes: [RouteOption] = []
@@ -301,20 +343,34 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var routeStart: CLLocationCoordinate2D? = nil
     @Published var routeEnd: CLLocationCoordinate2D? = nil
     
-    private var routePoints: [CLLocationCoordinate2D] = []
+    private var track: RouteTrack?
+    @Published private var journey: RouteJourney?
+    @Published private(set) var previewPosition: CLLocationCoordinate2D?
+    @Published private var seekFraction: Double?
+    private var isSeeking: Bool { seekFraction != nil }
+    private var lastTick: TimeInterval?
+    var elapsedTime: String { RouteSimulationMath.durationText(journey?.elapsed ?? 0) }
+    private var remainingMeters: Double {
+        guard let journey = journey else { return 0 }
+        return (1 - (seekFraction ?? journey.progress)) * journey.track.length
+    }
+    var remainingTime: String { RouteSimulationMath.durationText(remainingMeters / (currentSpeedKmh / 3.6)) }
+    var remainingDistance: String {
+        let meters = remainingMeters
+        return meters >= 1000 ? String(format: "%.1f km", meters / 1000) : "\(Int(ceil(meters))) m"
+    }
     private var timer: Timer? = nil
     private var altitude: Double = 0.0
     @Published private var speeds = RouteSpeeds()
     @Published private var modeCache = RouteModeCache()
     @Published private(set) var modeErrors: [TravelMode: String] = [:]
     func speedKmh(for mode: TravelMode) -> Double { speeds[mode] }
-    var currentSpeedKmh: Double { speeds[travelMode] }
+    var currentSpeedKmh: Double { isSimulating ? (journey?.speedKmh ?? speeds[travelMode]) : speeds[travelMode] }
     func modeDuration(_ mode: TravelMode) -> String? { modeCache.duration(for: mode, kmh: speeds[mode]) }
     var simulatedRouteETAs: [String] {
         availableRoutes.map { $0.simulationTimeText(speedKmh: currentSpeedKmh) }
     }
-    private let updateInterval: TimeInterval = 1.0
-    private var lastSimulatedLocation: CLLocation?
+    private let updateInterval: TimeInterval = 0.25
     private var pendingDirections: [TravelMode: MKDirections] = [:]
     private var bicycleTask: Task<Void, Never>?
     private var calculationID = UUID()
@@ -394,9 +450,8 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         availableRoutes = modeCache.routes[mode] ?? []
         allRoutePolylines = availableRoutes.map { $0.route.polyline }
         routePolyline = nil
-        routePoints = []
-        totalPoints = 0
-        estimatedTime = ""
+        track = nil
+        journey = nil
         selectedRouteIndex = modeCache.selections[mode] ?? 0
         selectRoute(at: selectedRouteIndex)
     }
@@ -411,12 +466,10 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         var coords = [CLLocationCoordinate2D](repeating: CLLocationCoordinate2D(), count: pointCount)
         route.polyline.getCoordinates(&coords, range: NSRange(location: 0, length: pointCount))
         
-        let effectiveSpeed = currentSpeedKmh / 3.6
-        routePoints = RouteSimulationMath.interpolate(coords: coords, speed: effectiveSpeed, interval: updateInterval)
-        totalPoints = routePoints.count
+        track = RouteTrack(coordinates: coords.map(CoordTransform.gcj02ToWgs84))
+        journey = nil
         routePolyline = route.polyline
         
-        estimatedTime = availableRoutes[index].simulationTimeText(speedKmh: currentSpeedKmh)
     }
 
     func updateSpeedKmh(_ kmh: Double, for mode: TravelMode) {
@@ -438,141 +491,148 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         availableRoutes = []
         allRoutePolylines = []
         routePolyline = nil
-        routePoints = []
+        track = nil
+        journey = nil
+        previewPosition = nil
+        seekFraction = nil
         routeStart = nil
         routeEnd = nil
         selectedRouteIndex = 0
-        totalPoints = 0
-        currentPointIndex = 0
         progress = 0
-        estimatedTime = ""
     }
     
     func startSimulation(altitude: Double = 0.0) {
-        guard !isSimulating, routePoints.count >= 2 else { return }
+        guard !isSimulating, let track = track else { return }
         timer?.invalidate()
         self.altitude = altitude
-        currentPointIndex = 0
+        journey = RouteJourney(track: track, speedKmh: speeds[travelMode])
         isSimulating = true
         isPaused = false
-        progress = 0.0
-        lastSimulatedLocation = nil
-        
-        // Request "Always" authorization for background
+        progress = 0
+        previewPosition = nil
+        seekFraction = nil
         locationManager.requestAlwaysAuthorization()
         locationManager.startUpdatingLocation()
-        
         startBackgroundTask()
-        updateLocation(at: 0)
-        
+        updateLocation()
+        startTimer()
+    }
+
+    private func startTimer() {
+        timer?.invalidate()
+        lastTick = ProcessInfo.processInfo.systemUptime
         timer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
-            self?.advanceToNextPoint()
+            self?.advanceRoute()
         }
         RunLoop.current.add(timer!, forMode: .common)
     }
-    
+
     func togglePause() {
         guard isSimulating else { return }
         if isPaused {
             isPaused = false
             startBackgroundTask()
-            timer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
-                self?.advanceToNextPoint()
-            }
-            RunLoop.current.add(timer!, forMode: .common)
+            startTimer()
         } else {
+            advanceRoute()
+            guard isSimulating else { return }
             isPaused = true
             timer?.invalidate()
             timer = nil
-            endBackgroundTask()
+            lastTick = nil
         }
-        // Refresh motion at the same coordinate; pausing must not leave a moving speed.
-        if let location = lastSimulatedLocation {
-            injectLocation(RouteLocationSample.make(
-                coordinate: location.coordinate,
-                altitude: location.altitude,
-                course: location.course,
-                speed: motion(at: currentPointIndex).speed,
-                timestamp: Date()
-            ))
-        }
+        updateLocation()
     }
-    
+
+    func updateLiveSpeed(_ kmh: Double) {
+        guard isSimulating, kmh.isFinite else { return }
+        advanceRoute() // Account for time at the previous speed first.
+        guard isSimulating else { return }
+        journey?.changeSpeed(kmh)
+        updateLocation()
+    }
+
+    func previewSeek(_ fraction: Double) {
+        guard isSimulating, fraction.isFinite, let journey = journey else { return }
+        let beginning = !isSeeking
+        if beginning {
+            advanceRoute()
+            guard isSimulating else { return }
+        }
+        seekFraction = min(1, max(0, fraction))
+        lastTick = nil
+        let point = journey.track.position(at: min(1, max(0, fraction)) * journey.track.length)
+        previewPosition = CoordTransform.wgs84ToGcj02(point.coordinate)
+        if beginning { updateLocation() }
+    }
+
+    func cancelSeek() {
+        guard isSeeking else { return }
+        previewPosition = nil
+        seekFraction = nil
+        lastTick = isPaused ? nil : ProcessInfo.processInfo.systemUptime
+        if isSimulating { updateLocation() }
+    }
+
+    func seek(to fraction: Double) {
+        guard isSimulating, fraction.isFinite else { return }
+        // Seeking is instantaneous; dragging freezes movement until release.
+        advanceRoute()
+        guard isSimulating else { previewPosition = nil; return }
+        journey?.seek(fraction)
+        previewPosition = nil
+        seekFraction = nil
+        lastTick = isPaused ? nil : ProcessInfo.processInfo.systemUptime
+        updateLocation()
+        if journey?.isFinished == true { finishRoute() }
+    }
+
     func stopSimulation() {
         timer?.invalidate()
         timer = nil
+        lastTick = nil
         isSimulating = false
         isPaused = false
         clearCalculatedRoutes()
         currentPosition = nil
-        lastSimulatedLocation = nil
         locationManager.stopUpdatingLocation()
         endBackgroundTask()
         LocSimManager.stopLocSim()
     }
-    
-    private func advanceToNextPoint() {
-        guard isSimulating, !isPaused else { return }
-        currentPointIndex += 1
-        currentPointIndex = min(currentPointIndex, routePoints.count - 1)
-        updateLocation(at: currentPointIndex)
-        progress = Double(currentPointIndex) / Double(max(totalPoints - 1, 1))
 
-        if currentPointIndex == routePoints.count - 1 {
-            // Finish immediately on the exact destination, whose injected speed is zero.
-            // Keep its simulated location fixed until the user explicitly stops LocSim.
-            timer?.invalidate()
-            timer = nil
-            isSimulating = false
-            isPaused = false
-            progress = 1.0
-            endBackgroundTask()
-            locationManager.stopUpdatingLocation()
-        }
-    }
-    
-    private func updateLocation(at index: Int) {
-        guard routePoints.indices.contains(index) else { return }
-        let coord = routePoints[index]
-        currentPosition = coord
-        
-        let wgsCoord = CoordTransform.gcj02ToWgs84(coord)
-        let motion = motion(at: index)
-        let location = RouteLocationSample.make(
-            coordinate: wgsCoord,
-            altitude: altitude,
-            course: motion.course,
-            speed: motion.speed,
-            timestamp: Date()
-        )
-        injectLocation(location)
+    private func advanceRoute() {
+        guard isSimulating, !isPaused, !isSeeking else { return }
+        let now = ProcessInfo.processInfo.systemUptime
+        if let previous = lastTick { journey?.advance(seconds: max(0, now - previous)) }
+        lastTick = now
+        updateLocation()
+        if journey?.isFinished == true { finishRoute() }
     }
 
-    private func injectLocation(_ location: CLLocation) {
-        lastSimulatedLocation = location
+    private func finishRoute() {
+        // The final sample has already published exact destination and zero speed.
+        timer?.invalidate()
+        timer = nil
+        lastTick = nil
+        isSimulating = false
+        isPaused = false
+        previewPosition = nil
+        seekFraction = nil
+        progress = 1
+        endBackgroundTask()
+        locationManager.stopUpdatingLocation()
+    }
+
+    private func updateLocation() {
+        guard let journey = journey else { return }
+        let motion = journey.motion(paused: isPaused || isSeeking)
+        progress = journey.progress
+        currentPosition = CoordTransform.wgs84ToGcj02(motion.coordinate)
+        let location = RouteLocationSample.make(coordinate: motion.coordinate, altitude: altitude,
+            course: motion.course, speed: motion.speed, timestamp: Date())
         LocSimManager.startLocSim(location: location)
     }
 
-    private func motion(at index: Int) -> (speed: CLLocationSpeed, course: CLLocationDirection) {
-        let previousCourse = lastSimulatedLocation?.course ?? 0
-        guard index >= 0, index + 1 < routePoints.count else {
-            // Keep the destination fixed with zero speed and the last known bearing.
-            return (0, previousCourse)
-        }
-        // Use unjittered WGS-84 route points so random noise does not steer the bearing.
-        let from = CoordTransform.gcj02ToWgs84(routePoints[index])
-        let to = CoordTransform.gcj02ToWgs84(routePoints[index + 1])
-        let stepDistance = RouteSimulationMath.distance(from, to)
-        guard stepDistance > 0 else { return (0, previousCourse) }
-        let lat1 = from.latitude * .pi / 180
-        let lat2 = to.latitude * .pi / 180
-        let deltaLongitude = (to.longitude - from.longitude) * .pi / 180
-        let y = sin(deltaLongitude) * cos(lat2)
-        let x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(deltaLongitude)
-        let course = (atan2(y, x) * 180 / .pi + 360).truncatingRemainder(dividingBy: 360)
-        return (isPaused ? 0 : min(currentSpeedKmh / 3.6, stepDistance / updateInterval), course)
-    }
-    
     // MARK: - Background Task Management
     private func startBackgroundTask() {
         endBackgroundTask()

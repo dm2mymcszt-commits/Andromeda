@@ -14,44 +14,46 @@ func near(_ lhs: Double, _ rhs: Double, tolerance: Double = 0.005) -> Bool {
     abs(lhs - rhs) <= tolerance
 }
 
-// A normal route can contain many vertices shorter than one simulation step.
-// Their residual distance must carry across every vertex, including duplicates.
+// Production distance engine: irregular ticks, seeks, speed changes, and motion.
 let shortSegments = (0...100).map { coordinate(Double($0)) }
-let length = RouteSimulationMath.distance(shortSegments[0], shortSegments[100])
-let samples = RouteSimulationMath.interpolate(coords: shortSegments, speed: length / 10, interval: 1)
-require(samples.count == 11, "Ten seconds of travel must contain a start and ten updates")
-for index in samples.indices {
-    require(near(RouteSimulationMath.distance(samples[0], samples[index]), length * Double(index) / 10),
-            "Residual distance must survive short segments")
-}
-let withDuplicates = [coordinate(0), coordinate(0), coordinate(3), coordinate(3), coordinate(7), coordinate(100)]
-let duplicateSamples = RouteSimulationMath.interpolate(coords: withDuplicates, speed: length / 10, interval: 1)
-require(duplicateSamples.count == samples.count, "Zero-length segments must not consume time")
-for index in samples.indices {
-    require(near(RouteSimulationMath.distance(samples[index], duplicateSamples[index]), 0),
-            "Duplicate vertices changed the sampled route")
-}
-
-let partialEnd = RouteSimulationMath.interpolate(coords: [coordinate(0), coordinate(95)], speed: length / 10, interval: 1)
-require(partialEnd.count == 11, "Keep one partial final step")
-require(near(RouteSimulationMath.distance(partialEnd.last!, coordinate(95)), 0), "Destination must be exact")
-require(RouteSimulationMath.interpolate(coords: [], speed: 10, interval: 1).isEmpty, "Empty route")
-require(RouteSimulationMath.interpolate(coords: [coordinate(0)], speed: 10, interval: 1).count == 1, "One-point route")
-for invalid in [0.0, -1, Double.nan, Double.infinity] {
-    require(RouteSimulationMath.interpolate(coords: shortSegments, speed: invalid, interval: 1).isEmpty, "Invalid speed must not loop")
-    require(RouteSimulationMath.interpolate(coords: shortSegments, speed: 10, interval: invalid).isEmpty, "Invalid interval must not loop")
-}
-let invalidCoordinate = CLLocationCoordinate2D(latitude: 91, longitude: 0)
-require(RouteSimulationMath.interpolate(coords: [coordinate(0), invalidCoordinate], speed: 10, interval: 1).isEmpty,
-        "Invalid route coordinates must be rejected")
-
-// A route crossing 180 degrees must stay near the date line, not traverse longitude 0.
-let dateLine = [CLLocationCoordinate2D(latitude: 0, longitude: 179.999),
-                CLLocationCoordinate2D(latitude: 0, longitude: -179.999)]
-let crossing = RouteSimulationMath.interpolate(coords: dateLine,
-    speed: RouteSimulationMath.distance(dateLine[0], dateLine[1]) / 4, interval: 1)
-require(crossing.count == 5, "Date-line step count")
-require(crossing.allSatisfy { abs($0.longitude) > 179.99 }, "Date-line interpolation took the long way")
+let track = RouteTrack(coordinates: shortSegments)!
+require(near(track.length, 100), "Short segments must preserve total length")
+let duplicateTrack = RouteTrack(coordinates: [coordinate(0), coordinate(0), coordinate(3), coordinate(3), coordinate(100)])!
+require(duplicateTrack.coordinates.count == 3 && near(duplicateTrack.length, 100), "Duplicate vertices must not consume distance")
+require(RouteTrack(coordinates: []) == nil, "Reject empty track")
+require(RouteTrack(coordinates: [coordinate(0), coordinate(0)]) == nil, "Reject stationary route")
+require(RouteTrack(coordinates: [coordinate(0), CLLocationCoordinate2D(latitude: 91, longitude: 0)]) == nil, "Reject invalid coordinates")
+var trip = RouteJourney(track: track, speedKmh: 36)
+for seconds in [0.1, 0.3, 0.6, 1.4, 0.6] { trip.advance(seconds: seconds) }
+require(near(trip.distance, 30) && near(trip.elapsed, 3), "Actual elapsed time, not tick count, controls distance")
+require(near(trip.motion(paused: false).course, 90), "Course points to the next segment")
+require(near(trip.motion(paused: false).speed, 10), "Moving speed matches trip speed exactly")
+require(trip.motion(paused: true).speed == 0, "Paused motion must be stationary")
+trip.seek(0.05)
+trip.seek(0.46)
+require(near(trip.distance, 46), "Seek from five to forty-six percent")
+require(near(RouteSimulationMath.distance(trip.motion(paused: false).coordinate, coordinate(46)), 0), "Seek updates the actual model coordinate")
+trip.seek(0.1)
+require(near(trip.distance, 10), "Seek backwards")
+trip.changeSpeed(120)
+trip.advance(seconds: 1)
+require(near(trip.distance, 10 + 120 / 3.6), "120 km/h applies to the next elapsed step")
+require(near(trip.motion(paused: false).speed, 120 / 3.6), "120 km/h is injected, not the old speed")
+trip.changeSpeed(50)
+require(near(trip.remainingSeconds, trip.remainingDistance / (50 / 3.6)), "Remaining time reacts immediately to speed")
+trip.seek(1)
+require(trip.isFinished && trip.motion(paused: false).speed == 0, "Seeking to 100 percent finishes with zero speed")
+require(near(RouteSimulationMath.distance(trip.motion(paused: false).coordinate, coordinate(100)), 0), "Exact destination")
+trip.seek(0.9)
+trip.advance(seconds: 60)
+require(trip.isFinished && trip.remainingSeconds == 0, "Overshoot clamps exactly to the destination")
+let previousDistance = trip.distance
+trip.seek(.nan)
+trip.advance(seconds: .infinity)
+require(trip.distance == previousDistance, "Non-finite seek/tick values cannot corrupt a route")
+let dateLine = RouteTrack(coordinates: [CLLocationCoordinate2D(latitude: 0, longitude: 179.999),
+                                      CLLocationCoordinate2D(latitude: 0, longitude: -179.999)])!
+require(abs(dateLine.position(at: dateLine.length / 2).coordinate.longitude) > 179.99, "Date-line seeking must take the short direction")
 
 // The simulated duration belongs to each route; provider traffic ETA remains separate.
 let speed = 75.0 / 3.6
@@ -69,7 +71,7 @@ require(RouteSimulationMath.rankedIndices(distances: [.nan, 0, 20, 10]) == [3, 2
 require(RouteSimulationMath.rankedIndices(distances: [10, 10]) == [0, 1], "Stable ranking tie")
 require(RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: 7_900, speed: 500 / 3.6)) == "57s", "7.9 km at 500 km/h must show 57 seconds")
 require(RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: 7_500, speed: 500 / 3.6)) == "54s", "7.5 km is faster than 7.9 km")
-print("PASS: route interpolation, short segments, duplicate vertices, exact destination, invalid inputs, date line, per-route durations, simulation-speed ranking")
+print("PASS: distance-based travel, irregular ticks, seek forward/back/end, live speed and motion metadata, date line, per-route durations, simulation-speed ranking")
 
 let suiteName = "Andromeda.RouteSpeeds.Tests.\(UUID().uuidString)"
 let defaults = UserDefaults(suiteName: suiteName)!

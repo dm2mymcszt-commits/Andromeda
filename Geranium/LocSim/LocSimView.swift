@@ -16,6 +16,8 @@ struct LocSimView: View {
     @State private var openSharedRoute = false
     @State private var sharedPlaceError: String?
     @AppStorage("mapStyle") private var mapStyle = "standard"
+    @AppStorage("mapButtonLabels") private var mapButtonLabels = true
+    @State private var routeControlsCollapsed = false
     @AppStorage("tapMapToSetLocation") private var tapMapToSetLocation = false
     @AppStorage("askBeforeMoving") private var askBeforeMoving = true
     @StateObject private var mapMove = MapMoveController()
@@ -58,7 +60,8 @@ struct LocSimView: View {
                                   guard !routeSimulator.isSimulating else { return }
                                   routeSimulator.selectRoute(at: index)
                               }, mapStyle: mapStyle,
-                              proposedPosition: mapMove.pendingRequest?.coordinate)
+                              proposedPosition: mapMove.pendingRequest?.coordinate ?? routeSimulator.previewPosition,
+                              proposalIsRoutePreview: mapMove.pendingRequest == nil && routeSimulator.previewPosition != nil)
                     .onAppear {
                         CLLocationManager().requestAlwaysAuthorization()
                     }
@@ -75,7 +78,8 @@ struct LocSimView: View {
                     .ignoresSafeArea()
                 
             // MARK: - Map Controls
-            FloatingQuickMenu(
+            ScrollView(showsIndicators: false) {
+              FloatingQuickMenu(
                 onAction: { action in
                     handleQuickMenuAction(action)
                 },
@@ -84,6 +88,8 @@ struct LocSimView: View {
             )
             .padding(.trailing, 12)
             .padding(.top, 12)
+            }
+            .frame(width: mapButtonLabels ? 156 : 68)
             
             // MARK: - Joystick Overlay
             if joystickActive {
@@ -103,10 +109,23 @@ struct LocSimView: View {
             
         }
         .safeAreaInset(edge: .bottom) {
+          VStack(spacing: 4) {
+            if routeSimulator.isSimulating {
+                RoutePlaybackPanel(
+                    progress: routeSimulator.progress, elapsed: routeSimulator.elapsedTime,
+                    remaining: routeSimulator.remainingTime, remainingDistance: routeSimulator.remainingDistance,
+                    isPaused: routeSimulator.isPaused,
+                    speedKmh: Binding(get: { routeSimulator.currentSpeedKmh }, set: { routeSimulator.updateLiveSpeed($0) }),
+                    collapsed: $routeControlsCollapsed,
+                    preview: routeSimulator.previewSeek, seek: routeSimulator.seek,
+                    cancelSeek: routeSimulator.cancelSeek, pause: routeSimulator.togglePause, stop: stopSimulation
+                ).padding(.horizontal, 12).padding(.bottom, 6)
+            }
             if routeSimulator.travelMode == .cycling && !routeSimulator.availableRoutes.isEmpty {
                 Text("© [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) · [Routing](https://routing.openstreetmap.de/about.html) · [Fix the map](https://www.openstreetmap.org/fixthemap)")
                     .font(.caption2).padding(6).background(.regularMaterial)
             }
+          }
         }
         .modifier(MapMoveConfirmation(controller: mapMove))
         .onChange(of: tapMapToSetLocation) { _ in mapMove.cancel() }

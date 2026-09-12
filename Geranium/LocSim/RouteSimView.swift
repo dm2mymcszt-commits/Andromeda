@@ -350,11 +350,11 @@ struct RouteSimSheet: View {
                     .progressViewStyle(LinearProgressViewStyle(tint: .accentColor))
                 
                 HStack {
-                    Text("Point \(routeSimulator.currentPointIndex)/\(routeSimulator.totalPoints)")
+                    Text("\(routeSimulator.remainingDistance) remaining")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     Spacer()
-                    Text("Duration: \(routeSimulator.estimatedTime)")
+                    Text("Remaining: \(routeSimulator.remainingTime)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
@@ -598,6 +598,103 @@ struct RouteModeControls: View {
 }
 
 // Shared by route setup and the isolated simulator visual check.
+struct RoutePlaybackPanel: View {
+    let progress: Double
+    let elapsed: String
+    let remaining: String
+    let remainingDistance: String
+    let isPaused: Bool
+    var legName = "Route in progress"
+    @Binding var speedKmh: Double
+    @Binding var collapsed: Bool
+    let preview: (Double) -> Void
+    let seek: (Double) -> Void
+    let cancelSeek: () -> Void
+    let pause: () -> Void
+    let stop: () -> Void
+    @State private var draggedProgress: Double?
+    @GestureState private var dragging = false
+
+    var body: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 12) {
+                Button { collapsed.toggle() } label: {
+                    Image(systemName: collapsed ? "chevron.up" : "chevron.down")
+                }.accessibilityLabel(collapsed ? "Expand route controls" : "Collapse route controls")
+                Text(collapsed ? "\(Int(progress * 100))% · \(remaining) left" : legName)
+                    .font(.subheadline.weight(.semibold)).lineLimit(1)
+                Spacer(minLength: 0)
+                Button(action: pause) { Image(systemName: isPaused ? "play.fill" : "pause.fill") }
+                    .accessibilityLabel(isPaused ? "Resume route" : "Pause route")
+                Button(action: stop) { Image(systemName: "stop.fill") }.accessibilityLabel("Stop simulation")
+            }
+            .buttonStyle(.borderless)
+            if !collapsed {
+                HStack {
+                    Text("\(Int((draggedProgress ?? progress) * 100))%")
+                    Spacer()
+                    Text("Elapsed \(elapsed)")
+                }.font(.caption).monospacedDigit()
+                GeometryReader { geometry in
+                    let width = max(1, geometry.size.width)
+                    let fraction = draggedProgress ?? progress
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Color.secondary.opacity(0.25)).frame(height: 5)
+                        Capsule().fill(Color.accentColor).frame(width: width * fraction, height: 5)
+                        Circle().fill(Color.accentColor).frame(width: 18, height: 18)
+                            .offset(x: min(width - 18, max(0, width * fraction - 9)))
+                    }
+                    .frame(height: 32)
+                    .contentShape(Rectangle())
+                    .gesture(DragGesture(minimumDistance: 0)
+                        .updating($dragging) { _, state, _ in state = true }
+                        .onChanged { value in
+                            let fraction = min(1, max(0, value.location.x / width))
+                            draggedProgress = fraction
+                            preview(fraction)
+                        }
+                        .onEnded { value in
+                            seek(min(1, max(0, value.location.x / width)))
+                            draggedProgress = nil
+                        })
+                    .accessibilityElement()
+                    .accessibilityLabel("Route progress")
+                    .accessibilityValue("\(Int(fraction * 100)) percent")
+                    .accessibilityAdjustableAction { direction in
+                        seek(min(1, max(0, progress + (direction == .increment ? 0.05 : -0.05))))
+                    }
+                }.frame(height: 32)
+                HStack {
+                    Text("\(remaining) remaining")
+                    Spacer()
+                    Text(remainingDistance)
+                }.font(.caption).foregroundColor(.secondary).monospacedDigit()
+                HStack {
+                    Text("Speed").font(.subheadline.weight(.semibold))
+                    Spacer()
+                    Text("\(Int(speedKmh)) km/h").monospacedDigit()
+                }
+                HStack(spacing: 12) {
+                    Button { speedKmh = max(1, speedKmh - 1) } label: { Image(systemName: "minus.circle.fill").font(.title2) }
+                        .accessibilityLabel("Decrease trip speed")
+                    Slider(value: $speedKmh, in: 1...500, step: 1).accessibilityLabel("Trip speed in kilometres per hour")
+                    Button { speedKmh = min(500, speedKmh + 1) } label: { Image(systemName: "plus.circle.fill").font(.title2) }
+                        .accessibilityLabel("Increase trip speed")
+                }
+            } else {
+                ProgressView(value: progress).tint(.accentColor)
+            }
+        }
+        .padding(14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18))
+        .onDisappear { cancelSeek() }
+        .onChange(of: dragging) { active in
+            if !active && draggedProgress != nil { draggedProgress = nil; cancelSeek() }
+        }
+        .onChange(of: collapsed) { _ in draggedProgress = nil; cancelSeek() }
+    }
+}
+
 struct RouteChoiceCard: View {
     let number: Int
     let name: String
