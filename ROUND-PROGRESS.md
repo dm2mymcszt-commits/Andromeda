@@ -41,8 +41,12 @@ Sharing candidate 4fbe7b9 pushed: extension renamed Andromeda, legacy storyboard
 
 4fbe7b9 app/extension native build passed in CI 34683257730; subsequent tests/screens pending. Follow-up search commit ac8cdb3 adds wrong-street approximation, preserves plus codes in URL paths, and tests the production resolver against the official Skytree short link (HEAD-only redirect manually verified).
 
-Exact next step: inspect CI for the latest search/share state, fix test failures and inspect Share/Incoming screenshots before marking item 5 complete. Items 6-10 remain untouched.
+ac8cdb3 builds and passes live addresses, production short-link resolution, parser and sharing tests in CI 34683402836; simulator steps pending. Inspected Settings and Talence search screenshots from verified 15e507b: neutral data credits are correct, but duplicate building pins appeared. Follow-up 427f2bd merges identical numbered-address names within 100 m (retains highest-ranked pin), preserves separately named businesses, and adds regression/pasted-location screenshot coverage.
+
+Exact next step: inspect CI for 427f2bd and the Share/Incoming/Pasted screenshots; fix any failures before marking item 5 complete. Items 6-10 remain untouched.
 
 Choices: debounce normal typing 650 ms; one Photon request per 1.25 seconds across pickers with a 128-query / 24-hour in-memory cache; five-decimal pasted coordinates; prefer a place pin over query coordinates, and use a camera center only as an approximate fallback after text lookup. Open Location Code adaptation has Apache-2.0 license and upstream test vectors. Data credits are a single About entry.
 
 Sharing choices: use the documented app-group fallback instead of unsupported app launching; save favorites directly in the extension; editable shared place name; Cancel discards that queued action, swipe dismissal keeps it for next activation; shared route endpoints do not interrupt an active trip.
+
+Package check: 4fbe7b9 app/helper/extension are ARM64 with expected signed entitlements. Share entry is Andromeda, principal controller exists, URL/text activation is configured, and the old storyboard is absent. Package is only an item-5 candidate, not final round delivery.
