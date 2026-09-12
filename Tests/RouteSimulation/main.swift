@@ -62,9 +62,10 @@ require(RouteSimulationMath.simulationSeconds(distance: 100, speed: 0) == nil, "
 require(RouteSimulationMath.durationText(3_600) == "1h 0m", "One-hour boundary")
 require(RouteSimulationMath.durationText(.nan) == "Unavailable", "Non-finite duration")
 require(RouteSimulationMath.durationText(60.01) == "1m 1s", "Round remaining partial seconds up")
-require(RouteSimulationMath.rankedIndices(times: [1_800, 1_200, 2_400], distances: [24_300, 24_100, 13_200]) == [1, 0, 2],
-        "Fastest must follow provider ETA, not response order or shortest distance")
-require(RouteSimulationMath.rankedIndices(times: [.nan, 0, 90, 90], distances: [1, 2, 20, 10]) == [3, 2, 0, 1],
-        "Invalid ETA must sort last; equal ETA uses distance")
-require(RouteSimulationMath.rankedIndices(times: [90, 90], distances: [10, 10]) == [0, 1], "Stable ranking tie")
-print("PASS: route interpolation, short segments, duplicate vertices, exact destination, invalid inputs, date line, per-route durations, provider ETA ranking")
+require(RouteSimulationMath.rankedIndices(distances: [24_300, 24_100, 13_200]) == [2, 1, 0],
+        "Fastest must follow simulated duration: shortest at the same speed")
+require(RouteSimulationMath.rankedIndices(distances: [.nan, 0, 20, 10]) == [3, 2, 0, 1], "Invalid distance must sort last")
+require(RouteSimulationMath.rankedIndices(distances: [10, 10]) == [0, 1], "Stable ranking tie")
+require(RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: 7_900, speed: 500 / 3.6)) == "57s", "7.9 km at 500 km/h must show 57 seconds")
+require(RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: 7_500, speed: 500 / 3.6)) == "54s", "7.5 km is faster than 7.9 km")
+print("PASS: route interpolation, short segments, duplicate vertices, exact destination, invalid inputs, date line, per-route durations, simulation-speed ranking")

@@ -11,9 +11,11 @@ struct EquatableCoordinate: Equatable {
 }
 
 enum BordeauxFixture {
-    static let etas = ["24 min", "31 min", "42 min"]
-    static let distances = ["24.1 km", "24.3 km", "13.2 km"]
-    static let simulations = ["19m 18s", "19m 26s", "10m 34s"]
+    static let trafficETAs = ["24 min", "23 min", "23 min"]
+    static let distances = ["7.5 km", "7.8 km", "7.9 km"]
+    static let simulations = [7_500.0, 7_800.0, 7_900.0].map {
+        RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: $0, speed: 500 / 3.6))
+    }
     static let roads = ["A630 · Pont d'Aquitaine", "A630 · Mérignac", "Bordeaux centre"]
 
     static func routes(latitudeOffset: Double = 0) -> [MKPolyline] {
@@ -106,7 +108,7 @@ private final class InsertionProbeMap: MKMapView {
         var parent = CustomMapView(
             tappedCoordinate: Binding(get: { location }, set: { location = $0 }),
             moveToRegion: .constant(nil), allRoutePolylines: originalRoutes,
-            selectedRouteIndex: 1, routeETAs: BordeauxFixture.etas,
+            selectedRouteIndex: 1, routeETAs: BordeauxFixture.simulations,
             allowsLocationSelection: false, onSelectRoute: { selections.append($0) },
             fitsRoutes: true, showsUserLocation: false
         )
@@ -125,7 +127,7 @@ private final class InsertionProbeMap: MKMapView {
         coordinator.updateRoutes(on: map)
         try assertRoutes(map, coordinator: coordinator, routes: originalRoutes, selected: 1)
         try assertAnnotations(map, coordinator: coordinator, routes: originalRoutes,
-                              selected: 1, etas: BordeauxFixture.etas)
+                              selected: 1, etas: BordeauxFixture.simulations)
 
         // Selection updates existing geometry, ordering, endpoint markers and badge state.
         parent.selectedRouteIndex = 2
@@ -134,7 +136,7 @@ private final class InsertionProbeMap: MKMapView {
         coordinator.updateRoutes(on: map)
         try assertRoutes(map, coordinator: coordinator, routes: originalRoutes, selected: 2)
         try assertAnnotations(map, coordinator: coordinator, routes: originalRoutes,
-                              selected: 2, etas: BordeauxFixture.etas)
+                              selected: 2, etas: BordeauxFixture.simulations)
 
         // Recalculation can return the same number of routes and vertices at new locations.
         let replacementRoutes = BordeauxFixture.routes(latitudeOffset: 0.02)
@@ -144,14 +146,19 @@ private final class InsertionProbeMap: MKMapView {
         coordinator.updateRoutes(on: map)
         try assertRoutes(map, coordinator: coordinator, routes: replacementRoutes, selected: 2)
         try assertAnnotations(map, coordinator: coordinator, routes: replacementRoutes,
-                              selected: 2, etas: BordeauxFixture.etas)
+                              selected: 2, etas: BordeauxFixture.simulations)
         try require(!map.overlays.contains { overlay in originalRoutes.contains { $0 === overlay as AnyObject } },
                     "Recalculation retained obsolete route geometry")
 
-        // ETA-only changes must refresh badges without changing the underlying routes.
-        parent.routeETAs = ["25 min", "32 min", "43 min"]
+        // Changing speed from 500 to 250 km/h refreshes every badge using the
+        // same geometry; no new directions response is supplied.
+        parent.routeETAs = [7_500.0, 7_800.0, 7_900.0].map {
+            RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: $0, speed: 250 / 3.6))
+        }
+        map.captures.removeAll()
         coordinator.parent = parent
         coordinator.updateRoutes(on: map)
+        try require(map.captures.isEmpty, "Changing speed replaced route geometry")
         try assertAnnotations(map, coordinator: coordinator, routes: replacementRoutes,
                               selected: 2, etas: parent.routeETAs)
 
@@ -278,7 +285,7 @@ private struct RouteMapFixtureView: View {
                         CustomMapView(
                             tappedCoordinate: .constant(nil), moveToRegion: .constant(nil),
                             allRoutePolylines: routes, selectedRouteIndex: selected,
-                            routeETAs: BordeauxFixture.etas, allowsLocationSelection: false,
+                            routeETAs: BordeauxFixture.simulations, allowsLocationSelection: false,
                             onSelectRoute: { selected = $0 }, fitsRoutes: true, showsUserLocation: false
                         )
                         .frame(height: 340)
@@ -290,8 +297,8 @@ private struct RouteMapFixtureView: View {
                                 number: index + 1,
                                 name: index == 0 ? "Fastest Route" : "Alternative \(index)",
                                 roadName: BordeauxFixture.roads[index], distance: BordeauxFixture.distances[index],
-                                roadETA: BordeauxFixture.etas[index], simulationETA: BordeauxFixture.simulations[index],
-                                speed: "75 km/h", isFastest: index == 0, isSelected: selected == index,
+                                roadETA: BordeauxFixture.trafficETAs[index], simulationETA: BordeauxFixture.simulations[index],
+                                speed: "500 km/h", isSelected: selected == index,
                                 select: { selected = index }
                             )
                         }

@@ -52,7 +52,7 @@ struct LocSimView: View {
                               allRoutePolylines: routeSimulator.allRoutePolylines,
                               selectedRouteIndex: routeSimulator.selectedRouteIndex,
                               movingPosition: routeSimulator.currentPosition,
-                              routeETAs: routeSimulator.availableRoutes.map(\.etaText),
+                              routeETAs: routeSimulator.simulatedRouteETAs,
                               allowsLocationSelection: tapMapToSetLocation,
                               onSelectRoute: { index in
                                   guard !routeSimulator.isSimulating else { return }

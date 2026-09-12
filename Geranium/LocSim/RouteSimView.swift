@@ -173,7 +173,7 @@ struct RouteSimSheet: View {
 
                                 routePreview
 
-                                Text("Road estimates from Apple Maps. Simulation time uses your selected constant speed.")
+                                Text("Times use your simulation speed. Real traffic estimates are shown separately.")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal)
@@ -332,7 +332,7 @@ struct RouteSimSheet: View {
                 routePolyline: routeSimulator.routePolyline,
                 allRoutePolylines: routeSimulator.allRoutePolylines,
                 selectedRouteIndex: routeSimulator.selectedRouteIndex,
-                routeETAs: routeSimulator.availableRoutes.map(\.etaText),
+                routeETAs: routeSimulator.simulatedRouteETAs,
                 allowsLocationSelection: false,
                 onSelectRoute: { routeSimulator.selectRoute(at: $0) },
                 fitsRoutes: true, showsUserLocation: false, mapStyle: mapStyle
@@ -352,10 +352,9 @@ struct RouteSimSheet: View {
             name: option.name,
             roadName: option.route.name,
             distance: option.distanceText,
-            roadETA: option.etaText,
+            roadETA: option.trafficTimeText,
             simulationETA: option.simulationTimeText(mode: selectedMode, speedMultiplier: speedMultiplier),
             speed: formattedSpeed,
-            isFastest: option.isFastest,
             isSelected: routeSimulator.selectedRouteIndex == index,
             select: { routeSimulator.selectRoute(at: index) }
         )
@@ -581,7 +580,6 @@ struct RouteChoiceCard: View {
     let roadETA: String
     let simulationETA: String
     let speed: String
-    let isFastest: Bool
     let isSelected: Bool
     let select: () -> Void
 
@@ -609,10 +607,10 @@ struct RouteChoiceCard: View {
                     if !roadName.isEmpty {
                         Text(roadName).font(.caption).foregroundColor(.secondary).lineLimit(2)
                     }
-                    Text("\(roadETA) \u{00B7} \(distance)\(isFastest ? " \u{00B7} Fastest" : "")")
+                    Text("\(simulationETA) · \(distance)")
+                        .font(.headline).foregroundColor(.primary)
+                    Text("At \(speed) · Real traffic: \(roadETA)")
                         .font(.caption).foregroundColor(.secondary)
-                    Label("Simulation: \(simulationETA) at \(speed)", systemImage: "speedometer")
-                        .font(.caption).foregroundColor(.primary)
                 }
             }
             .padding(14)
@@ -624,7 +622,7 @@ struct RouteChoiceCard: View {
             .contentShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Route \(number), \(name), \(roadETA), \(distance). Simulation \(simulationETA) at \(speed)")
+        .accessibilityLabel("Route \(number), \(name), \(simulationETA) at \(speed), \(distance). Real traffic: \(roadETA)")
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }

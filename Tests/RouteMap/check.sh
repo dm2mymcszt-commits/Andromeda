@@ -13,12 +13,14 @@ marker = 'struct RouteChoiceCard: View {'
 if source.count(marker) != 1:
     raise SystemExit('Expected exactly one production RouteChoiceCard')
 Path(sys.argv[1]).write_text('import SwiftUI\n' + marker + source.split(marker, 1)[1])
+models = Path('Geranium/LocSim/RouteSimulator.swift').read_text().split('class RouteSimulator: NSObject')[0]
+Path(sys.argv[1]).with_name('RouteModels.swift').write_text(models)
 PY
 PREVIEW_APP="$QA_DIR/RouteMapPreview.app"
 mkdir -p "$PREVIEW_APP"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
-  Geranium/LocSim/CustomMapView.swift "$QA_DIR/RouteChoiceCard.swift" Tests/RouteMap/Preview.swift \
+  Geranium/LocSim/CustomMapView.swift "$QA_DIR/RouteChoiceCard.swift" "$QA_DIR/RouteModels.swift" Tests/RouteMap/Preview.swift \
   -o "$PREVIEW_APP/RouteMapPreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'
 import plistlib, sys

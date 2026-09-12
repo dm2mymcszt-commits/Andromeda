@@ -25,18 +25,17 @@ enum RouteSimulationMath {
         guard let seconds = seconds, seconds.isFinite, seconds >= 0,
               seconds < Double(Int.max) else { return "Unavailable" }
         let rounded = Int(ceil(seconds))
+        if rounded < 60 { return "\(rounded)s" }
         let minutes = rounded / 60
         return minutes >= 60 ? "\(minutes / 60)h \(minutes % 60)m" : "\(minutes)m \(rounded % 60)s"
     }
 
-    // MapKit does not promise that the first alternative has the shortest ETA.
-    static func rankedIndices(times: [TimeInterval], distances: [Double]) -> [Int] {
-        precondition(times.count == distances.count)
-        return times.indices.sorted { lhs, rhs in
-            let lhsTime = times[lhs].isFinite && times[lhs] > 0 ? times[lhs] : .infinity
-            let rhsTime = times[rhs].isFinite && times[rhs] > 0 ? times[rhs] : .infinity
-            if lhsTime != rhsTime { return lhsTime < rhsTime }
-            if distances[lhs] != distances[rhs] { return distances[lhs] < distances[rhs] }
+    // Every alternative uses the same simulation speed, so shortest is fastest.
+    static func rankedIndices(distances: [Double]) -> [Int] {
+        return distances.indices.sorted { lhs, rhs in
+            let lhsDistance = distances[lhs].isFinite && distances[lhs] > 0 ? distances[lhs] : .infinity
+            let rhsDistance = distances[rhs].isFinite && distances[rhs] > 0 ? distances[rhs] : .infinity
+            if lhsDistance != rhsDistance { return lhsDistance < rhsDistance }
             return lhs < rhs
         }
     }
@@ -119,7 +118,7 @@ class RouteOption: Identifiable, ObservableObject {
     let index: Int
 
     var isFastest: Bool {
-        index == 0 && route.expectedTravelTime.isFinite && route.expectedTravelTime > 0
+        index == 0 && route.distance.isFinite && route.distance > 0
     }
     
     var name: String {
@@ -135,7 +134,7 @@ class RouteOption: Identifiable, ObservableObject {
         return String(format: "%.0f m", route.distance)
     }
     
-    var etaText: String {
+    var trafficTimeText: String {
         guard route.expectedTravelTime.isFinite, route.expectedTravelTime > 0 else { return "ETA unavailable" }
         let minutes = max(1, Int(ceil(route.expectedTravelTime / 60)))
         if minutes >= 60 {
@@ -178,8 +177,11 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     private var routePoints: [CLLocationCoordinate2D] = []
     private var timer: Timer? = nil
     private var altitude: Double = 0.0
-    private var speedMultiplier: Double = 1.0
+    @Published private var speedMultiplier: Double = 1.0
     var currentSpeedMultiplier: Double { speedMultiplier }
+    var simulatedRouteETAs: [String] {
+        availableRoutes.map { $0.simulationTimeText(mode: travelMode, speedMultiplier: speedMultiplier) }
+    }
     private let updateInterval: TimeInterval = 1.0
     private var lastSimulatedLocation: CLLocation?
     private var pendingDirections: MKDirections?
@@ -242,7 +244,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
                     return
                 }
                 let sortedRoutes = RouteSimulationMath.rankedIndices(
-                    times: routes.map(\.expectedTravelTime), distances: routes.map(\.distance)
+                    distances: routes.map(\.distance)
                 ).map { routes[$0] }
                 self.availableRoutes = sortedRoutes.enumerated().map { RouteOption(route: $0.element, index: $0.offset) }
                 self.allRoutePolylines = sortedRoutes.map { $0.polyline }
