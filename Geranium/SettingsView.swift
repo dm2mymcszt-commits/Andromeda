@@ -46,7 +46,7 @@ struct SettingsView: View {
                     Link("Source code", destination: URL(string: "https://github.com/dm2mymcszt-commits/Andromeda")!)
                     Text("Based on Andromeda by son3ra1n and Geranium by c22dev. GPL-3.0.")
                         .font(.caption).foregroundColor(.secondary)
-                    Text("Data sources: [Apple Maps](https://www.apple.com/maps/), [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), [IGN](https://geoservices.ign.fr/services-geoplateforme-geocodage). [Open Location Code and licenses](https://github.com/dm2mymcszt-commits/Andromeda/blob/experiment/route-motion/THIRD-PARTY-NOTICES.md).")
+                    Text("Data sources: [Apple Maps](https://www.apple.com/maps/), [OpenStreetMap contributors](https://www.openstreetmap.org/copyright), [routing](https://routing.openstreetmap.de/about.html), [IGN](https://geoservices.ign.fr/services-geoplateforme-geocodage). [Open Location Code and licenses](https://github.com/dm2mymcszt-commits/Andromeda/blob/experiment/route-motion/THIRD-PARTY-NOTICES.md).")
                         .font(.caption).foregroundColor(.secondary)
                 }
             }

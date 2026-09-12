@@ -102,6 +102,12 @@ struct LocSimView: View {
             }
             
         }
+        .safeAreaInset(edge: .bottom) {
+            if routeSimulator.travelMode == .cycling && !routeSimulator.availableRoutes.isEmpty {
+                Text("© [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) · [Routing](https://routing.openstreetmap.de/about.html) · [Fix the map](https://www.openstreetmap.org/fixthemap)")
+                    .font(.caption2).padding(6).background(.regularMaterial)
+            }
+        }
         .modifier(MapMoveConfirmation(controller: mapMove))
         .onChange(of: tapMapToSetLocation) { _ in mapMove.cancel() }
         .onChange(of: askBeforeMoving) { _ in mapMove.cancel() }

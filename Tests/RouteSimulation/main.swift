@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import MapKit
 
 func require(_ condition: @autoclosure () -> Bool, _ message: String) {
     guard condition() else { fatalError(message) }
@@ -53,7 +54,7 @@ require(crossing.count == 5, "Date-line step count")
 require(crossing.allSatisfy { abs($0.longitude) > 179.99 }, "Date-line interpolation took the long way")
 
 // The simulated duration belongs to each route; provider traffic ETA remains separate.
-let speed = TravelMode.driving.speed * 1.5
+let speed = 75.0 / 3.6
 let etas = [24_100.0, 24_300.0, 13_200.0].map {
     RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: $0, speed: speed))
 }
@@ -69,3 +70,52 @@ require(RouteSimulationMath.rankedIndices(distances: [10, 10]) == [0, 1], "Stabl
 require(RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: 7_900, speed: 500 / 3.6)) == "57s", "7.9 km at 500 km/h must show 57 seconds")
 require(RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: 7_500, speed: 500 / 3.6)) == "54s", "7.5 km is faster than 7.9 km")
 print("PASS: route interpolation, short segments, duplicate vertices, exact destination, invalid inputs, date line, per-route durations, simulation-speed ranking")
+
+let suiteName = "Andromeda.RouteSpeeds.Tests.\(UUID().uuidString)"
+let defaults = UserDefaults(suiteName: suiteName)!
+defer { defaults.removePersistentDomain(forName: suiteName) }
+var speeds = RouteSpeeds(defaults: defaults)
+require(speeds[.walking] == 5 && speeds[.cycling] == 20 && speeds[.driving] == 50, "Exact default km/h for each mode")
+for mode in TravelMode.allCases {
+    speeds.set(1, for: mode)
+    require(RouteSpeeds(defaults: defaults)[mode] == 1, "Persist minimum speed in every mode")
+    speeds.set(500, for: mode)
+    require(RouteSpeeds(defaults: defaults)[mode] == 500, "Persist maximum speed in every mode")
+}
+speeds.set(7, for: .walking)
+speeds.set(26, for: .cycling)
+speeds.set(120, for: .driving)
+let restored = RouteSpeeds(defaults: defaults)
+require(restored[.walking] == 7 && restored[.cycling] == 26 && restored[.driving] == 120, "Mode speeds must remain independent across launches")
+speeds.set(.nan, for: .walking)
+require(speeds[.walking] == 7, "Reject non-finite speed")
+require(TravelMode.cycling.appleTransportType == nil, "Cycling must not request walking directions")
+
+func path(_ distance: Double, offset: Double = 0) -> RoutePath {
+    let coords = [coordinate(offset), coordinate(offset + distance)]
+    return RoutePath(polyline: MKPolyline(coordinates: coords, count: coords.count), distance: distance,
+                     expectedTravelTime: distance / 10, name: "Fixture")
+}
+var cache = RouteModeCache()
+cache.store([path(7_900), path(7_500)], for: .driving)
+cache.store([path(6_000, offset: 100), path(5_000, offset: 100)], for: .cycling)
+cache.store([path(4_000, offset: 200)], for: .walking)
+let original = cache.routes[.driving]![0].route.polyline
+require(cache.duration(for: .driving, kmh: 500) == "54s", "Mode tab shows shortest simulated time")
+cache.select(1, for: .driving)
+cache.select(1, for: .cycling)
+require(cache.selections[.driving] == 1 && cache.selections[.cycling] == 1, "Mode switches preserve independent alternative selections")
+require(cache.routes[.driving]![0].route.polyline === original, "Switching mode must reuse cached geometry")
+require(cache.duration(for: .driving, kmh: 250) == "1m 48s", "Speed changes update mode duration without replacing routes")
+cache = RouteModeCache()
+require(cache.routes.isEmpty && cache.selections.isEmpty, "Changing endpoints clears every mode")
+
+let bicycleJSON = #"{"code":"Ok","routes":[{"geometry":{"coordinates":[[-0.585746,44.817059],[-0.59,44.82]]},"distance":720,"duration":150,"legs":[{"summary":"Cycleway"}]}]}"#.data(using: .utf8)!
+let bicycle = try! BicycleDirections.decode(bicycleJSON)[0]
+require(bicycle.distance == 720 && bicycle.name == "Cycleway", "Decode bicycle distance and road name")
+require(bicycle.polyline.pointCount == 2 && near(bicycle.polyline.coordinate.latitude, 44.817059, tolerance: 0.01), "Decode GeoJSON longitude/latitude order")
+do {
+    _ = try BicycleDirections.decode(Data(#"{"code":"NoRoute"}"#.utf8))
+    fatalError("NoRoute must be reported, not replaced by walking")
+} catch {}
+print("PASS: per-mode speed persistence/range, independent route cache, bicycle provider decoding")

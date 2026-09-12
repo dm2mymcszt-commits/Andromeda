@@ -262,6 +262,8 @@ private final class InsertionProbeMap: MKMapView {
 
 private struct RouteMapFixtureView: View {
     @State private var selected = 0
+    @State private var mode: TravelMode = .driving
+    @State private var modeSpeeds: [TravelMode: Double] = [.walking: 5, .cycling: 20, .driving: 50]
     private let routes = BordeauxFixture.routes()
     private let arguments = ProcessInfo.processInfo.arguments
 
@@ -277,6 +279,13 @@ private struct RouteMapFixtureView: View {
             ScrollViewReader { reader in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
+                        if section == "modes" {
+                            RouteModeControls(selectedMode: mode, duration: { mode in
+                                RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(
+                                    distance: mode == .walking ? 5_000 : mode == .cycling ? 6_000 : 7_500,
+                                    speed: modeSpeeds[mode]! / 3.6))
+                            }, speedKmh: Binding(get: { modeSpeeds[mode]! }, set: { modeSpeeds[mode] = $0 }), select: { mode = $0 })
+                        }
                         HStack {
                             Label("Select Route", systemImage: "map.fill").font(.headline)
                             Spacer()

@@ -97,6 +97,15 @@ final class RouteDraft: ObservableObject {
     // A shared endpoint invalidates a previous preview when the planner opens.
     var needsRecalculation = false
 
+    @discardableResult
+    func swapEndpoints() -> Bool {
+        guard let oldStart = start, let oldDestination = destination else { return false }
+        start = oldDestination
+        destination = oldStart
+        needsRecalculation = true
+        return true
+    }
+
     func accept(_ request: SharedPlaceRequest) {
         guard let place = request.place else { return }
         if request.action == .start { start = place }

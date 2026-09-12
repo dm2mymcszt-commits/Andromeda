@@ -35,6 +35,15 @@ require(draft.start?.name == place.name && draft.destination?.name == place.name
 let previousStart = draft.start?.id
 draft.accept(requests[0])
 require(draft.start?.id == previousStart, "A Go request must not edit the route draft")
+let resolvedCurrent = RoutePlace(name: "Current Location", coordinate: CLLocationCoordinate2D(latitude: 44.8, longitude: -0.6))
+draft.start = resolvedCurrent
+draft.destination = place
+require(draft.swapEndpoints(), "Resolved endpoints can swap")
+require(draft.destination?.id == resolvedCurrent.id && draft.destination?.latitude == 44.8 && draft.start?.id == place.id,
+        "Swap must preserve the resolved current-location coordinates and both names")
+require(draft.swapEndpoints() && draft.start?.id == resolvedCurrent.id && draft.destination?.id == place.id, "Swap twice restores endpoints")
+draft.start = nil
+require(!draft.swapEndpoints() && draft.destination?.id == place.id, "Unresolved current location cannot swap")
 let suite = "andromeda.share.tests." + UUID().uuidString
 let defaults = UserDefaults(suiteName: suite)!
 defer { defaults.removePersistentDomain(forName: suite) }

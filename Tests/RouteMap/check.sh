@@ -9,7 +9,7 @@ python3 - "$QA_DIR/RouteChoiceCard.swift" <<'PY'
 from pathlib import Path
 import sys
 source = Path('Geranium/LocSim/RouteSimView.swift').read_text()
-marker = 'struct RouteChoiceCard: View {'
+marker = 'struct RouteModeControls: View {'
 if source.count(marker) != 1:
     raise SystemExit('Expected exactly one production RouteChoiceCard')
 Path(sys.argv[1]).write_text('import SwiftUI\n' + marker + source.split(marker, 1)[1])
@@ -20,7 +20,7 @@ PREVIEW_APP="$QA_DIR/RouteMapPreview.app"
 mkdir -p "$PREVIEW_APP"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
-  Geranium/LocSim/CustomMapView.swift "$QA_DIR/RouteChoiceCard.swift" "$QA_DIR/RouteModels.swift" Tests/RouteMap/Preview.swift \
+  Geranium/LocSim/CustomMapView.swift Geranium/LocSim/CoordTransform.swift "$QA_DIR/RouteChoiceCard.swift" "$QA_DIR/RouteModels.swift" Tests/RouteMap/Preview.swift \
   -o "$PREVIEW_APP/RouteMapPreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'
 import plistlib, sys
@@ -41,7 +41,7 @@ CONTAINER=$(xcrun simctl get_app_container "$DEVICE" local.andromeda.routemappre
 
 for appearance in dark light; do
   xcrun simctl ui "$DEVICE" appearance "$appearance"
-  for section in map cards; do
+  for section in map cards modes; do
     # A separate launch controls scroll position deterministically, with no UI automation dependency.
     xcrun simctl terminate "$DEVICE" local.andromeda.routemappreview 2>/dev/null || true
     RESULT="$CONTAINER/Documents/route-map-$appearance-$section.txt"

@@ -23,7 +23,6 @@ struct RouteSimSheet: View {
     @State private var waitingForCurrentStart = false
     @State private var didInitializeStart = false
     @State private var routeReady: Bool = false
-    @State private var speedMultiplier: Double = 1.0
     @State private var showGPXPicker: Bool = false
     
     enum ActiveField: String, Identifiable {
@@ -58,11 +57,13 @@ struct RouteSimSheet: View {
                             }
                         }
                         
-                        // Arrow between cards
-                        Image(systemName: "arrow.down.circle.fill")
-                            .font(.title2)
-                            .foregroundColor(.accentColor)
-                        
+                        Button(action: swapEndpoints) {
+                            Image(systemName: "arrow.up.arrow.down.circle.fill")
+                                .font(.title2)
+                        }
+                        .accessibilityLabel("Swap start and destination")
+                        .disabled(waitingForCurrentStart || startCoord == nil || endCoord == nil)
+
                         // MARK: - End Point
                         locationCard(
                             title: "Destination",
@@ -73,64 +74,28 @@ struct RouteSimSheet: View {
                             field: .end
                         )
                         
-                        // MARK: - Travel Mode
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Travel Mode")
-                                .font(.headline)
-                                .padding(.horizontal)
-                            
-                            HStack(spacing: 12) {
-                                ForEach(TravelMode.allCases, id: \.self) { mode in
-                                    Button(action: {
-                                        guard selectedMode != mode else { return }
-                                        selectedMode = mode
-                                        invalidateRoute()
-                                    }) {
-                                        VStack(spacing: 4) {
-                                            Image(systemName: mode.icon)
-                                                .font(.title2)
-                                            Text(mode.rawValue)
-                                                .font(.caption)
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 10)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .fill(selectedMode == mode ?
-                                                      Color.accentColor.opacity(0.2) :
-                                                      Color(UIColor.secondarySystemBackground))
-                                        )
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .stroke(selectedMode == mode ?
-                                                        Color.accentColor : Color.clear, lineWidth: 2)
-                                        )
-                                    }
-                                    .foregroundColor(selectedMode == mode ? .accentColor : .primary)
-                                }
+                        RouteModeControls(
+                            selectedMode: selectedMode,
+                            duration: { mode in
+                                routeSimulator.modeDuration(mode) ??
+                                    (routeSimulator.modeErrors[mode] == nil ? "" : "No route")
+                            },
+                            speedKmh: Binding(
+                                get: { routeSimulator.speedKmh(for: selectedMode) },
+                                set: { routeSimulator.updateSpeedKmh($0, for: selectedMode) }
+                            ),
+                            select: { mode in
+                                selectedMode = mode
+                                routeSimulator.selectMode(mode)
+                                routeReady = !routeSimulator.availableRoutes.isEmpty
+                                showRouteOnMap()
                             }
-                            .padding(.horizontal)
+                        )
+                        .padding(.horizontal)
+                        if let error = routeSimulator.modeErrors[selectedMode] {
+                            Text(error).font(.caption).foregroundColor(.secondary).padding(.horizontal)
                         }
-                        
-                        // MARK: - Speed Multiplier
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Text("Speed")
-                                    .font(.headline)
-                                Spacer()
-                                Text("\(String(format: "%.1f", speedMultiplier))x (\(formattedSpeed))")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                            .padding(.horizontal)
-                            
-                            Slider(value: $speedMultiplier, in: 0.5...10.0, step: 0.5)
-                                .padding(.horizontal)
-                                .onChange(of: speedMultiplier) { _ in
-                                    routeSimulator.updateSpeedMultiplier(speedMultiplier)
-                                }
-                        }
-                        
+
                         // MARK: - Calculate Button
                                 Button(action: calculateRoute) {
                                     HStack {
@@ -173,7 +138,7 @@ struct RouteSimSheet: View {
 
                                 routePreview
 
-                                Text("Times use your simulation speed. Real traffic estimates are shown separately.")
+                                Text("Times use your simulation speed. Travel estimates are shown separately.")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                     .padding(.horizontal)
@@ -285,7 +250,6 @@ struct RouteSimSheet: View {
                     endCoord = draft.destination?.coordinate
                     endText = draft.destination?.name ?? ""
                     selectedMode = routeSimulator.travelMode
-                    speedMultiplier = routeSimulator.currentSpeedMultiplier
                     if draft.needsRecalculation && !routeSimulator.isSimulating {
                         invalidateRoute()
                         draft.needsRecalculation = false
@@ -297,7 +261,6 @@ struct RouteSimSheet: View {
                     startText = "Route Start"
                     endText = "Destination"
                     selectedMode = routeSimulator.travelMode
-                    speedMultiplier = routeSimulator.currentSpeedMultiplier
                     routeReady = true
                 } else if !routeSimulator.isSimulating {
                     useCurrentStart()
@@ -341,6 +304,10 @@ struct RouteSimSheet: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
             Text("Tap a numbered route to select it. A is the start; B is the destination.")
                 .font(.caption).foregroundColor(.secondary)
+            if selectedMode == .cycling {
+                Text("© [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) · [Routing](https://routing.openstreetmap.de/about.html) · [Fix the map](https://www.openstreetmap.org/fixthemap)")
+                    .font(.caption2).foregroundColor(.secondary)
+            }
         }
         .padding(.horizontal)
     }
@@ -353,7 +320,8 @@ struct RouteSimSheet: View {
             roadName: option.route.name,
             distance: option.distanceText,
             roadETA: option.trafficTimeText,
-            simulationETA: option.simulationTimeText(mode: selectedMode, speedMultiplier: speedMultiplier),
+            roadETALabel: option.route.trafficLabel,
+            simulationETA: option.simulationTimeText(speedKmh: routeSimulator.speedKmh(for: selectedMode)),
             speed: formattedSpeed,
             isSelected: routeSimulator.selectedRouteIndex == index,
             select: { routeSimulator.selectRoute(at: index) }
@@ -491,9 +459,7 @@ struct RouteSimSheet: View {
 
     // MARK: - Computed
     private var formattedSpeed: String {
-        let baseSpeed = selectedMode.speed * speedMultiplier
-        let kmh = baseSpeed * 3.6
-        return "\(Int(kmh)) km/h"
+        "\(Int(routeSimulator.speedKmh(for: selectedMode))) km/h"
     }
     
     // MARK: - Actions
@@ -532,10 +498,24 @@ struct RouteSimSheet: View {
         invalidateRoute()
     }
 
+    private func swapEndpoints() {
+        guard !waitingForCurrentStart, let start = startCoord, let end = endCoord else { return }
+        currentLocation.cancel()
+        draft.start = RoutePlace(name: startText, coordinate: start)
+        draft.destination = RoutePlace(name: endText, coordinate: end)
+        guard draft.swapEndpoints() else { return }
+        startCoord = draft.start?.coordinate
+        endCoord = draft.destination?.coordinate
+        startText = draft.start?.name ?? ""
+        endText = draft.destination?.name ?? ""
+        draft.needsRecalculation = false
+        calculateRoute()
+    }
+
     private func calculateRoute() {
         guard let start = startCoord, let end = endCoord else { return }
         
-        routeSimulator.calculateRoutes(from: start, to: end, mode: selectedMode, speedMult: speedMultiplier) { success, error in
+        routeSimulator.calculateRoutes(from: start, to: end, mode: selectedMode) { success, error in
             if success {
                 routeReady = true
                 showRouteOnMap()
@@ -571,6 +551,52 @@ struct RouteSimSheet: View {
     }
 }
 
+struct RouteModeControls: View {
+    let selectedMode: TravelMode
+    let duration: (TravelMode) -> String
+    @Binding var speedKmh: Double
+    let select: (TravelMode) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                ForEach(TravelMode.allCases, id: \.self) { mode in
+                    Button { select(mode) } label: {
+                        VStack(spacing: 6) {
+                            Image(systemName: mode.icon).font(.title2)
+                            Text(mode.rawValue).font(.caption)
+                            if !duration(mode).isEmpty {
+                                Text(duration(mode)).font(.subheadline.weight(.semibold)).monospacedDigit()
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(selectedMode == mode ? Color.accentColor.opacity(0.15) : Color(UIColor.secondarySystemBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(selectedMode == mode ? Color.accentColor : .clear, lineWidth: 2))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(selectedMode == mode ? .accentColor : .primary)
+                    .accessibilityAddTraits(selectedMode == mode ? [.isSelected] : [])
+                }
+            }
+            HStack {
+                Text("\(selectedMode.rawValue) speed").font(.headline)
+                Spacer()
+                Text("\(Int(speedKmh)) km/h").monospacedDigit()
+            }
+            HStack {
+                Button { speedKmh = max(1, speedKmh - 1) } label: { Image(systemName: "minus.circle.fill").font(.title2) }
+                    .accessibilityLabel("Decrease speed")
+                Slider(value: $speedKmh, in: 1...500, step: 1).accessibilityLabel("Speed in kilometres per hour")
+                Button { speedKmh = min(500, speedKmh + 1) } label: { Image(systemName: "plus.circle.fill").font(.title2) }
+                    .accessibilityLabel("Increase speed")
+            }
+            Text("Saved for \(selectedMode.rawValue.lowercased()) trips.").font(.caption).foregroundColor(.secondary)
+        }
+    }
+}
+
 // Shared by route setup and the isolated simulator visual check.
 struct RouteChoiceCard: View {
     let number: Int
@@ -578,6 +604,7 @@ struct RouteChoiceCard: View {
     let roadName: String
     let distance: String
     let roadETA: String
+    var roadETALabel: String = "Real traffic"
     let simulationETA: String
     let speed: String
     let isSelected: Bool
@@ -609,7 +636,7 @@ struct RouteChoiceCard: View {
                     }
                     Text("\(simulationETA) · \(distance)")
                         .font(.headline).foregroundColor(.primary)
-                    Text("At \(speed) · Real traffic: \(roadETA)")
+                    Text("At \(speed) · \(roadETALabel): \(roadETA)")
                         .font(.caption).foregroundColor(.secondary)
                 }
             }
@@ -622,7 +649,7 @@ struct RouteChoiceCard: View {
             .contentShape(RoundedRectangle(cornerRadius: 14))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Route \(number), \(name), \(simulationETA) at \(speed), \(distance). Real traffic: \(roadETA)")
+        .accessibilityLabel("Route \(number), \(name), \(simulationETA) at \(speed), \(distance). \(roadETALabel): \(roadETA)")
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
