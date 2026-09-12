@@ -43,7 +43,9 @@ Sharing candidate 4fbe7b9 pushed: extension renamed Andromeda, legacy storyboard
 
 ac8cdb3 builds and passes live addresses, production short-link resolution, parser and sharing tests in CI 34683402836; simulator steps pending. Inspected Settings and Talence search screenshots from verified 15e507b: neutral data credits are correct, but duplicate building pins appeared. Follow-up 427f2bd merges identical numbered-address names within 100 m (retains highest-ranked pin), preserves separately named businesses, and adds regression/pasted-location screenshot coverage.
 
-Exact next step: inspect CI for 427f2bd and the Share/Incoming/Pasted screenshots; fix any failures before marking item 5 complete. Items 6-10 remain untouched.
+427f2bd builds; CI 34683820596 found the new regression fixture used the generic priority 20 instead of the national provider priority 0, so it expected the wrong retained pin. Fixture correction dd350ed uses the production priority; the check still requires one highest-ranked building pin.
+
+Exact next step: inspect CI for dd350ed and the Share/Incoming/Pasted screenshots; fix any failures before marking item 5 complete. Items 6-10 remain untouched.
 
 Choices: debounce normal typing 650 ms; one Photon request per 1.25 seconds across pickers with a 128-query / 24-hour in-memory cache; five-decimal pasted coordinates; prefer a place pin over query coordinates, and use a camera center only as an approximate fallback after text lookup. Open Location Code adaptation has Apache-2.0 license and upstream test vectors. Data credits are a single About entry.
 
