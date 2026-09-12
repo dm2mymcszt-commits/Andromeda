@@ -14,7 +14,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 6. Simulation times and fastest-route ranking | done | `71cd400` - CI 34696753573 passed every check; route map/cards reviewed |
 | 7. Per-mode speeds, mode routes, and swap | done | `191ecf8` - CI 34697693135 passed every check; dark/light mode controls reviewed |
 | 8. Main-map route controls, seeking, and live speed | done | `b6a1244` - CI 34713045215 passed every check; expanded/collapsed playback reviewed |
-| 9. Finish actions and notifications | in progress | local preparation; no commit yet |
+| 9. Finish actions and notifications | in progress | `b4b2282` - CI 34714016327 running |
 | 10. Persistent automatic/custom altitude | not started | - |
 
 ## Items 1-3 verified
@@ -77,10 +77,10 @@ CI 34713045215 passed every check, including native build, motion/seek/live-spee
 
 Choices: advance every 250 ms using monotonic elapsed time; distance/bearing measured in WGS-84; freeze and inject zero speed while scrubbing; releasing preserves prior pause state; cancelled gestures resume without moving; elapsed means actual moving time (excluding pause/scrub), seeking does not fabricate elapsed time; live +/- controls change one km/h without saving mode defaults; VoiceOver adjusts progress by five percent.
 
-## Item 9 local preparation
+## Item 9 candidate
 
 Added RouteFinish.swift with six persisted actions, a WGS-84 saved destination, repeat/reverse leg state, and foreground/background local notifications. Settings uses the existing place picker; first route start requests notification permission before movement begins. Engine snapshots finish settings at trip start, uses the same finish path for natural arrival and seeking, preserves timer/background/location updates across repeated legs, reverses the same geometry, and carries delayed elapsed time across legs. Added policy, notification-count, reverse seek/speed, and persistence regressions.
 
-Exact next: finish item 8 validation, review/commit/push item 9, verify native build/tests and Settings screenshot. No item 10 implementation yet.
+Candidate b4b2282 reviewed, committed and pushed after item 8 passed completely. CI 34714016327 is running. Exact next: verify native build/tests and Settings screenshot, then mark item 9 done. Prepare item 10 locally while CI runs; do not commit it before item 9 verification.
 
 Choices: changing finish settings affects the next trip, stated in Settings; canceling a required Go-to-place picker keeps the previous option; reject starting an invalid Go-to-place configuration; loop/repeat notifications only on first arrival; elapsed resets for each leg; delayed repeat legs are counted without replaying every missed update; map shows the active leg with correctly oriented endpoints while running.
