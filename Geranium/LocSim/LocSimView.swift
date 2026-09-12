@@ -51,8 +51,8 @@ struct LocSimView: View {
                 // MARK: - Main Map
                 CustomMapView(tappedCoordinate: $tappedCoordinate, moveToRegion: $mapRegion,
                               routePolyline: routeSimulator.routePolyline,
-                              allRoutePolylines: routeSimulator.allRoutePolylines,
-                              selectedRouteIndex: routeSimulator.selectedRouteIndex,
+                              allRoutePolylines: routeSimulator.displayedPolylines,
+                              selectedRouteIndex: routeSimulator.isSimulating ? 0 : routeSimulator.selectedRouteIndex,
                               movingPosition: routeSimulator.currentPosition,
                               routeETAs: routeSimulator.simulatedRouteETAs,
                               allowsLocationSelection: tapMapToSetLocation,
@@ -115,6 +115,7 @@ struct LocSimView: View {
                     progress: routeSimulator.progress, elapsed: routeSimulator.elapsedTime,
                     remaining: routeSimulator.remainingTime, remainingDistance: routeSimulator.remainingDistance,
                     isPaused: routeSimulator.isPaused,
+                    legName: routeSimulator.legName,
                     speedKmh: Binding(get: { routeSimulator.currentSpeedKmh }, set: { routeSimulator.updateLiveSpeed($0) }),
                     collapsed: $routeControlsCollapsed,
                     preview: routeSimulator.previewSeek, seek: routeSimulator.seek,

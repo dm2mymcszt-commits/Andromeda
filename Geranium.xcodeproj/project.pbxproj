@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BDA110090000000000000001 /* RouteFinish.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110090000000000000002 /* RouteFinish.swift */; };
 		BDA110050000000000000305 /* CoordTransform.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = F82C58032E37786D00F76DFA /* CoordTransform.swift */; };
 		BDA110050000000000000304 /* PlaceSearch.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000042 /* PlaceSearch.swift */; };
 		BDA110050000000000000303 /* AddressQuery.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000032 /* AddressQuery.swift */; };
@@ -114,6 +115,7 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BDA110090000000000000002 /* RouteFinish.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteFinish.swift; sourceTree = "<group>"; };
 		BDA110050000000000000102 /* SharePlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/SharePlaceView.swift"; sourceTree = SOURCE_ROOT; };
 		BDA110050000000000000101 /* SharedPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/SharedPlace.swift"; sourceTree = SOURCE_ROOT; };
 		BBDA11005000000000000042 /* PlaceSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/PlaceSearch.swift"; sourceTree = SOURCE_ROOT; };
@@ -252,6 +254,7 @@
 				799488A72B347E2F00AFFDCF /* LocSimPrivateHeaders.h */,
 				7989FD022B347EEA00FBAB8D /* LocSimView.swift */,
 				F82C58052E37790000F76DFA /* RouteSimulator.swift */,
+				BDA110090000000000000002 /* RouteFinish.swift */,
 				F82C58072E37790100F76DFA /* RouteSimView.swift */,
 				BDA080010000000000000002 /* RouteLocationPicker.swift */,
 			);
@@ -556,6 +559,7 @@
 				FAA456D52B265FEA00FC7287 /* GeraniumApp.swift in Sources */,
 				79BA958A2B30D91600380D83 /* RootHelperMan.swift in Sources */,
 				F82C58062E37790000F76DFA /* RouteSimulator.swift in Sources */,
+				BDA110090000000000000001 /* RouteFinish.swift in Sources */,
 				F82C58082E37790100F76DFA /* RouteSimView.swift in Sources */,
 				BDA110050000000000000201 /* SharedPlace.swift in Sources */,
 				BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */,

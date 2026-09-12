@@ -336,6 +336,11 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var progress: Double = 0.0
     @Published var isCalculatingRoute: Bool = false
     @Published var travelMode: TravelMode = .driving
+    @Published private var finishState = RouteFinishState(action: .stay)
+    @Published private(set) var startError: String?
+    private var finishDestination: RouteFinishDestination?
+    var legName: String { finishState.legName }
+    var displayedPolylines: [MKPolyline] { isSimulating ? routePolyline.map { [$0] } ?? [] : allRoutePolylines }
     
     @Published var availableRoutes: [RouteOption] = []
     @Published var allRoutePolylines: [MKPolyline] = []
@@ -368,7 +373,10 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     var currentSpeedKmh: Double { isSimulating ? (journey?.speedKmh ?? speeds[travelMode]) : speeds[travelMode] }
     func modeDuration(_ mode: TravelMode) -> String? { modeCache.duration(for: mode, kmh: speeds[mode]) }
     var simulatedRouteETAs: [String] {
-        availableRoutes.map { $0.simulationTimeText(speedKmh: currentSpeedKmh) }
+        if isSimulating, let journey = journey {
+            return [RouteSimulationMath.durationText(journey.track.length / (currentSpeedKmh / 3.6))]
+        }
+        return availableRoutes.map { $0.simulationTimeText(speedKmh: currentSpeedKmh) }
     }
     private let updateInterval: TimeInterval = 0.25
     private var pendingDirections: [TravelMode: MKDirections] = [:]
@@ -503,6 +511,14 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func startSimulation(altitude: Double = 0.0) {
         guard !isSimulating, let track = track else { return }
+        let settings = RouteFinishSettings.shared
+        startError = nil
+        guard settings.action != .goToPlace || settings.destination != nil else {
+            startError = "Choose an after-route place in Settings before starting."
+            return
+        }
+        finishState = RouteFinishState(action: settings.action)
+        finishDestination = settings.destination
         timer?.invalidate()
         self.altitude = altitude
         journey = RouteJourney(track: track, speedKmh: speeds[travelMode])
@@ -553,12 +569,13 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
 
     func previewSeek(_ fraction: Double) {
-        guard isSimulating, fraction.isFinite, let journey = journey else { return }
+        guard isSimulating, fraction.isFinite else { return }
         let beginning = !isSeeking
         if beginning {
             advanceRoute()
             guard isSimulating else { return }
         }
+        guard let journey = journey else { return }
         seekFraction = min(1, max(0, fraction))
         lastTick = nil
         let point = journey.track.position(at: min(1, max(0, fraction)) * journey.track.length)
@@ -603,13 +620,54 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     private func advanceRoute() {
         guard isSimulating, !isPaused, !isSeeking else { return }
         let now = ProcessInfo.processInfo.systemUptime
-        if let previous = lastTick { journey?.advance(seconds: max(0, now - previous)) }
+        var seconds = lastTick.map { max(0, now - $0) } ?? 0
         lastTick = now
-        updateLocation()
-        if journey?.isFinished == true { finishRoute() }
+        while isSimulating {
+            let remaining = journey?.remainingSeconds ?? 0
+            journey?.advance(seconds: seconds)
+            updateLocation()
+            guard journey?.isFinished == true else { break }
+            seconds = max(0, seconds - remaining)
+            finishRoute()
+            guard isSimulating, !isPaused, !isSeeking, seconds > 0 else { break }
+            // A delayed background tick may span many very short repeated legs.
+            // Skip their elapsed time arithmetically without a notification flood.
+            if finishState.action == .loop || finishState.action == .backAndForth,
+               let journey = journey, journey.remainingSeconds > 0 {
+                let count = Int(min(Double(Int.max / 2), floor(seconds / journey.remainingSeconds)))
+                if count > 0 {
+                    finishState.skipRepeatedLegs(count)
+                    seconds -= Double(count) * journey.remainingSeconds
+                    let next = finishState.returning ? RouteTrack(coordinates: Array(track!.coordinates.reversed()))! : track!
+                    beginLeg(next, speedKmh: journey.speedKmh)
+                }
+            }
+        }
     }
 
     private func finishRoute() {
+        let transition = finishState.arrive()
+        if let message = transition.notification { RouteNotifications.shared.complete(message) }
+        switch transition.effect {
+        case .restart:
+            if let track = track { beginLeg(track, speedKmh: currentSpeedKmh) }
+            return
+        case .reverse:
+            if let journey = journey, let reversed = RouteTrack(coordinates: Array(journey.track.coordinates.reversed())) {
+                beginLeg(reversed, speedKmh: journey.speedKmh)
+            }
+            return
+        case .stop:
+            stopSimulation()
+            return
+        case .goToPlace:
+            if let destination = finishDestination {
+                currentPosition = CoordTransform.wgs84ToGcj02(destination.coordinate)
+                LocSimManager.startLocSim(location: RouteLocationSample.make(coordinate: destination.coordinate,
+                    altitude: altitude, course: 0, speed: 0, timestamp: Date()))
+            }
+        case .hold: break
+        }
         // The final sample has already published exact destination and zero speed.
         timer?.invalidate()
         timer = nil
@@ -621,6 +679,21 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         progress = 1
         endBackgroundTask()
         locationManager.stopUpdatingLocation()
+    }
+
+    private func beginLeg(_ track: RouteTrack, speedKmh: Double) {
+        journey = RouteJourney(track: track, speedKmh: speedKmh)
+        let coords = track.coordinates.map(CoordTransform.wgs84ToGcj02)
+        routePolyline = MKPolyline(coordinates: coords, count: coords.count)
+        // Keep the same timer, background task and location updates across legs.
+        updateLocation()
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        // Location delivery also advances time if iOS delayed a timer while locked.
+        // Ignore the immediate echo of our own injected sample.
+        guard let lastTick = lastTick, ProcessInfo.processInfo.systemUptime - lastTick >= updateInterval else { return }
+        advanceRoute()
     }
 
     private func updateLocation() {

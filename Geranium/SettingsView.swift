@@ -8,6 +8,10 @@ struct SettingsView: View {
     @AppStorage("mapHaptics") private var mapHaptics = true
     @AppStorage("tapMapToSetLocation") private var tapMapToSetLocation = false
     @AppStorage("askBeforeMoving") private var askBeforeMoving = true
+    @ObservedObject private var finishSettings = RouteFinishSettings.shared
+    @StateObject private var recentPlaces = RouteRecentPlaces()
+    @State private var showFinishPlacePicker = false
+    @State private var selectGoAfterPicking = false
 
     var body: some View {
         NavigationView {
@@ -36,6 +40,32 @@ struct SettingsView: View {
                 } header: { Text("Location") } footer: {
                     Text("Allow location access to use Current Location. Route simulation can continue while this settings panel is open.")
                 }
+                Section("When a route finishes") {
+                    Picker("Action", selection: Binding(get: { finishSettings.action }, set: { action in
+                        if action == .goToPlace && finishSettings.destination == nil {
+                            selectGoAfterPicking = true
+                            showFinishPlacePicker = true
+                        } else { finishSettings.action = action }
+                    })) {
+                        ForEach(RouteFinishAction.allCases) { action in Text(action.title).tag(action) }
+                    }
+                    if finishSettings.action == .goToPlace {
+                        Button {
+                            selectGoAfterPicking = false
+                            showFinishPlacePicker = true
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(finishSettings.destination?.name ?? "Choose a place")
+                                if let destination = finishSettings.destination {
+                                    Text(destination.address.isEmpty ? String(format: "%.5f, %.5f", destination.latitude, destination.longitude) : destination.address)
+                                        .font(.caption).foregroundColor(.secondary)
+                                }
+                            }
+                        }
+                    }
+                    Text("Applies to the next route. Notifications are requested when you first start a route.")
+                        .font(.caption).foregroundColor(.secondary)
+                }
                 Section("About") {
                     HStack {
                         Text("Andromeda")
@@ -53,6 +83,16 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .sheet(isPresented: $showFinishPlacePicker) {
+                RouteLocationPicker(title: "After the route", region: nil,
+                    selectedCoordinate: finishSettings.destination.map { CoordTransform.wgs84ToGcj02($0.coordinate) },
+                    recents: recentPlaces, select: { place in
+                        finishSettings.destination = RouteFinishDestination(name: place.name, address: place.address,
+                            coordinate: CoordTransform.gcj02ToWgs84(place.coordinate))
+                        recentPlaces.remember(place)
+                        if selectGoAfterPicking { finishSettings.action = .goToPlace }
+                    })
+            }
         }
     }
 }

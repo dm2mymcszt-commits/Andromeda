@@ -121,3 +121,51 @@ do {
     fatalError("NoRoute must be reported, not replaced by walking")
 } catch {}
 print("PASS: per-mode speed persistence/range, independent route cache, bicycle provider decoding")
+
+for (action, expected) in [(RouteFinishAction.stay, RouteFinishEffect.hold), (.goToPlace, .goToPlace), (.stop, .stop)] {
+    var finish = RouteFinishState(action: action)
+    let arrival = finish.arrive()
+    require(arrival.effect == expected && arrival.notification != nil, "Single arrival action and notification")
+}
+var loop = RouteFinishState(action: .loop)
+require(loop.legName == "Lap 1", "Initial lap label")
+for leg in 1...10 {
+    let arrival = loop.arrive()
+    require(arrival.effect == .restart && (arrival.notification != nil) == (leg == 1), "Loop notifies only on its first arrival")
+}
+require(loop.legName == "Lap 11", "Loop progress identifies the current lap")
+var returnTrip = RouteFinishState(action: .returnOnce)
+require(returnTrip.arrive().effect == .reverse && returnTrip.legName == "Returning to start", "Return trip uses a reverse leg")
+let home = returnTrip.arrive()
+require(home.effect == .hold && home.notification == "Staying at the start", "Return trip notifies again and stays at its start")
+var repeated = RouteFinishState(action: .backAndForth)
+for leg in 1...6 {
+    let arrival = repeated.arrive()
+    require(arrival.effect == .reverse && repeated.returning == (leg % 2 == 1), "Repeated trips alternate directions")
+    require((arrival.notification != nil) == (leg == 1), "Repeated trips do not notify every leg")
+}
+repeated.skipRepeatedLegs(10_001)
+require(repeated.completedLegs == 10_007 && repeated.returning, "Delayed background tick preserves repeated-leg count and direction")
+loop.skipRepeatedLegs(10_000)
+require(loop.legName == "Lap 10011", "Delayed loop tick preserves lap count")
+
+let reverseTrack = RouteTrack(coordinates: Array(track.coordinates.reversed()))!
+var reverseJourney = RouteJourney(track: reverseTrack, speedKmh: 120)
+require(near(reverseJourney.track.length, track.length), "Reverse uses the same path length")
+require(near(reverseJourney.motion(paused: false).course, 270), "Reverse bearing points toward the original start")
+reverseJourney.seek(0.46)
+require(near(RouteSimulationMath.distance(reverseJourney.motion(paused: false).coordinate, coordinate(54)), 0), "Seeking works within the reversed leg")
+reverseJourney.changeSpeed(500)
+require(near(reverseJourney.motion(paused: false).speed, 500 / 3.6), "Reverse leg uses live speed metadata")
+require(RouteSpeeds(defaults: defaults)[.driving] == 120, "Live leg speed must not overwrite saved mode speed")
+reverseJourney.seek(1)
+require(reverseJourney.motion(paused: false).speed == 0 && near(RouteSimulationMath.distance(reverseJourney.motion(paused: false).coordinate, coordinate(0)), 0), "Reverse arrival holds the exact original start")
+
+let finishSettings = RouteFinishSettings(defaults: defaults)
+require(finishSettings.action == .stay && finishSettings.destination == nil, "Default finish behavior")
+finishSettings.destination = RouteFinishDestination(name: "Saved end place", address: "Test address",
+    coordinate: CLLocationCoordinate2D(latitude: 39.9087, longitude: 116.3975))
+finishSettings.action = .goToPlace
+let restoredFinish = RouteFinishSettings(defaults: defaults)
+require(restoredFinish.action == .goToPlace && restoredFinish.destination?.longitude == 116.3975, "Finish action and WGS-84 place survive relaunch")
+print("PASS: six finish actions, repeat notification counts, reverse path/speed/seek, saved finish destination")

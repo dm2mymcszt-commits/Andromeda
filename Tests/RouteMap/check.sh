@@ -20,7 +20,7 @@ PREVIEW_APP="$QA_DIR/RouteMapPreview.app"
 mkdir -p "$PREVIEW_APP"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
-  Geranium/LocSim/CustomMapView.swift Geranium/LocSim/CoordTransform.swift Geranium/LocSim/FloatingQuickMenu.swift "$QA_DIR/RouteChoiceCard.swift" "$QA_DIR/RouteModels.swift" Tests/RouteMap/Preview.swift \
+  Geranium/LocSim/CustomMapView.swift Geranium/LocSim/CoordTransform.swift Geranium/LocSim/RouteFinish.swift Geranium/LocSim/FloatingQuickMenu.swift "$QA_DIR/RouteChoiceCard.swift" "$QA_DIR/RouteModels.swift" Tests/RouteMap/Preview.swift \
   -o "$PREVIEW_APP/RouteMapPreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'
 import plistlib, sys

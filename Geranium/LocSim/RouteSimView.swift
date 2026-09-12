@@ -24,6 +24,7 @@ struct RouteSimSheet: View {
     @State private var didInitializeStart = false
     @State private var routeReady: Bool = false
     @State private var showGPXPicker: Bool = false
+    @State private var isStarting = false
     
     enum ActiveField: String, Identifiable {
         case start, end
@@ -168,7 +169,7 @@ struct RouteSimSheet: View {
                     }
                 }
                 .padding(.vertical)
-                .disabled(routeSimulator.isCalculatingRoute)
+                .disabled(routeSimulator.isCalculatingRoute || isStarting)
             }
             .navigationTitle("Andromeda Navigation")
             .navigationBarTitleDisplayMode(.inline)
@@ -337,7 +338,7 @@ struct RouteSimSheet: View {
                 HStack {
                     Image(systemName: selectedMode.icon)
                         .foregroundColor(.accentColor)
-                    Text("Route in Progress")
+                    Text(routeSimulator.legName)
                         .font(.headline)
                     Spacer()
                     Text("\(Int(routeSimulator.progress * 100))%")
@@ -537,17 +538,20 @@ struct RouteSimSheet: View {
     }
     
     private func startRoute() {
-        guard routeReady && !routeSimulator.availableRoutes.isEmpty else { return }
-        routeSimulator.startSimulation(altitude: 0.0)
-        guard routeSimulator.isSimulating else { return }
-        isPresented = false
-
-        AlertKitAPI.present(
-            title: "Route Started!",
-            icon: .done,
-            style: .iOS17AppleMusic,
-            haptic: .success
-        )
+        guard !isStarting, routeReady, !routeSimulator.availableRoutes.isEmpty else { return }
+        isStarting = true
+        Task { @MainActor in
+            await RouteNotifications.shared.requestPermissionIfNeeded()
+            isStarting = false
+            guard isPresented, routeReady, !routeSimulator.availableRoutes.isEmpty else { return }
+            routeSimulator.startSimulation(altitude: 0.0)
+            guard routeSimulator.isSimulating else {
+                UIApplication.shared.alert(body: routeSimulator.startError ?? "Unable to start this route.")
+                return
+            }
+            isPresented = false
+            AlertKitAPI.present(title: "Route Started!", icon: .done, style: .iOS17AppleMusic, haptic: .success)
+        }
     }
 }
 
@@ -621,9 +625,10 @@ struct RoutePlaybackPanel: View {
                 Button { collapsed.toggle() } label: {
                     Image(systemName: collapsed ? "chevron.up" : "chevron.down")
                 }.accessibilityLabel(collapsed ? "Expand route controls" : "Collapse route controls")
-                Text(collapsed ? "\(Int(progress * 100))% · \(remaining) left" : legName)
+                Text(legName)
                     .font(.subheadline.weight(.semibold)).lineLimit(1)
                 Spacer(minLength: 0)
+                if collapsed { Text("\(Int(progress * 100))%").font(.caption).monospacedDigit() }
                 Button(action: pause) { Image(systemName: isPaused ? "play.fill" : "pause.fill") }
                     .accessibilityLabel(isPaused ? "Resume route" : "Pause route")
                 Button(action: stop) { Image(systemName: "stop.fill") }.accessibilityLabel("Stop simulation")
