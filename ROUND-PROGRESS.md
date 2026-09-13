@@ -8,6 +8,7 @@
 - Next step: run exact-head Phase 0 CI and publish audit/approval questions; then begin Phase 1 items that do not depend on unanswered approvals.
 - User instruction: persist every audit step so usage-limit interruptions cannot lose findings.
 - Latest verified existing CI: [34745274343](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34745274343), success, application source `e878442`. Later baseline commits only changed Markdown.
+- Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), dispatched on `f2c2a4256ca6782cf904dad0dd607f109fdb6896`; running. All six audit steps are pushed. Approval questions for 0.5 removals, exact R2 operations and return-leg destination were posted in chat; no answer received yet.
 - CI currently ignores Markdown-only pushes. Phase 0 must remain documentation only; manually dispatch the workflow for the completed audit to verify the exact documentation commit without changing application code.
 - Commits: `30cbf19` saved plan and checklist, pushed. Each following audit commit records the preceding hash (a commit cannot contain its own hash).
 
@@ -845,3 +846,31 @@ git remote set-url origin https://github.com/dm2mymcszt-commits/TrollRoute.git
 ```
 
 Execute sequentially with exit-status checks, stop on failure, record partial completion before any retry. Update source/documentation links after rename. Keep original upstream credit links. Delete no releases (none exist). `main` remains at its existing commit. The --yes CLI flag will only be used after the owner's explicit chat approval of this command list.
+
+### Audit acceptance checkpoint
+
+- Architecture/approval commands saved and pushed as `f2c2a42`.
+- All six audit findings are committed; app behavior, project, entitlement and workflow files are byte-for-byte unchanged from `546ffb2`.
+- Plan and progress plus per-step findings have been posted to the owner. Entitlement and repository questions remain pending; future icon approval is separate.
+- Manually dispatched CI run 34759000421 for f2c2a42 (docs-only push does not trigger the existing workflow). Build running; do not claim green until it finishes.
+- Inspected the previously delivered local .tipa, SHA256 `14b26e84a91c2c923e83cd3b76fada74ea19524c1c844b45e52a1a08b0188334`: one embedded share extension, display name Andromeda, ID com.son3ra1n.andromeda.bookmark. This package does not embed a second Geranium share extension. Cannot identify another installed app or cached action registration remotely.
+- Additional risk to verify before applying the proposed no-container removal: changing container policy must not hide preferences written during Phase 1. Test both old global preferences and data-container locations; retain/migrate the new app's own data consistently. If reliable migration cannot be demonstrated, pause that removal and report it, without changing the old app's files.
+
+Tag references recorded for exact-scope review (no changes made):
+
+| Tag | Object SHA |
+|---|---|
+| 1.0 | d2d19e9edb2f36ad719fbae4692256987dba1251 |
+| 1.0-RC1 | 8b6acab95bf7ff190120fc688b43a56f0ff092bc |
+| 1.0-RC2 | 8a79b7fd2ea94e7f3e142afefd2209d1f2014e1b |
+| 1.0.1 | 1a91f45ded7605132faab545f509a891009d746a |
+| 1.0.2 | 04ada6cf8bd79ea50d15f54be85eb70b32f0fdf1 |
+| 1.0.3 | b7758ab79a19f14af077c42a626449a4e75757c3 |
+| 1.0.4 | 8fb40b0f45db3f00bd0591bdc357a5ca2e770f54 |
+| 1.1 | d791091c634a7c43ee07128da376a09f380cd775 |
+| 1.1.1 | 92626e3c45676dedaba7693ed3a62a624816edf6 |
+| 1.1.2 | 7f35ff8e0ac19939fbf90b254e104d339b001696 |
+| 1.1.3 | cbcadde9c6e217e989f2a9b212ac7460f8190417 |
+| v2.5.0 | ece06a7a9cf1a29fd2f904ac9823d7f35c5e93f2 |
+| v2.5.1 | ad335e5b5739ce6726425a3f2fe7f225b593d392 |
+| v2.5.2 | ad7a9413551f6a5a0f6504f8ea43dbec6290a189 |
