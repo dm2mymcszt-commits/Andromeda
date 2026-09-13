@@ -30,10 +30,10 @@
 | 0.5 entitlement audit | Done, approved | `c3ba6b9`, approval `575d61d` |
 | 0.6 architecture | Done | `f2c2a42`; migration detail `bcab51e` |
 | 0 acceptance | Done | Audit posted; CI 34759000421 SUCCESS; source unchanged by subsequent documentation commits |
-| 1 R1 identity + import | In progress | Naming step prepared: project/targets/IDs/UI/docs/UA, 3.0.0 (5); local identity tests pass; CI pending. Import remains next |
+| 1 R1 identity + import | In progress | Naming pushed `db74fc5`: package + model/live checks passed in CI 34777564932; final previews pending. Read-only import, launch summary, stable group settings and fixtures now prepared (build 6); next push for CI |
 | 1 R2 repository | Done, `674ee30` | Approved operations executed; verified zero tags/releases; main still bc1e1d3; origin updated |
 | 1 R4 icon | Not started | Save reference; deterministic vector layers/render; comparison in chat+CI; wait for approval |
-| 1 F6 data credits | Implemented, CI pending | Generic About line links exact notices; no country-specific feature labels |
+| 1 F6 data credits | Implemented, CI pending | `db74fc5`: generic About line links exact notices; package compiled; preview CI pending |
 | 1 acceptance | Not started | New .tipa IDs/signing; migration tests; icon comparison; no Release |
 | 2 R3 foundation | Not started | Approved cleanup, shared LocationSession, previous spoof snapshot; preserve checkSandbox |
 | 2 F2 injection | Not started | Separate commit; adapter cadence/coalescing/timezone tests and phone check |

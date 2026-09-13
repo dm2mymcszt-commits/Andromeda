@@ -22,7 +22,7 @@ final class AltitudeSettings: ObservableObject {
     @Published private(set) var profile: AltitudeProfile {
         didSet { defaults.set(try? JSONEncoder().encode(profile), forKey: "altitudeProfile") }
     }
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = SharedPreferences.defaults) {
         self.defaults = defaults
         let saved = defaults.data(forKey: "altitudeProfile").flatMap {
             try? JSONDecoder().decode(AltitudeProfile.self, from: $0)
@@ -74,7 +74,7 @@ final class AltitudeController: ObservableObject {
     private let defaults: UserDefaults
     private var nextLookup: Date
 
-    init(settings: AltitudeSettings = .shared, defaults: UserDefaults = .standard,
+    init(settings: AltitudeSettings = .shared, defaults: UserDefaults = SharedPreferences.defaults,
          interval: TimeInterval = 10,
          lookup: @escaping (CLLocationCoordinate2D) async -> Double? = ElevationLookup.fetch,
          deliver: @escaping (CLLocation) -> Void) {

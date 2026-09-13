@@ -53,6 +53,9 @@ jobs:
           unzip -t build/TrollRoute.tipa
           python3 Tests/Identity/check.py build/TrollRoute.tipa
 
+      - name: Check read-only data migration
+        run: bash Tests/Migration/check.sh
+
       - name: Check simulated motion metadata
         run: bash Tests/RouteMotion/check-location.sh
 

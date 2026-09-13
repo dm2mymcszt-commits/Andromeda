@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>routeFinishAction</key>
+	<string>returnOnce</string>
+	<key>routeFinishDestination</key>
+	<data>
+	eyJuYW1lIjogIlNoYW5naGFpIFdHUyBwb2ludCIsICJhZGRyZXNzIjogIldHUyBmaXh0
+	dXJlIiwgImxhdGl0dWRlIjogMzEuMjMwNCwgImxvbmdpdHVkZSI6IDEyMS40NzM3fQ==
+	</data>
+	<key>routeRecentPlaces.v1</key>
+	<data>
+	W3siaWQiOiAiQTIwMDAwMDAtMDAwMC00MDAwLTgwMDAtMDAwMDAwMDAwMDAxIiwgIm5h
+	bWUiOiAiU2hhbmdoYWkgbWFwIHBvaW50IiwgImFkZHJlc3MiOiAiTWFwLWNvb3JkaW5h
+	dGUgZml4dHVyZSIsICJsYXRpdHVkZSI6IDMxLjIzNjEsICJsb25naXR1ZGUiOiAxMjEu
+	NDc4NSwgImFwcHJveGltYXRlIjogZmFsc2V9LCB7ImlkIjogIkEyMDAwMDAwLTAwMDAt
+	NDAwMC04MDAwLTAwMDAwMDAwMDAwMiIsICJuYW1lIjogIlRhbGVuY2UiLCAiYWRkcmVz
+	cyI6ICIxMjUgQ3IgR2FtYmV0dGEiLCAibGF0aXR1ZGUiOiA0NC44MTcwNTksICJsb25n
+	aXR1ZGUiOiAtMC41ODU3NDYsICJhcHByb3hpbWF0ZSI6IHRydWV9XQ==
+	</data>
+	<key>routeSpeedKmh.walking</key>
+	<real>5.0</real>
+	<key>routeSpeedKmh.cycling</key>
+	<real>20.0</real>
+	<key>routeSpeedKmh.driving</key>
+	<real>75.0</real>
+	<key>altitudeProfile</key>
+	<data>
+	eyJtb2RlIjogImN1c3RvbSIsICJjdXN0b21NZXRlcnMiOiAtMTIuNX0=
+	</data>
+	<key>mapAppearance</key>
+	<string>light</string>
+	<key>mapStyle</key>
+	<string>hybrid</string>
+	<key>mapButtonLabels</key>
+	<false/>
+	<key>mapHaptics</key>
+	<true/>
+	<key>tapMapToSetLocation</key>
+	<false/>
+	<key>askBeforeMoving</key>
+	<true/>
+	<key>TSBypass</key>
+	<true/>
+	<key>obsoleteFeature</key>
+	<string>do not import</string>
+</dict>
+</plist>

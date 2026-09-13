@@ -15,11 +15,11 @@ struct LocSimView: View {
     @State private var incomingPlace: SharedPlaceRequest?
     @State private var openSharedRoute = false
     @State private var sharedPlaceError: String?
-    @AppStorage("mapStyle") private var mapStyle = "standard"
-    @AppStorage("mapButtonLabels") private var mapButtonLabels = true
+    @AppStorage("mapStyle", store: SharedPreferences.defaults) private var mapStyle = "standard"
+    @AppStorage("mapButtonLabels", store: SharedPreferences.defaults) private var mapButtonLabels = true
     @State private var routeControlsCollapsed = false
-    @AppStorage("tapMapToSetLocation") private var tapMapToSetLocation = false
-    @AppStorage("askBeforeMoving") private var askBeforeMoving = true
+    @AppStorage("tapMapToSetLocation", store: SharedPreferences.defaults) private var tapMapToSetLocation = false
+    @AppStorage("askBeforeMoving", store: SharedPreferences.defaults) private var askBeforeMoving = true
     @StateObject private var mapMove = MapMoveController()
     @StateObject private var routeSimulator = RouteSimulator()
     

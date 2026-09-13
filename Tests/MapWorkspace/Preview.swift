@@ -24,9 +24,9 @@ struct WorkspacePreview: View {
         return {}
     })
     @StateObject private var places = RouteRecentPlaces()
-    @AppStorage("mapStyle") private var mapStyle = "standard"
-    @AppStorage("tapMapToSetLocation") private var tapEnabled = false
-    @AppStorage("askBeforeMoving") private var askBeforeMoving = true
+    @AppStorage("mapStyle", store: SharedPreferences.defaults) private var mapStyle = "standard"
+    @AppStorage("tapMapToSetLocation", store: SharedPreferences.defaults) private var tapEnabled = false
+    @AppStorage("askBeforeMoving", store: SharedPreferences.defaults) private var askBeforeMoving = true
     let screen: String
     let appearance: String
 

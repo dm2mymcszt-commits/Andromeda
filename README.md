@@ -8,7 +8,7 @@ Requires iOS 15.0 or later on a version supported by [TrollStore](https://github
 
 Use the successful [GitHub Actions build](https://github.com/dm2mymcszt-commits/TrollRoute/actions/workflows/trollstore.yml) on `experiment/route-motion`. Download `TrollRoute-<version>-<commit>`, extract `TrollRoute.tipa`, and install through TrollStore's **+** button.
 
-The new bundle ID installs alongside Andromeda. This rework is in progress: keep Andromeda and its data until the one-time import has completed successfully. The new icon also awaits approval.
+The new bundle ID installs alongside Andromeda. This rework is in progress: the first launch imports saved places and settings read-only. Keep Andromeda and its data until that import completes successfully and you have checked the values. The new icon also awaits approval.
 
 Builds use macOS 15 and Xcode 16.4 through `ipabuild.sh`; the workflow runs model tests, live search checks and simulator previews. See [BUILD-TROLLSTORE.md](BUILD-TROLLSTORE.md) for verification and installation notes.
 

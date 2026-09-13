@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @AppStorage("mapAppearance") private var appearance = "system"
+    @AppStorage("mapAppearance", store: SharedPreferences.defaults) private var appearance = "system"
     var body: some View {
         LocSimView()
             .tint(.indigo)

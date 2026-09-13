@@ -65,7 +65,7 @@ final class RouteRecentPlaces: ObservableObject {
     private let defaults: UserDefaults
     private let key = "routeRecentPlaces.v1"
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = SharedPreferences.defaults) {
         self.defaults = defaults
         places = defaults.data(forKey: key)
             .flatMap { try? JSONDecoder().decode([RoutePlace].self, from: $0) } ?? []

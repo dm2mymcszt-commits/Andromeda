@@ -162,7 +162,7 @@ struct RouteSpeeds {
     private var values: [TravelMode: Double] = [:]
     private let defaults: UserDefaults
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = SharedPreferences.defaults) {
         self.defaults = defaults
         for mode in TravelMode.allCases {
             let saved = defaults.double(forKey: Self.key(mode))

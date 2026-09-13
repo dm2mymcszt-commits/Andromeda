@@ -8,9 +8,12 @@
 import SwiftUI
 @main
 struct TrollRouteApp: App {
+    var body: some Scene { WindowGroup { MigrationLaunchView() } }
+}
+
+struct ReadyAppView: View {
     @StateObject private var appSettings = AppSettings()
-    var body: some Scene {
-        WindowGroup {
+    var body: some View {
             ContentView()
                 .onAppear {
                     if checkSandbox(), !appSettings.tsBypass, !appSettings.isFirstRun {
@@ -29,18 +32,17 @@ struct TrollRouteApp: App {
                         }
                     }
                 }
-        }
     }
 }
 
 class AppSettings: ObservableObject {
-    @AppStorage("TSBypass") var tsBypass = false
-    @AppStorage("isFirstRun") var isFirstRun = true
-    @AppStorage("languageCode") var languageCode = ""
-    @AppStorage("mapAppearance") var mapAppearance = "system"
-    @AppStorage("mapStyle") var mapStyle = "standard"
-    @AppStorage("mapButtonLabels") var mapButtonLabels = true
-    @AppStorage("mapHaptics") var mapHaptics = true
+    @AppStorage("TSBypass", store: SharedPreferences.defaults) var tsBypass = false
+    @AppStorage("isFirstRun", store: SharedPreferences.defaults) var isFirstRun = true
+    @AppStorage("languageCode", store: SharedPreferences.defaults) var languageCode = ""
+    @AppStorage("mapAppearance", store: SharedPreferences.defaults) var mapAppearance = "system"
+    @AppStorage("mapStyle", store: SharedPreferences.defaults) var mapStyle = "standard"
+    @AppStorage("mapButtonLabels", store: SharedPreferences.defaults) var mapButtonLabels = true
+    @AppStorage("mapHaptics", store: SharedPreferences.defaults) var mapHaptics = true
 }
 
 var langaugee: String = {

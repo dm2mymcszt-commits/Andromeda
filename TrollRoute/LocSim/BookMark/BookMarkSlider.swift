@@ -22,7 +22,7 @@ struct BookMarkSlider: View {
     @Binding var long: Double
     @State private var name = ""
     @State private var result: Bool = false
-    @AppStorage("isMika") var isMika: Bool = false
+    @AppStorage("isMika", store: SharedPreferences.defaults) var isMika: Bool = false
     @State private var bookmarks: [Bookmark] = BookMarkRetrieve().compactMap { dict in
         guard let name = dict["name"] as? String,
               let lat = dict["lat"] as? Double,

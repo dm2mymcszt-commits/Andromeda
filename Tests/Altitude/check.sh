@@ -15,7 +15,7 @@ for path in ['LocSimView.swift', 'RouteSimulator.swift', 'RouteSimView.swift', '
     assert 'altitude: 0' not in text and 'Double(altitude)' not in text, path
 print('PASS: all location entry paths use the shared altitude injection layer')
 PY
-xcrun swiftc -parse-as-library TrollRoute/LocSim/Altitude.swift "$QA_DIR/RouteLocationSample.swift" Tests/Altitude/main.swift -o "$QA_DIR/altitude-tests"
+xcrun swiftc TrollRoute/Storage/SharedPreferences.swift -parse-as-library TrollRoute/LocSim/Altitude.swift "$QA_DIR/RouteLocationSample.swift" Tests/Altitude/main.swift -o "$QA_DIR/altitude-tests"
 "$QA_DIR/altitude-tests"
-xcrun swiftc TrollRoute/LocSim/Altitude.swift Tests/Altitude/LiveElevation.swift -o "$QA_DIR/elevation-live"
+xcrun swiftc TrollRoute/Storage/SharedPreferences.swift TrollRoute/LocSim/Altitude.swift Tests/Altitude/LiveElevation.swift -o "$QA_DIR/elevation-live"
 "$QA_DIR/elevation-live"

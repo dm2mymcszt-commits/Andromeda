@@ -7,3 +7,5 @@
 
 #import "LocSim/LocSimPrivateHeaders.h"
 #import "TSUtil.h"
+
+#import "Storage/LegacyLocations.h"

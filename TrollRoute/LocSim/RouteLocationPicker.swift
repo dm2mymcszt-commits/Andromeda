@@ -168,7 +168,7 @@ struct RouteMapPicker: View {
 
 // This map only selects a coordinate. It never starts or changes location simulation.
 private struct RouteSelectionMap: UIViewRepresentable {
-    @AppStorage("mapStyle") private var mapStyle = "standard"
+    @AppStorage("mapStyle", store: SharedPreferences.defaults) private var mapStyle = "standard"
     let region: MKCoordinateRegion?
     let selectedCoordinate: CLLocationCoordinate2D?
     @Binding var point: EquatableCoordinate?

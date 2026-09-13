@@ -19,7 +19,7 @@ PY
 PREVIEW_APP="$QA_DIR/MapWorkspacePreview.app"
 mkdir -p "$PREVIEW_APP"
 python3 Tests/RoutePicker/bookmark-support.py "$QA_DIR/Bookmarks.swift"
-xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
+xcrun --sdk iphonesimulator swiftc TrollRoute/Storage/SharedPreferences.swift -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
   TrollRoute/LocSim/CustomMapView.swift TrollRoute/LocSim/FloatingQuickMenu.swift \
   TrollRoute/LocSim/RouteLocationPicker.swift TrollRoute/LocSim/PlaceModels.swift TrollRoute/LocSim/PlaceInput.swift TrollRoute/LocSim/AddressQuery.swift TrollRoute/LocSim/PlaceSearch.swift TrollRoute/SettingsView.swift \

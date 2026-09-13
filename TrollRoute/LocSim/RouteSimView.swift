@@ -6,7 +6,7 @@ import MapKit
 import AlertKit
 
 struct RouteSimSheet: View {
-    @AppStorage("mapStyle") private var mapStyle = "standard"
+    @AppStorage("mapStyle", store: SharedPreferences.defaults) private var mapStyle = "standard"
     @ObservedObject var routeSimulator: RouteSimulator
     @ObservedObject var draft: RouteDraft
     @Binding var mapRegion: MKCoordinateRegion?

@@ -26,8 +26,8 @@ struct FloatingQuickMenu: View {
     let onAction: (QuickMenuAction) -> Void
     var joystickActive: Bool
     var routeActive: Bool = false
-    @AppStorage("mapButtonLabels") private var showLabels = true
-    @AppStorage("mapHaptics") private var haptics = true
+    @AppStorage("mapButtonLabels", store: SharedPreferences.defaults) private var showLabels = true
+    @AppStorage("mapHaptics", store: SharedPreferences.defaults) private var haptics = true
 
     var body: some View {
         VStack(spacing: 2) {

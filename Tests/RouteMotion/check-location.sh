@@ -10,6 +10,6 @@ import sys
 source = Path('TrollRoute/LocSim/LocSimManager.swift').read_text()
 Path(sys.argv[1]).write_text(source.split('class LocSimManager {')[0])
 PY
-xcrun swiftc "$QA_DIR/RouteLocationSample.swift" Tests/RouteMotion/LocationSampleTests.swift \
+xcrun swiftc TrollRoute/Storage/SharedPreferences.swift "$QA_DIR/RouteLocationSample.swift" Tests/RouteMotion/LocationSampleTests.swift \
   -o "$QA_DIR/location-sample-tests"
 "$QA_DIR/location-sample-tests"

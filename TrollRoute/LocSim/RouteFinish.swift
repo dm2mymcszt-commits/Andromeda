@@ -36,7 +36,7 @@ final class RouteFinishSettings: ObservableObject {
     @Published var destination: RouteFinishDestination? {
         didSet { defaults.set(try? JSONEncoder().encode(destination), forKey: "routeFinishDestination") }
     }
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = SharedPreferences.defaults) {
         self.defaults = defaults
         action = RouteFinishAction(rawValue: defaults.string(forKey: "routeFinishAction") ?? "") ?? .stay
         let place = defaults.data(forKey: "routeFinishDestination").flatMap {

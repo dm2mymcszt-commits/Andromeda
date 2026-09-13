@@ -2,12 +2,12 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("mapAppearance") private var mapAppearance = "system"
-    @AppStorage("mapStyle") private var mapStyle = "standard"
-    @AppStorage("mapButtonLabels") private var mapButtonLabels = true
-    @AppStorage("mapHaptics") private var mapHaptics = true
-    @AppStorage("tapMapToSetLocation") private var tapMapToSetLocation = false
-    @AppStorage("askBeforeMoving") private var askBeforeMoving = true
+    @AppStorage("mapAppearance", store: SharedPreferences.defaults) private var mapAppearance = "system"
+    @AppStorage("mapStyle", store: SharedPreferences.defaults) private var mapStyle = "standard"
+    @AppStorage("mapButtonLabels", store: SharedPreferences.defaults) private var mapButtonLabels = true
+    @AppStorage("mapHaptics", store: SharedPreferences.defaults) private var mapHaptics = true
+    @AppStorage("tapMapToSetLocation", store: SharedPreferences.defaults) private var tapMapToSetLocation = false
+    @AppStorage("askBeforeMoving", store: SharedPreferences.defaults) private var askBeforeMoving = true
     @ObservedObject private var finishSettings = RouteFinishSettings.shared
     @StateObject private var recentPlaces = RouteRecentPlaces()
     @State private var showFinishPlacePicker = false
