@@ -453,3 +453,8 @@ The Route Stop dialog still appears every time.
   - the entitlements that changed;
   - the GitHub operations performed, with my confirmation;
   - confirmation that no GitHub Release was created.
+
+
+## Owner workflow amendment (2026-09-13)
+
+Keep ROUND-PROGRESS.md short (status, decisions, exact next step). Move long audit evidence into ROUND-AUDIT.md and read relevant sections as needed. Commit and push each audit step. Delete ROUND-AUDIT.md together with ROUND-PLAN.md and ROUND-PROGRESS.md in the final commit.
