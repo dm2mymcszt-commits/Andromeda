@@ -1,9 +1,10 @@
-Geranium.xcodeproj/xcuserdata/*
-Geranium.xcodeproj/project.xcworkspace/xcuserdata/*
-Geranium.xcodeproj/xcuserdata/
-Geranium.xcodeproj/project.xcworkspace/xcuserdata/
-Geranium.xcodeproj/project.xcworkspace/xcuserdata/cclerc.xcuserdatad/UserInterfaceState.xcuserstate
+TrollRoute.xcodeproj/xcuserdata/*
+TrollRoute.xcodeproj/project.xcworkspace/xcuserdata/*
+TrollRoute.xcodeproj/xcuserdata/
+TrollRoute.xcodeproj/project.xcworkspace/xcuserdata/
 **/.DS_Store
 build/*
 build/
 *.entitlements
+!TrollRoute/TrollRoute.entitlements
+!TrollRouteShare/TrollRouteShare.entitlements

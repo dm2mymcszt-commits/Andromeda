@@ -8,24 +8,24 @@ mkdir -p "$QA_DIR"
 python3 - "$QA_DIR/RouteChoiceCard.swift" <<'PY'
 from pathlib import Path
 import sys
-source = Path('Geranium/LocSim/RouteSimView.swift').read_text()
+source = Path('TrollRoute/LocSim/RouteSimView.swift').read_text()
 marker = 'struct RouteModeControls: View {'
 if source.count(marker) != 1:
     raise SystemExit('Expected exactly one production RouteChoiceCard')
 Path(sys.argv[1]).write_text('import SwiftUI\n' + marker + source.split(marker, 1)[1])
-models = Path('Geranium/LocSim/RouteSimulator.swift').read_text().split('class RouteSimulator: NSObject')[0]
+models = Path('TrollRoute/LocSim/RouteSimulator.swift').read_text().split('class RouteSimulator: NSObject')[0]
 Path(sys.argv[1]).with_name('RouteModels.swift').write_text(models)
 PY
 PREVIEW_APP="$QA_DIR/RouteMapPreview.app"
 mkdir -p "$PREVIEW_APP"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
-  Geranium/LocSim/CustomMapView.swift Geranium/LocSim/CoordTransform.swift Geranium/LocSim/RouteFinish.swift Geranium/LocSim/FloatingQuickMenu.swift "$QA_DIR/RouteChoiceCard.swift" "$QA_DIR/RouteModels.swift" Tests/RouteMap/Preview.swift \
+  TrollRoute/LocSim/CustomMapView.swift TrollRoute/LocSim/CoordTransform.swift TrollRoute/LocSim/RouteFinish.swift TrollRoute/LocSim/FloatingQuickMenu.swift "$QA_DIR/RouteChoiceCard.swift" "$QA_DIR/RouteModels.swift" Tests/RouteMap/Preview.swift \
   -o "$PREVIEW_APP/RouteMapPreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'
 import plistlib, sys
 with open(sys.argv[1], 'wb') as f:
-    plistlib.dump(dict(CFBundleIdentifier='local.andromeda.routemappreview',
+    plistlib.dump(dict(CFBundleIdentifier='local.trollroute.routemappreview',
         CFBundleExecutable='RouteMapPreview', CFBundleName='RouteMapPreview',
         CFBundlePackageType='APPL', MinimumOSVersion='17.0', UIDeviceFamily=[1],
         UILaunchScreen={}, NSLocationWhenInUseUsageDescription='Preview the map.'), f)
@@ -37,16 +37,16 @@ xcrun simctl boot "$DEVICE"
 xcrun simctl bootstatus "$DEVICE" -b
 xcrun simctl status_bar "$DEVICE" override --time '9:41' --batteryState charged --batteryLevel 100
 xcrun simctl install "$DEVICE" "$PREVIEW_APP"
-CONTAINER=$(xcrun simctl get_app_container "$DEVICE" local.andromeda.routemappreview data)
+CONTAINER=$(xcrun simctl get_app_container "$DEVICE" local.trollroute.routemappreview data)
 
 for appearance in dark light; do
   xcrun simctl ui "$DEVICE" appearance "$appearance"
   for section in map cards modes playback collapsed; do
     # A separate launch controls scroll position deterministically, with no UI automation dependency.
-    xcrun simctl terminate "$DEVICE" local.andromeda.routemappreview 2>/dev/null || true
+    xcrun simctl terminate "$DEVICE" local.trollroute.routemappreview 2>/dev/null || true
     RESULT="$CONTAINER/Documents/route-map-$appearance-$section.txt"
     rm -f "$RESULT"
-    xcrun simctl launch "$DEVICE" local.andromeda.routemappreview --appearance "$appearance" --section "$section"
+    xcrun simctl launch "$DEVICE" local.trollroute.routemappreview --appearance "$appearance" --section "$section"
     ready=false
     for attempt in $(seq 1 40); do
       if test -s "$RESULT"; then ready=true; break; fi

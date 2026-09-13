@@ -1,0 +1,1026 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BDA110100000000000000003 /* AltitudeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110100000000000000004 /* AltitudeSheet.swift */; };
+		BDA110100000000000000001 /* Altitude.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110100000000000000002 /* Altitude.swift */; };
+		BDA110090000000000000001 /* RouteFinish.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110090000000000000002 /* RouteFinish.swift */; };
+		BDA110050000000000000305 /* CoordTransform.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = F82C58032E37786D00F76DFA /* CoordTransform.swift */; };
+		BDA110050000000000000304 /* PlaceSearch.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000042 /* PlaceSearch.swift */; };
+		BDA110050000000000000303 /* AddressQuery.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000032 /* AddressQuery.swift */; };
+		BDA110050000000000000302 /* PlaceInput.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000022 /* PlaceInput.swift */; };
+		BDA110050000000000000301 /* PlaceModels.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000012 /* PlaceModels.swift */; };
+		BDA110050000000000000300 /* SharedPlace.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BDA110050000000000000101 /* SharedPlace.swift */; };
+		BDA110050000000000000202 /* SharePlaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110050000000000000102 /* SharePlaceView.swift */; };
+		BDA110050000000000000201 /* SharedPlace.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110050000000000000101 /* SharedPlace.swift */; };
+		BBDA11005000000000000041 /* PlaceSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000042 /* PlaceSearch.swift */; };
+		BBDA11005000000000000031 /* AddressQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000032 /* AddressQuery.swift */; };
+		BBDA11005000000000000021 /* PlaceInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000022 /* PlaceInput.swift */; };
+		BBDA11005000000000000011 /* PlaceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000012 /* PlaceModels.swift */; };
+		BDA110030000000000000001 /* MapMoveConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110030000000000000002 /* MapMoveConfirmation.swift */; };
+		BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA080010000000000000002 /* RouteLocationPicker.swift */; };
+		AA222222222222220000BEEF /* GeraniumRootHelper in Resources */ = {isa = PBXBuildFile; fileRef = AA111111111111110000CAFE /* GeraniumRootHelper */; };
+		790301C12B377EA70044E30A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 790301C02B377EA70044E30A /* Localizable.xcstrings */; };
+		790301C52B3794480044E30A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 790301C42B3794480044E30A /* SettingsView.swift */; };
+		7930B46D2B4B2AD800A5B0CB /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7930B4592B4B267F00A5B0CB /* MobileCoreServices.framework */; };
+		7930B46E2B4B2ADD00A5B0CB /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 790301BC2B3774F90044E30A /* CoreServices.framework */; };
+		7956C4542B4DF122004D3A1A /* Beta.png in Resources */ = {isa = PBXBuildFile; fileRef = 7956C4532B4DF122004D3A1A /* Beta.png */; };
+		796072E02B4F4FAE00737B5D /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 796072DF2B4F4FAE00737B5D /* UniformTypeIdentifiers.framework */; };
+		796072E32B4F4FAE00737B5D /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 796072E22B4F4FAE00737B5D /* Media.xcassets */; };
+		796072E52B4F4FAE00737B5D /* ActionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796072E42B4F4FAE00737B5D /* ActionViewController.swift */; };
+		796072EC2B4F4FAE00737B5D /* TrollRouteShare.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 796072DE2B4F4FAE00737B5D /* TrollRouteShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7969F91A2B5E57DE0010DBE5 /* AlertKit in Frameworks */ = {isa = PBXBuildFile; productRef = 7969F9192B5E57DE0010DBE5 /* AlertKit */; };
+		7989FD032B347EEA00FBAB8D /* LocSimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7989FD022B347EEA00FBAB8D /* LocSimView.swift */; };
+		7989FD062B3486B100FBAB8D /* CustomMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7989FD052B3486B100FBAB8D /* CustomMapView.swift */; };
+		7989FD082B34894400FBAB8D /* BookMarkSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7989FD072B34894400FBAB8D /* BookMarkSlider.swift */; };
+		7989FD0A2B348A0200FBAB8D /* BookMarkHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7989FD092B348A0200FBAB8D /* BookMarkHelper.swift */; };
+		799488A62B347E2C00AFFDCF /* LocSimManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799488A52B347E2C00AFFDCF /* LocSimManager.swift */; };
+		79BA958A2B30D91600380D83 /* RootHelperMan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79BA95892B30D91600380D83 /* RootHelperMan.swift */; };
+		79D7891D2B41BDE700FEBD32 /* Bouquet.png in Resources */ = {isa = PBXBuildFile; fileRef = 79D7891C2B41BDE700FEBD32 /* Bouquet.png */; };
+		79D7891F2B41BEA600FEBD32 /* Flore.png in Resources */ = {isa = PBXBuildFile; fileRef = 79D7891E2B41BEA600FEBD32 /* Flore.png */; };
+		79DF26992B31C90C005D81D2 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79DF26982B31C90C005D81D2 /* WelcomeView.swift */; };
+		F82C58042E37786D00F76DFA /* CoordTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82C58032E37786D00F76DFA /* CoordTransform.swift */; };
+		F82C58062E37790000F76DFA /* RouteSimulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82C58052E37790000F76DFA /* RouteSimulator.swift */; };
+		F82C58082E37790100F76DFA /* RouteSimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82C58072E37790100F76DFA /* RouteSimView.swift */; };
+		FAA456D52B265FEA00FC7287 /* TrollRouteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA456D42B265FEA00FC7287 /* TrollRouteApp.swift */; };
+		FAA456D72B265FEA00FC7287 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA456D62B265FEA00FC7287 /* ContentView.swift */; };
+		FAA456D92B265FEC00FC7287 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FAA456D82B265FEC00FC7287 /* Assets.xcassets */; };
+		FAA456DC2B265FEC00FC7287 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FAA456DB2B265FEC00FC7287 /* Preview Assets.xcassets */; };
+		FAA457122B2661E300FC7287 /* TSUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = FAA457102B2661E300FC7287 /* TSUtil.m */; };
+		FAA457232B26654700FC7287 /* Addon.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA457222B26654700FC7287 /* Addon.swift */; };
+		BB110001000000010000AA01 /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110001000000010000BB01 /* FavoritesView.swift */; };
+		BB110002000000020000AA02 /* JoystickView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110002000000020000BB02 /* JoystickView.swift */; };
+		BB110004000000040000AA04 /* GPXParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110004000000040000BB04 /* GPXParser.swift */; };
+		BB110007000000070000AA07 /* FloatingQuickMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110007000000070000BB07 /* FloatingQuickMenu.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		796072EA2B4F4FAE00737B5D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FAA456C92B265FEA00FC7287 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 796072DD2B4F4FAE00737B5D;
+			remoteInfo = "TrollRouteShare";
+		};
+		FAA456E22B265FED00FC7287 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FAA456C92B265FEA00FC7287 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FAA456D02B265FEA00FC7287;
+			remoteInfo = TrollRoute;
+		};
+		FAA456EC2B265FED00FC7287 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FAA456C92B265FEA00FC7287 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FAA456D02B265FEA00FC7287;
+			remoteInfo = TrollRoute;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		796072ED2B4F4FAE00737B5D /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				796072EC2B4F4FAE00737B5D /* TrollRouteShare.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		AA333333333333330000BEEF /* Copy RootHelper */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/TrollRoute/GeraniumRootHelper",
+			);
+			name = "Copy RootHelper";
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/GeraniumRootHelper",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "cp \"${SRCROOT}/TrollRoute/GeraniumRootHelper\" \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/GeraniumRootHelper\"\nchmod +x \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/GeraniumRootHelper\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXFileReference section */
+		BDA110100000000000000004 /* AltitudeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AltitudeSheet.swift; sourceTree = "<group>"; };
+		BDA110100000000000000002 /* Altitude.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Altitude.swift; sourceTree = "<group>"; };
+		BDA110090000000000000002 /* RouteFinish.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteFinish.swift; sourceTree = "<group>"; };
+		BDA110050000000000000102 /* SharePlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/SharePlaceView.swift"; sourceTree = SOURCE_ROOT; };
+		BDA110050000000000000101 /* SharedPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/SharedPlace.swift"; sourceTree = SOURCE_ROOT; };
+		BBDA11005000000000000042 /* PlaceSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/PlaceSearch.swift"; sourceTree = SOURCE_ROOT; };
+		BBDA11005000000000000032 /* AddressQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/AddressQuery.swift"; sourceTree = SOURCE_ROOT; };
+		BBDA11005000000000000022 /* PlaceInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/PlaceInput.swift"; sourceTree = SOURCE_ROOT; };
+		BBDA11005000000000000012 /* PlaceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/PlaceModels.swift"; sourceTree = SOURCE_ROOT; };
+		BDA110030000000000000002 /* MapMoveConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/MapMoveConfirmation.swift"; sourceTree = SOURCE_ROOT; };
+		BDA080010000000000000002 /* RouteLocationPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteLocationPicker.swift; sourceTree = "<group>"; };
+		790301BA2B37747A0044E30A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		790301BC2B3774F90044E30A /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		790301C02B377EA70044E30A /* Localizable.xcstrings */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; tabWidth = 2; };
+		790301C42B3794480044E30A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		7930B4592B4B267F00A5B0CB /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
+		7956C4532B4DF122004D3A1A /* Beta.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Beta.png; sourceTree = "<group>"; };
+		796072DE2B4F4FAE00737B5D /* TrollRouteShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "TrollRouteShare.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		796072DF2B4F4FAE00737B5D /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
+		796072E22B4F4FAE00737B5D /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
+		796072E42B4F4FAE00737B5D /* ActionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionViewController.swift; sourceTree = "<group>"; };
+		796072E92B4F4FAE00737B5D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		796072F12B4F5A7A00737B5D /* TrollRoute.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TrollRoute.entitlements; sourceTree = "<group>"; };
+		796072F22B4F616B00737B5D /* TrollRouteShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TrollRouteShare.entitlements"; sourceTree = "<group>"; };
+		7989FD022B347EEA00FBAB8D /* LocSimView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocSimView.swift; sourceTree = "<group>"; };
+		7989FD052B3486B100FBAB8D /* CustomMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMapView.swift; sourceTree = "<group>"; };
+		7989FD072B34894400FBAB8D /* BookMarkSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMarkSlider.swift; sourceTree = "<group>"; };
+		7989FD092B348A0200FBAB8D /* BookMarkHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMarkHelper.swift; sourceTree = "<group>"; };
+		AA111111111111110000CAFE /* GeraniumRootHelper */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = GeraniumRootHelper; sourceTree = "<group>"; };
+		799488A52B347E2C00AFFDCF /* LocSimManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocSimManager.swift; sourceTree = "<group>"; };
+		799488A72B347E2F00AFFDCF /* LocSimPrivateHeaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocSimPrivateHeaders.h; sourceTree = "<group>"; };
+		79BA95892B30D91600380D83 /* RootHelperMan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootHelperMan.swift; sourceTree = "<group>"; };
+		79D7891C2B41BDE700FEBD32 /* Bouquet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Bouquet.png; sourceTree = "<group>"; };
+		79D7891E2B41BEA600FEBD32 /* Flore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Flore.png; sourceTree = "<group>"; };
+		79DF26982B31C90C005D81D2 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		F82C58032E37786D00F76DFA /* CoordTransform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordTransform.swift; sourceTree = "<group>"; };
+		F82C58052E37790000F76DFA /* RouteSimulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSimulator.swift; sourceTree = "<group>"; };
+		F82C58072E37790100F76DFA /* RouteSimView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSimView.swift; sourceTree = "<group>"; };
+		FAA456D12B265FEA00FC7287 /* TrollRoute.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrollRoute.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FAA456D42B265FEA00FC7287 /* TrollRouteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrollRouteApp.swift; sourceTree = "<group>"; };
+		FAA456D62B265FEA00FC7287 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		FAA456D82B265FEC00FC7287 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FAA456DB2B265FEC00FC7287 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		FAA456E12B265FED00FC7287 /* TrollRouteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrollRouteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FAA456EB2B265FED00FC7287 /* TrollRouteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrollRouteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FAA457042B2660AC00FC7287 /* TrollRoute-Bringing-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TrollRoute-Bringing-Header.h"; sourceTree = "<group>"; };
+		FAA4570F2B2661E200FC7287 /* CoreServices.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreServices.h; sourceTree = "<group>"; };
+		FAA457102B2661E300FC7287 /* TSUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TSUtil.m; sourceTree = "<group>"; };
+		FAA457112B2661E300FC7287 /* TSUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSUtil.h; sourceTree = "<group>"; };
+		FAA457222B26654700FC7287 /* Addon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Addon.swift; sourceTree = "<group>"; };
+		BB110001000000010000BB01 /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/FavoritesView.swift"; sourceTree = SOURCE_ROOT; };
+		BB110002000000020000BB02 /* JoystickView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/JoystickView.swift"; sourceTree = SOURCE_ROOT; };
+		BB110004000000040000BB04 /* GPXParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/GPXParser.swift"; sourceTree = SOURCE_ROOT; };
+		BB110007000000070000BB07 /* FloatingQuickMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/FloatingQuickMenu.swift"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		796072DB2B4F4FAE00737B5D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				796072E02B4F4FAE00737B5D /* UniformTypeIdentifiers.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FAA456CE2B265FEA00FC7287 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7930B46D2B4B2AD800A5B0CB /* MobileCoreServices.framework in Frameworks */,
+				7930B46E2B4B2ADD00A5B0CB /* CoreServices.framework in Frameworks */,
+				7969F91A2B5E57DE0010DBE5 /* AlertKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FAA456DE2B265FED00FC7287 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FAA456E82B265FED00FC7287 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		790301B92B37747A0044E30A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7930B4592B4B267F00A5B0CB /* MobileCoreServices.framework */,
+				790301BC2B3774F90044E30A /* CoreServices.framework */,
+				790301BA2B37747A0044E30A /* Foundation.framework */,
+				796072DF2B4F4FAE00737B5D /* UniformTypeIdentifiers.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		790301BF2B377E850044E30A /* Translations */ = {
+			isa = PBXGroup;
+			children = (
+				790301C02B377EA70044E30A /* Localizable.xcstrings */,
+			);
+			path = Translations;
+			sourceTree = "<group>";
+		};
+		796072E12B4F4FAE00737B5D /* TrollRouteShare */ = {
+			isa = PBXGroup;
+			children = (
+				796072F22B4F616B00737B5D /* TrollRouteShare.entitlements */,
+				796072E22B4F4FAE00737B5D /* Media.xcassets */,
+				796072E42B4F4FAE00737B5D /* ActionViewController.swift */,
+				796072E92B4F4FAE00737B5D /* Info.plist */,
+			);
+			path = "TrollRouteShare";
+			sourceTree = "<group>";
+		};
+		7989FD0B2B348A8600FBAB8D /* BookMark */ = {
+			isa = PBXGroup;
+			children = (
+				7989FD092B348A0200FBAB8D /* BookMarkHelper.swift */,
+				7989FD072B34894400FBAB8D /* BookMarkSlider.swift */,
+			);
+			path = BookMark;
+			sourceTree = "<group>";
+		};
+		799488A42B347E1100AFFDCF /* LocSim */ = {
+			isa = PBXGroup;
+			children = (
+				F82C58032E37786D00F76DFA /* CoordTransform.swift */,
+				7989FD0B2B348A8600FBAB8D /* BookMark */,
+				7989FD052B3486B100FBAB8D /* CustomMapView.swift */,
+				799488A52B347E2C00AFFDCF /* LocSimManager.swift */,
+				799488A72B347E2F00AFFDCF /* LocSimPrivateHeaders.h */,
+				7989FD022B347EEA00FBAB8D /* LocSimView.swift */,
+				F82C58052E37790000F76DFA /* RouteSimulator.swift */,
+				BDA110090000000000000002 /* RouteFinish.swift */,
+				BDA110100000000000000004 /* AltitudeSheet.swift */,
+				BDA110100000000000000002 /* Altitude.swift */,
+				F82C58072E37790100F76DFA /* RouteSimView.swift */,
+				BDA080010000000000000002 /* RouteLocationPicker.swift */,
+			);
+			path = LocSim;
+			sourceTree = "<group>";
+		};
+		79D789072B40930A00FEBD32 /* Icons */ = {
+			isa = PBXGroup;
+			children = (
+				7956C4532B4DF122004D3A1A /* Beta.png */,
+				79D7891E2B41BEA600FEBD32 /* Flore.png */,
+				79D7891C2B41BDE700FEBD32 /* Bouquet.png */,
+			);
+			path = Icons;
+			sourceTree = "<group>";
+		};
+		FAA456C82B265FEA00FC7287 = {
+			isa = PBXGroup;
+			children = (
+				FAA456D32B265FEA00FC7287 /* TrollRoute */,
+				796072E12B4F4FAE00737B5D /* TrollRouteShare */,
+				FAA456D22B265FEA00FC7287 /* Products */,
+				790301B92B37747A0044E30A /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		FAA456D22B265FEA00FC7287 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FAA456D12B265FEA00FC7287 /* TrollRoute.app */,
+				FAA456E12B265FED00FC7287 /* TrollRouteTests.xctest */,
+				FAA456EB2B265FED00FC7287 /* TrollRouteUITests.xctest */,
+				796072DE2B4F4FAE00737B5D /* TrollRouteShare.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FAA456D32B265FEA00FC7287 /* TrollRoute */ = {
+			isa = PBXGroup;
+			children = (
+				796072F12B4F5A7A00737B5D /* TrollRoute.entitlements */,
+				FAA456D42B265FEA00FC7287 /* TrollRouteApp.swift */,
+				FAA457042B2660AC00FC7287 /* TrollRoute-Bringing-Header.h */,
+				FAA457052B2661AD00FC7287 /* Libs */,
+				FAA456D62B265FEA00FC7287 /* ContentView.swift */,
+				790301C42B3794480044E30A /* SettingsView.swift */,
+				79DF26982B31C90C005D81D2 /* WelcomeView.swift */,
+				799488A42B347E1100AFFDCF /* LocSim */,
+				790301BF2B377E850044E30A /* Translations */,
+				FAA456D82B265FEC00FC7287 /* Assets.xcassets */,
+				79D789072B40930A00FEBD32 /* Icons */,
+				FAA456DA2B265FEC00FC7287 /* Preview Content */,
+			);
+			path = TrollRoute;
+			sourceTree = "<group>";
+		};
+		FAA456DA2B265FEC00FC7287 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				FAA456DB2B265FEC00FC7287 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		FAA457052B2661AD00FC7287 /* Libs */ = {
+			isa = PBXGroup;
+			children = (
+				FAA457222B26654700FC7287 /* Addon.swift */,
+				79BA95892B30D91600380D83 /* RootHelperMan.swift */,
+				FAA4570E2B2661D200FC7287 /* TrollStore */,
+			);
+			path = Libs;
+			sourceTree = "<group>";
+		};
+		FAA4570E2B2661D200FC7287 /* TrollStore */ = {
+			isa = PBXGroup;
+			children = (
+				FAA4570F2B2661E200FC7287 /* CoreServices.h */,
+				FAA457112B2661E300FC7287 /* TSUtil.h */,
+				FAA457102B2661E300FC7287 /* TSUtil.m */,
+			);
+			path = TrollStore;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		796072DD2B4F4FAE00737B5D /* TrollRouteShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 796072F02B4F4FAE00737B5D /* Build configuration list for PBXNativeTarget "TrollRouteShare" */;
+			buildPhases = (
+				796072DA2B4F4FAE00737B5D /* Sources */,
+				796072DB2B4F4FAE00737B5D /* Frameworks */,
+				796072DC2B4F4FAE00737B5D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "TrollRouteShare";
+			productName = "TrollRouteShare";
+			productReference = 796072DE2B4F4FAE00737B5D /* TrollRouteShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		FAA456D02B265FEA00FC7287 /* TrollRoute */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FAA456F52B265FED00FC7287 /* Build configuration list for PBXNativeTarget "TrollRoute" */;
+			buildPhases = (
+				FAA456CD2B265FEA00FC7287 /* Sources */,
+				FAA456CE2B265FEA00FC7287 /* Frameworks */,
+				FAA456CF2B265FEA00FC7287 /* Resources */,
+				796072ED2B4F4FAE00737B5D /* Embed Foundation Extensions */,
+				AA333333333333330000BEEF /* Copy RootHelper */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				796072EB2B4F4FAE00737B5D /* PBXTargetDependency */,
+			);
+			name = TrollRoute;
+			packageProductDependencies = (
+				7969F9192B5E57DE0010DBE5 /* AlertKit */,
+			);
+			productName = TrollRoute;
+			productReference = FAA456D12B265FEA00FC7287 /* TrollRoute.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FAA456E02B265FED00FC7287 /* TrollRouteTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FAA456F82B265FED00FC7287 /* Build configuration list for PBXNativeTarget "TrollRouteTests" */;
+			buildPhases = (
+				FAA456DD2B265FED00FC7287 /* Sources */,
+				FAA456DE2B265FED00FC7287 /* Frameworks */,
+				FAA456DF2B265FED00FC7287 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FAA456E32B265FED00FC7287 /* PBXTargetDependency */,
+			);
+			name = TrollRouteTests;
+			productName = TrollRouteTests;
+			productReference = FAA456E12B265FED00FC7287 /* TrollRouteTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		FAA456EA2B265FED00FC7287 /* TrollRouteUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FAA456FB2B265FED00FC7287 /* Build configuration list for PBXNativeTarget "TrollRouteUITests" */;
+			buildPhases = (
+				FAA456E72B265FED00FC7287 /* Sources */,
+				FAA456E82B265FED00FC7287 /* Frameworks */,
+				FAA456E92B265FED00FC7287 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FAA456ED2B265FED00FC7287 /* PBXTargetDependency */,
+			);
+			name = TrollRouteUITests;
+			productName = TrollRouteUITests;
+			productReference = FAA456EB2B265FED00FC7287 /* TrollRouteUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FAA456C92B265FEA00FC7287 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1510;
+				LastUpgradeCheck = 1510;
+				TargetAttributes = {
+					796072DD2B4F4FAE00737B5D = {
+						CreatedOnToolsVersion = 15.1;
+					};
+					FAA456D02B265FEA00FC7287 = {
+						CreatedOnToolsVersion = 15.0.1;
+					};
+					FAA456E02B265FED00FC7287 = {
+						CreatedOnToolsVersion = 15.0.1;
+						TestTargetID = FAA456D02B265FEA00FC7287;
+					};
+					FAA456EA2B265FED00FC7287 = {
+						CreatedOnToolsVersion = 15.0.1;
+						TestTargetID = FAA456D02B265FEA00FC7287;
+					};
+				};
+			};
+			buildConfigurationList = FAA456CC2B265FEA00FC7287 /* Build configuration list for PBXProject "TrollRoute" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				fr,
+				sk,
+				"zh-Hans",
+				de,
+				"es-419",
+				ja,
+				cs,
+				"zh-Hant",
+				sv,
+				vi,
+				it,
+				es,
+				ca,
+				sq,
+				ko,
+				ru,
+				fa,
+				"en-GB",
+			);
+			mainGroup = FAA456C82B265FEA00FC7287;
+			packageReferences = (
+				7969F9182B5E57DE0010DBE5 /* XCRemoteSwiftPackageReference "AlertKit" */,
+			);
+			productRefGroup = FAA456D22B265FEA00FC7287 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FAA456D02B265FEA00FC7287 /* TrollRoute */,
+				FAA456E02B265FED00FC7287 /* TrollRouteTests */,
+				FAA456EA2B265FED00FC7287 /* TrollRouteUITests */,
+				796072DD2B4F4FAE00737B5D /* TrollRouteShare */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		796072DC2B4F4FAE00737B5D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				796072E32B4F4FAE00737B5D /* Media.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FAA456CF2B265FEA00FC7287 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FAA456DC2B265FEC00FC7287 /* Preview Assets.xcassets in Resources */,
+				FAA456D92B265FEC00FC7287 /* Assets.xcassets in Resources */,
+				790301C12B377EA70044E30A /* Localizable.xcstrings in Resources */,
+				79D7891F2B41BEA600FEBD32 /* Flore.png in Resources */,
+				79D7891D2B41BDE700FEBD32 /* Bouquet.png in Resources */,
+				7956C4542B4DF122004D3A1A /* Beta.png in Resources */,
+				AA111111111111110000BEEF /* GeraniumRootHelper in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FAA456DF2B265FED00FC7287 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FAA456E92B265FED00FC7287 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		796072DA2B4F4FAE00737B5D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				796072E52B4F4FAE00737B5D /* ActionViewController.swift in Sources */,
+				BDA110050000000000000305 /* CoordTransform.swift in Extension Sources */,
+				BDA110050000000000000304 /* PlaceSearch.swift in Extension Sources */,
+				BDA110050000000000000303 /* AddressQuery.swift in Extension Sources */,
+				BDA110050000000000000302 /* PlaceInput.swift in Extension Sources */,
+				BDA110050000000000000301 /* PlaceModels.swift in Extension Sources */,
+				BDA110050000000000000300 /* SharedPlace.swift in Extension Sources */,
+				BDA110050000000000000202 /* SharePlaceView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FAA456CD2B265FEA00FC7287 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7989FD082B34894400FBAB8D /* BookMarkSlider.swift in Sources */,
+				FAA457122B2661E300FC7287 /* TSUtil.m in Sources */,
+				7989FD062B3486B100FBAB8D /* CustomMapView.swift in Sources */,
+				FAA457232B26654700FC7287 /* Addon.swift in Sources */,
+				F82C58042E37786D00F76DFA /* CoordTransform.swift in Sources */,
+				790301C52B3794480044E30A /* SettingsView.swift in Sources */,
+				79DF26992B31C90C005D81D2 /* WelcomeView.swift in Sources */,
+				7989FD032B347EEA00FBAB8D /* LocSimView.swift in Sources */,
+				799488A62B347E2C00AFFDCF /* LocSimManager.swift in Sources */,
+				FAA456D72B265FEA00FC7287 /* ContentView.swift in Sources */,
+				7989FD0A2B348A0200FBAB8D /* BookMarkHelper.swift in Sources */,
+				FAA456D52B265FEA00FC7287 /* TrollRouteApp.swift in Sources */,
+				79BA958A2B30D91600380D83 /* RootHelperMan.swift in Sources */,
+				F82C58062E37790000F76DFA /* RouteSimulator.swift in Sources */,
+				BDA110090000000000000001 /* RouteFinish.swift in Sources */,
+				BDA110100000000000000003 /* AltitudeSheet.swift in Sources */,
+				BDA110100000000000000001 /* Altitude.swift in Sources */,
+				F82C58082E37790100F76DFA /* RouteSimView.swift in Sources */,
+				BDA110050000000000000201 /* SharedPlace.swift in Sources */,
+				BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */,
+				BDA110030000000000000001 /* MapMoveConfirmation.swift in Sources */,
+				BBDA11005000000000000041 /* PlaceSearch.swift in Sources */,
+				BBDA11005000000000000031 /* AddressQuery.swift in Sources */,
+				BBDA11005000000000000021 /* PlaceInput.swift in Sources */,
+				BBDA11005000000000000011 /* PlaceModels.swift in Sources */,
+				BB110001000000010000AA01 /* FavoritesView.swift in Sources */,
+				BB110002000000020000AA02 /* JoystickView.swift in Sources */,
+				BB110004000000040000AA04 /* GPXParser.swift in Sources */,
+				BB110007000000070000AA07 /* FloatingQuickMenu.swift in Sources */,
+
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FAA456DD2B265FED00FC7287 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FAA456E72B265FED00FC7287 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		796072EB2B4F4FAE00737B5D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 796072DD2B4F4FAE00737B5D /* TrollRouteShare */;
+			targetProxy = 796072EA2B4F4FAE00737B5D /* PBXContainerItemProxy */;
+		};
+		FAA456E32B265FED00FC7287 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FAA456D02B265FEA00FC7287 /* TrollRoute */;
+			targetProxy = FAA456E22B265FED00FC7287 /* PBXContainerItemProxy */;
+		};
+		FAA456ED2B265FED00FC7287 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FAA456D02B265FEA00FC7287 /* TrollRoute */;
+			targetProxy = FAA456EC2B265FED00FC7287 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		796072EE2B4F4FAE00737B5D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "TrollRouteShare/TrollRouteShare.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = 7G89J82G2A;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "TrollRouteShare/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "TrollRoute";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dm2mymcszt.trollroute.share";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		796072EF2B4F4FAE00737B5D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "TrollRouteShare/TrollRouteShare.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = 7G89J82G2A;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "TrollRouteShare/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "TrollRoute";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.dm2mymcszt.trollroute.share";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FAA456F32B265FED00FC7287 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		FAA456F42B265FED00FC7287 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		FAA456F62B265FED00FC7287 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TrollRoute/TrollRoute.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_ASSET_PATHS = "\"TrollRoute/Preview Content\"";
+				DEVELOPMENT_TEAM = 7G89J82G2A;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TrollRoute/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TrollRoute;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationUsageDescription = "Enabling location for TrollRoute makes it possible for the app to display your location on the map.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This will allow the app to display your location on the LocSim map.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = NO;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dm2mymcszt.trollroute;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "TrollRoute/TrollRoute-Bringing-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FAA456F72B265FED00FC7287 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = TrollRoute/TrollRoute.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_ASSET_PATHS = "\"TrollRoute/Preview Content\"";
+				DEVELOPMENT_TEAM = 7G89J82G2A;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = TrollRoute/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TrollRoute;
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
+				INFOPLIST_KEY_NSLocationUsageDescription = "Enabling location for TrollRoute makes it possible for the app to display your location on the map.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This will allow the app to display your location on the LocSim map.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UIStatusBarHidden = NO;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dm2mymcszt.trollroute;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "TrollRoute/TrollRoute-Bringing-Header.h";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		FAA456F92B265FED00FC7287 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = 7G89J82G2A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dm2mymcszt.trollrouteTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TrollRoute.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TrollRoute";
+			};
+			name = Debug;
+		};
+		FAA456FA2B265FED00FC7287 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = 7G89J82G2A;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dm2mymcszt.trollrouteTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TrollRoute.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TrollRoute";
+			};
+			name = Release;
+		};
+		FAA456FC2B265FED00FC7287 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = 7G89J82G2A;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dm2mymcszt.trollrouteUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = TrollRoute;
+			};
+			name = Debug;
+		};
+		FAA456FD2B265FED00FC7287 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 5;
+				DEVELOPMENT_TEAM = 7G89J82G2A;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 3.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dm2mymcszt.trollrouteUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = TrollRoute;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		796072F02B4F4FAE00737B5D /* Build configuration list for PBXNativeTarget "TrollRouteShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				796072EE2B4F4FAE00737B5D /* Debug */,
+				796072EF2B4F4FAE00737B5D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FAA456CC2B265FEA00FC7287 /* Build configuration list for PBXProject "TrollRoute" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FAA456F32B265FED00FC7287 /* Debug */,
+				FAA456F42B265FED00FC7287 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FAA456F52B265FED00FC7287 /* Build configuration list for PBXNativeTarget "TrollRoute" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FAA456F62B265FED00FC7287 /* Debug */,
+				FAA456F72B265FED00FC7287 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FAA456F82B265FED00FC7287 /* Build configuration list for PBXNativeTarget "TrollRouteTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FAA456F92B265FED00FC7287 /* Debug */,
+				FAA456FA2B265FED00FC7287 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FAA456FB2B265FED00FC7287 /* Build configuration list for PBXNativeTarget "TrollRouteUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FAA456FC2B265FED00FC7287 /* Debug */,
+				FAA456FD2B265FED00FC7287 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		7969F9182B5E57DE0010DBE5 /* XCRemoteSwiftPackageReference "AlertKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparrowcode/AlertKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.1.8;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		7969F9192B5E57DE0010DBE5 /* AlertKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7969F9182B5E57DE0010DBE5 /* XCRemoteSwiftPackageReference "AlertKit" */;
+			productName = AlertKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = FAA456C92B265FEA00FC7287 /* Project object */;
+}

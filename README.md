@@ -1,134 +1,21 @@
-<div align="center">
+# TrollRoute
 
-<img src="https://raw.githubusercontent.com/Sonerbt/Andromeda/main/Geranium/Assets.xcassets/AppIcon.appiconset/geranium.png" width="150" style="border-radius: 32px;" />
+Location simulation and route playback for TrollStore. Set a location, save favorites, search worldwide, import GPX files, or play walking, cycling and driving routes with adjustable speed, progress seeking and finish actions.
 
-# Andromeda
-### The Ultimate iOS Utility — by son3ra1n
+Requires iOS 15.0 or later on a version supported by [TrollStore](https://github.com/opa334/TrollStore). This is a TrollStore-only app.
 
-[![iOS](https://img.shields.io/badge/iOS-15.0%2B-indigo.svg?style=for-the-badge&logo=apple)](https://github.com/Sonerbt/Andromeda)
-[![TrollStore](https://img.shields.io/badge/Requires-TrollStore-purple.svg?style=for-the-badge)](https://github.com/opa334/TrollStore)
-[![License](https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=for-the-badge)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-2.5.2-green.svg?style=for-the-badge)](https://github.com/Sonerbt/Andromeda/releases)
+## Install and build
 
-**Andromeda** is a powerful, modern iOS utility app featuring location simulation, system cleaning, daemon management, and much more — all wrapped in a stunning glassmorphism UI.
+Use the successful [GitHub Actions build](https://github.com/dm2mymcszt-commits/TrollRoute/actions/workflows/trollstore.yml) on `experiment/route-motion`. Download `TrollRoute-<version>-<commit>`, extract `TrollRoute.tipa`, and install through TrollStore's **+** button.
 
-</div>
+The new bundle ID installs alongside Andromeda. This rework is in progress: keep Andromeda and its data until the one-time import has completed successfully. The new icon also awaits approval.
 
----
+Builds use macOS 15 and Xcode 16.4 through `ipabuild.sh`; the workflow runs model tests, live search checks and simulator previews. See [BUILD-TROLLSTORE.md](BUILD-TROLLSTORE.md) for verification and installation notes.
 
-## ✨ Features
+## Credits and license
 
-### 🌍 LocSim Pro — Advanced Location Simulator
-- **🕹️ Real-time Joystick** — Move your GPS instantly with 4 speed modes (Walk, Run, Bike, Car)
-- **🛣️ Route Simulation** — Follow paths automatically with speed multipliers
-- **📂 GPX Support** — Import your own route files for automated movement
-- **🎛️ Quick Menu** — New sidebar for instant tool access
-- **⭐ Favorites v2** — One-tap location saving
+Based on Andromeda by son3ra1n and Geranium by c22dev. GPL-3.0. See [LICENSE](LICENSE).
 
-### 🧹 Cleaner & Analyzer
-- **📊 Storage Dashboard** — Beautiful interactive donut chart for storage breakdown
-- **🧹 System Cleaner** — Clean junk, caches, and temp files with real-time progress
-- **⚙️ Configurable Filters** — Minimum file size control and Safe Mode
+Data: Apple Maps, © OpenStreetMap contributors, national address and elevation services. See [data credits and licenses](THIRD-PARTY-NOTICES.md).
 
-### 🚩 Utilities
-- **Daemons Manager** — Enable / Disable system daemons safely
-- **Supervise** — Device oversight and supervision tools
-- **ByeTime** — Disable Screen Time restrictions (iCloud supported)
-
----
-
-## 🎥 Demo Video
-
-<div align="center">
-  <p>Click the image below to watch Andromeda's realistic route simulation in action:</p>
-
-  [![Watch the video](Media/locsim_main.png)](https://github.com/Sonerbt/Andromeda/raw/main/Media/route_simulation.mov)
-
-  *(Clicking will open the video in a new tab)*
-</div>
-
----
-
-## 📱 Screenshots
-
-<div align="center">
-  <h3>✨ New v2.5.2 Features</h3>
-  <table style="border: none;">
-    <tr>
-      <td align="center"><b>Storage Analyzer</b><br/><img src="Assets/Screenshots/storage_analyzer.png" width="220" /></td>
-      <td align="center"><b>Cleaner (Result)</b><br/><img src="Assets/Screenshots/cleaner_success.png" width="220" /></td>
-      <td align="center"><b>LocSim Pro</b><br/><img src="Assets/Screenshots/locsim_pro.png" width="220" /></td>
-    </tr>
-  </table>
-
-  <h3>📱 App Interface</h3>
-  <table style="border: none;">
-    <tr>
-      <td align="center"><b>Search</b><br/><img src="Media/locsim_search.png" width="180" /></td>
-      <td align="center"><b>Route Selection</b><br/><img src="Media/cleaner_view.png" width="180" /></td>
-      <td align="center"><b>Route Details</b><br/><img src="Media/settings_view.png" width="180" /></td>
-      <td align="center"><b>Map View</b><br/><img src="Media/locsim_main.png" width="180" /></td>
-    </tr>
-  </table>
-</div>
-
----
-
-## 🚀 Installation
-
-### Requirements
-- **iOS 15.0 - 17.0** (TrollStore supported versions)
-- [TrollStore](https://github.com/opa334/TrollStore) installed on your device
-
-### Steps
-
-1. Download the latest `Andromeda_v2.5.2.tipa` from the [**Releases**](https://github.com/Sonerbt/Andromeda/releases) page.
-2. Open **TrollStore** on your iPhone.
-3. Tap **+** and select the downloaded file.
-4. Tap **Install**.
-5. Launch **Andromeda** from your home screen. 🌌
-
----
-
-## 🛠 Building from Source
-
-```bash
-# Clone the repository
-git clone https://github.com/Sonerbt/Andromeda.git
-cd Andromeda
-
-# Open in Xcode
-open Geranium.xcodeproj
-
-# Build for your device (requires macOS + Xcode 15+)
-# Set scheme to "Geranium" and target to a generic iOS device
-```
-
----
-
-## 📜 Acknowledgments
-
-Andromeda was **inspired by and built upon** the excellent work of:
-
-| Project | Author | Contribution |
-|---------|--------|-------------|
-| [Geranium](https://github.com/c22dev/Geranium) | [c22dev](https://github.com/c22dev) | Original project & core architecture |
-| [Geranium](https://github.com/BomberFish/Geranium) | [BomberFish](https://github.com/BomberFish) | Daemon listing |
-
----
-
-## 📄 License
-
-This project is licensed under the **GNU General Public License v3.0** — see the [LICENSE](LICENSE) file for details.
-
----
-
-<div align="center">
-
-Made with ❤️ and 🌌 by **son3ra1n**
-
-*"Reach for the stars."*
-
-⭐ **Star this repo if you find it useful!**
-
-</div>
+GitHub Releases are created only on the owner's explicit request, with the `.tipa` from a successful CI run and notes describing additions, changes and fixes. Ordinary development builds are Actions artifacts, not Releases.

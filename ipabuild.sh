@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 
 WORKING_LOCATION="$(pwd)"
-APPLICATION_NAME=Geranium
+APPLICATION_NAME=TrollRoute
 CONFIGURATION=Debug
 
 rm -rf build
@@ -21,7 +21,7 @@ fi
 
 # Build .app
 xcodebuild -project "$WORKING_LOCATION/$APPLICATION_NAME.xcodeproj" \
-    -scheme Geranium \
+    -scheme TrollRoute \
     -configuration Debug \
     -derivedDataPath "$WORKING_LOCATION/build/DerivedData" \
     -destination 'generic/platform=iOS' \
@@ -60,7 +60,7 @@ make
 cp "$WORKING_LOCATION/RootHelper/.theos/obj/debug/GeraniumRootHelper" "$TARGET_APP/GeraniumRootHelper"
 cd -
 
-#cp $WORKING_LOCATION/build/DerivedData/Build/Products/$CONFIGURATION-iphoneos/RootHelper $WORKING_LOCATION/build/Geranium.app/RootHelper
+#cp $WORKING_LOCATION/build/DerivedData/Build/Products/$CONFIGURATION-iphoneos/RootHelper $WORKING_LOCATION/build/TrollRoute.app/RootHelper
 
 # Is ldid installed ?
 if command -v ldid &> /dev/null; then
@@ -80,9 +80,9 @@ fi
 echo "Adding entitlements"
 ldid -S"$WORKING_LOCATION/entitlements.plist" "$TARGET_APP/$APPLICATION_NAME"
 # Inject into the Maps thingy
-ldid -S"$WORKING_LOCATION/Bookmark Location in Geranium/entitlements.plist" "$TARGET_APP/PlugIns/Bookmark Location in Geranium.appex/Bookmark Location in Geranium"
+ldid -S"$WORKING_LOCATION/TrollRouteShare/entitlements.plist" "$TARGET_APP/PlugIns/TrollRouteShare.appex/TrollRouteShare"
 # idk if this is usefull but uhm
-# ldid -S"$WORKING_LOCATION/Bookmark Location in Geranium/entitlements.plist" "$TARGET_APP/PlugIns/Bookmark Location in Geranium.appex/Bookmark Location in Geranium.debug.dylib"
+# ldid -S"$WORKING_LOCATION/TrollRouteShare/entitlements.plist" "$TARGET_APP/PlugIns/TrollRouteShare.appex/TrollRouteShare.debug.dylib"
 # ldid -S"$WORKING_LOCATION/entitlements.plist" "$TARGET_APP/RootHelper"
 
 # Package .ipa

@@ -1,7 +1,7 @@
 import SwiftUI
 import MapKit
 
-// Separate simulator-only app using the production picker; never bundled in Andromeda.
+// Separate simulator-only app using the production picker; never bundled in TrollRoute.
 struct EquatableCoordinate: Equatable {
     let coordinate: CLLocationCoordinate2D
     static func == (lhs: Self, rhs: Self) -> Bool {

@@ -4,7 +4,7 @@ cd "$(dirname "$0")/../.."
 QA_DIR="$PWD/build/route-picker-qa"
 mkdir -p "$QA_DIR"
 python3 Tests/RoutePicker/bookmark-support.py "$QA_DIR/Bookmarks.swift"
-xcrun swiftc Geranium/LocSim/PlaceModels.swift Geranium/LocSim/PlaceInput.swift Geranium/LocSim/AddressQuery.swift Geranium/LocSim/PlaceSearch.swift "$QA_DIR/Bookmarks.swift" Geranium/LocSim/CoordTransform.swift \
+xcrun swiftc TrollRoute/LocSim/PlaceModels.swift TrollRoute/LocSim/PlaceInput.swift TrollRoute/LocSim/AddressQuery.swift TrollRoute/LocSim/PlaceSearch.swift "$QA_DIR/Bookmarks.swift" TrollRoute/LocSim/CoordTransform.swift \
   Tests/RoutePicker/main.swift -o "$QA_DIR/model-tests"
 "$QA_DIR/model-tests"
 
@@ -13,14 +13,14 @@ PREVIEW_APP="$QA_DIR/RoutePickerPreview.app"
 mkdir -p "$PREVIEW_APP"
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
-  Geranium/LocSim/RouteLocationPicker.swift Geranium/LocSim/PlaceModels.swift Geranium/LocSim/PlaceInput.swift Geranium/LocSim/AddressQuery.swift Geranium/LocSim/PlaceSearch.swift Geranium/LocSim/CoordTransform.swift \
-  Geranium/LocSim/SharedPlace.swift Geranium/LocSim/SharePlaceView.swift \
+  TrollRoute/LocSim/RouteLocationPicker.swift TrollRoute/LocSim/PlaceModels.swift TrollRoute/LocSim/PlaceInput.swift TrollRoute/LocSim/AddressQuery.swift TrollRoute/LocSim/PlaceSearch.swift TrollRoute/LocSim/CoordTransform.swift \
+  TrollRoute/LocSim/SharedPlace.swift TrollRoute/LocSim/SharePlaceView.swift \
   "$QA_DIR/Bookmarks.swift" Tests/RoutePicker/Preview.swift \
   -o "$PREVIEW_APP/RoutePickerPreview"
 python3 - "$PREVIEW_APP/Info.plist" <<'PY'
 import plistlib, sys
 with open(sys.argv[1], 'wb') as f:
-    plistlib.dump(dict(CFBundleIdentifier='local.andromeda.routepickerpreview',
+    plistlib.dump(dict(CFBundleIdentifier='local.trollroute.routepickerpreview',
         CFBundleExecutable='RoutePickerPreview', CFBundleName='RoutePickerPreview',
         CFBundlePackageType='APPL', MinimumOSVersion='17.0', UIDeviceFamily=[1],
         UILaunchScreen={}, NSLocationWhenInUseUsageDescription='Preview the map.'), f)
@@ -33,8 +33,8 @@ xcrun simctl bootstatus "$DEVICE" -b
 xcrun simctl status_bar "$DEVICE" override --time '9:41' --batteryState charged --batteryLevel 100
 xcrun simctl install "$DEVICE" "$PREVIEW_APP"
 for screen in Destination Start Search Filtered Share Incoming Pasted; do
-  xcrun simctl terminate "$DEVICE" local.andromeda.routepickerpreview 2>/dev/null || true
-  xcrun simctl launch "$DEVICE" local.andromeda.routepickerpreview --screen "$screen"
+  xcrun simctl terminate "$DEVICE" local.trollroute.routepickerpreview 2>/dev/null || true
+  xcrun simctl launch "$DEVICE" local.trollroute.routepickerpreview --screen "$screen"
   sleep 5
   xcrun simctl io "$DEVICE" screenshot "$QA_DIR/$screen-picker.png"
 done

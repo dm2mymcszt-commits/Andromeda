@@ -38,12 +38,20 @@ jobs:
           git -C "$RUNNER_TEMP/theos-sdks" checkout 0222fd5413cf4b9af096f37b4621afa2688572f7
           cp -R "$RUNNER_TEMP/theos-sdks/iPhoneOS14.5.sdk" "$THEOS/sdks/"
 
+      - name: Check app identity
+        run: python3 Tests/Identity/check.py
+
+      - name: Package version
+        id: version
+        run: echo "version=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' TrollRoute/Info.plist)" >> "$GITHUB_OUTPUT"
+
       - name: Build and package
         run: |
           set -o pipefail
           bash ipabuild.sh 2>&1 | tee "$RUNNER_TEMP/trollstore-build.log"
-          test -s build/Geranium.tipa
-          unzip -t build/Geranium.tipa
+          test -s build/TrollRoute.tipa
+          unzip -t build/TrollRoute.tipa
+          python3 Tests/Identity/check.py build/TrollRoute.tipa
 
       - name: Check simulated motion metadata
         run: bash Tests/RouteMotion/check-location.sh
@@ -78,8 +86,8 @@ jobs:
       - name: Upload TrollStore package
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: Andromeda-route-motion-${{ github.sha }}
-          path: build/Geranium.tipa
+          name: TrollRoute-${{ steps.version.outputs.version }}-${{ github.sha }}
+          path: build/TrollRoute.tipa
           if-no-files-found: error
           retention-days: 30
 

@@ -73,7 +73,7 @@ require(RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(d
 require(RouteSimulationMath.durationText(RouteSimulationMath.simulationSeconds(distance: 7_500, speed: 500 / 3.6)) == "54s", "7.5 km is faster than 7.9 km")
 print("PASS: distance-based travel, irregular ticks, seek forward/back/end, live speed and motion metadata, date line, per-route durations, simulation-speed ranking")
 
-let suiteName = "Andromeda.RouteSpeeds.Tests.\(UUID().uuidString)"
+let suiteName = "TrollRoute.RouteSpeeds.Tests.\(UUID().uuidString)"
 let defaults = UserDefaults(suiteName: suiteName)!
 defer { defaults.removePersistentDomain(forName: suiteName) }
 var speeds = RouteSpeeds(defaults: defaults)
