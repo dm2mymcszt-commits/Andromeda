@@ -5,7 +5,7 @@
 - Source of truth: ROUND-PLAN.md (exact copy of the owner's attached document).
 - Baseline: `546ffb2`, branch `experiment/route-motion`, repository `dm2mymcszt-commits/Andromeda`.
 - Current phase: **Phase 0, in progress**. No application behavior changed.
-- Next step: audit step 0.4, prove unused code and resources, then commit and push.
+- Next step: audit step 0.5, complete the entitlement approval table, then commit and push.
 - User instruction: persist every audit step so usage-limit interruptions cannot lose findings.
 - Latest verified existing CI: [34745274343](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34745274343), success, application source `e878442`. Later baseline commits only changed Markdown.
 - CI currently ignores Markdown-only pushes. Phase 0 must remain documentation only; manually dispatch the workflow for the completed audit to verify the exact documentation commit without changing application code.
@@ -18,7 +18,7 @@
 | 0.1 Verify every Part B fact | Done | This audit commit; source baseline `546ffb2` |
 | 0.2 Confirm six bug causes, citations and reproductions | Done | This audit commit; runtime regression cases specified below |
 | 0.3 Classify every old-identity occurrence | Done | Baseline inventory appendix below |
-| 0.4 Prove unused code and resources | Not started | Helper, Addon, first-run, translations, media |
+| 0.4 Prove unused code and resources | Done | Evidence and retain/remove boundaries below |
 | 0.5 Entitlement table and owner approval | Not started | Audit all signing inputs; remove nothing before approval |
 | 0.6 Shared-state architecture note | Not started | LocationSession, route session, command channel |
 | 0 acceptance | Not started | Publish audit/table/questions; green CI |
@@ -669,3 +669,72 @@ Inventory: 431 content occurrences; 60 identity-bearing paths. Classes: {'rename
 | `RootHelper/control:5:14` | Geranium | technical | Description: GeraniumRootHelper | Remove dead helper/build references in Phase 2; preserve license attribution in notices. |
 
 </details>
+
+### 0.4 Dead-code and resource audit
+
+Step 0.3 saved and pushed as `ad85d73`. Evidence: tracked-source reference search, Xcode source/resource membership, entry-point and caller inspection. No deletion has happened. Removing a file also requires its project/build/test references to be removed in Phase 2.
+
+| Candidate | Reachability proof / decision |
+|---|---|
+| RootHelperMan.swift, prebuilt GeraniumRootHelper, RootHelper submodule | Only app caller is loadMCM with empty action. Child process loads its own framework and creates an unused test directory; no supported feature consumes an output. Remove wrapper, startup call, binary, submodule, project resource/copy phase, packaging make/copy, Theos/SDK workflow setup. Submodule baseline `50fb4efef688c77c3b2108e372bf7d1e17321e1c`; retain license credits. |
+| App TSUtil.m/.h and broad CoreServices.h | Only reachable C call today is spawnRoot from the obsolete wrapper. killall is reached only through uncalled respring code. Remaining TSUtil exports have no Swift caller. Remove obsolete implementation/header dependency after wrapper/respring cleanup. Phase 5/6 will use narrowly scoped private API declarations needed for new features, not retain this entire utility library. |
+| Addon MaterialView, keyed Published initializer + cancellables, navigationBarTitleTextColor | No caller outside definitions. Remove. |
+| Addon respring/respringDeprecated, exitGracefully/betterExit | No reachable caller. Remove, including process-kill and snapshot-loop dependencies. |
+| Addon UIColor.rgba / Color(uiColor14:) | Only references are inside their uncalled conversion pair. Remove. |
+| Addon dismissAlert/change; impactVibrate/miniimpactVibrate/errorVibrate; Bundle.icon | No production caller. Remove. successVibrate is different: Favorites -> BookMarkSave calls it; retain. |
+| Addon LinkCell -> AsyncImageView -> ImageLoader | Internally connected but no caller instantiates LinkCell/AsyncImageView outside this island. Remove all three. |
+| Addon truelyEnabled/disableListScroll/isMiniDevice | No caller outside definitions. Remove. |
+| StringProtocol integer subscripts | No identified caller, but overloaded subscript resolution cannot be proven by symbol-name search alone. Remove as a candidate only with compiler verification; do not infer that array indexing requires this extension. |
+| Addon checkSandbox + UIApplication.alert/present + currentUIAlertController | Reachable from app startup. **Keep** TrollStore installation check and necessary alert presentation; rename temporary probe path with the app. |
+| BookMarkSlider + bookmarkSheetToggle | Dead presentation: state initializes false, is only assigned false, and no action ever sets it true. Sole sheet reference cannot become presented. Remove sheet/state and old screen. Update `Tests/Altitude/check.sh:13`, which currently lists this file. |
+| isThereAnyMika/importMika; confirmAlert/TextFieldAlert | Only callers belong to unreachable BookMarkSlider (Mika helpers also only feed that screen). Remove after its deletion. BookMarkSave/BookMarkRetrieve stay: Favorites and picker still use them. |
+| LocationModel in LocSimManager.swift | No instantiation; current location is requested through other managers. Remove dead wrapper and delegate extension without changing live authorization flow in this step. |
+| WelcomeView and isFirstRun | **Not dead**: GeraniumApp presents it on first launch and Open map writes isFirstRun=false. Preserve useful onboarding, integrate migration summary later; do not delete solely because it is first-run code. |
+| CustomButtonStyle/LinkButtonStyle/DangerButtonStyle in WelcomeView | No call sites; remove these three styles. |
+| languageCode / langaugee | languageCode only feeds unused global langaugee. No live localization selector reads it. Remove both dead plumbing pieces; standard platform localization remains. |
+| TSBypass | **Not dead**: still read by startup check and old saved values can change behavior. Not approved for silent deletion. Preserve while refactoring checkSandbox; no current setting exposes it. |
+| Duplicate map settings in AppSettings | Fields have no AppSettings-property consumers, while live views use same AppStorage keys. Remove unused wrapper properties only; preserve keys and values for live settings/migration. |
+| Geranium/Icons/{Beta,Bouquet,Flore}.png | Included as resources in project but no current Image/UIImage lookup names reference them; removed icon-selection UI. Remove resources and project membership. |
+| Assets/Screenshots/{home,storage,storage_analyzer,cleaner_success}.png; Media/{home_view,cleaner_view}.png | Old removed-feature screenshots; no app resource membership. Some still have stale README links, so remove those links with files. They are documentation leftovers, not executable assets. |
+| Remaining old LocSim screenshots/video in Assets/Screenshots and Media | No runtime dependency; README currently references several. Replace with current preview artifacts when documentation is rewritten, then remove old files/links together. Do not characterize currently referenced media as unreferenced. |
+| geranium.png and icon.sketch | Asset is currently used, archive is old design source. **Keep until icon approval and replacement**, then remove both per R4. Current asset actually encodes JPEG. |
+| Localizable.xcstrings | 165 keys, mostly older utility UI; extractionState is not a reliable unused flag (many dead keys have none). Remove confirmed obsolete feature keys together with their translations. Keep common/current/format keys until call-site verification; do not delete whole catalog blindly. |
+| InfoPlist.xcstrings | **Correction to Part B:** built localized Info strings differ from base Info.plist (English CFBundleName=Geranium; localized WhenInUse purpose text also differs). Rename/update localization values along with base plist, or old identity/purpose text can remain in the built app. NSLocationUsageDescription is a legacy key, not the current iOS permission key. |
+
+Confirmed obsolete catalog keys below have no current application call site and refer to removed utility features. This is the deletion set supported by this audit, not a claim that every other key is used:
+
+- A list of daemons and what they do
+- A list of daemons you could disable
+- An error occured with the RootHelper.
+- By adding some rules to iOS internals, this software prevents the daemon from launching when you boot your phone. The app lists every running daemon, and you can swipe to the left to remove one of them.
+- Calculate Cleaning Size
+- Clean !
+- Cleaner
+- Cleaner File Sizes
+- Cleaner Settings
+- Daemons
+- Delete currently disabled daemon list, and start-over. iOS will generate the file back from scratch next reboot.
+- Disabled Daemons Manager
+- DISABLING SYSTEM DAEMONS IS DANGEROUS. YOU COULD BOOTLOOP YOUR DEVICE. PROCEED WITH CAUTION. I AM NOT RESPONSIBLE FOR ANY PROBLEM ON YOUR DEVICE.
+- DISABLING SYSTEM DAEMONS IS NOT RECOMMENDED. YOU COULD BOOTLOOP YOUR DEVICE. PROCEED WITH CAUTION. I AM NOT RESPONSIBLE FOR ANY PROBLEM ON YOUR DEVICE.
+- If you want to enable auto-update, you need to turn on Magnifier URL Scheme in TrollStore.
+- If you want to revert any of your choice, you should go into the manager (list icon next to the apply icon), where you can toggle disabled daemons.
+- Keep selection after cleaning
+- Lost your notifications because of the cleaner ? Don't panic, here is the solution !
+- Reboot
+- Respring
+- RootHelper Path : %@
+- Safe Clean Measures (Disable this if on iOS 15!)
+- Safe Clean Measures (Enable this if on iOS 15!)
+- Search a currently running daemon...
+- Search for a daemon...
+- Supervise
+- Superviser
+- This is a list of all the currently disabled daemons. Don't change things you didn't changed. The toggled ones are the disabled ones.
+- This is a list of all the currently disabled daemons. Swipe to the right to enable back the daemon.
+- Unsupervise
+- Various settings for the cleaner.
+- Welcome to Geranium Beta Testing Program
+- Welcome to Geranium, a toolbox for TrollStore that allows you to disable some daemons, simulate your location, clean your phone's storage and other. We need to configure a few things before you can use the app. This will only take a minute. You will still be able to change the settings later.
+
+Next implementation validation: remove closed dead-call islands, update project/CI extraction references, compile both targets, run every existing suite. No production test result for deletion is claimed in this docs-only audit.
