@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg-base" x2="0.25" y2="1">
+      <stop stop-color="#252b34"/>
+      <stop offset="0.48" stop-color="#15191f"/>
+      <stop offset="1" stop-color="#08090b"/>
+    </linearGradient>
+    <radialGradient id="bg-sheen" cx="0.38" cy="-0.04" r="0.9" gradientTransform="translate(0 -0.01) scale(1 0.77)">
+      <stop stop-color="#a9b1c4" stop-opacity="0.25"/>
+      <stop offset="0.48" stop-color="#677084" stop-opacity="0.09"/>
+      <stop offset="1" stop-color="#0b0c10" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bg-reflection" cx="0.95" cy="0.65" r="0.7">
+      <stop stop-color="#535b6c" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#13171e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg-base)"/>
+  <rect width="1024" height="1024" fill="url(#bg-sheen)"/>
+  <rect width="1024" height="1024" fill="url(#bg-reflection)"/>
+</svg>

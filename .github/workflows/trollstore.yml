@@ -10,6 +10,33 @@ permissions:
   contents: read
 
 jobs:
+  icon-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Render icon comparison without changing app assets
+        run: |
+          npm ci --prefix Design/Icon --ignore-scripts --no-audit --no-fund
+          python3 -m venv "$RUNNER_TEMP/icon-env"
+          "$RUNNER_TEMP/icon-env/bin/pip" install -r Design/Icon/requirements.txt
+          node Design/Icon/render.cjs
+          "$RUNNER_TEMP/icon-env/bin/python" Design/Icon/compare.py
+          cp Design/Icon/output/render.sha256 "$RUNNER_TEMP/first-render.sha256"
+          node Design/Icon/render.cjs
+          "$RUNNER_TEMP/icon-env/bin/python" Design/Icon/compare.py
+          cmp "$RUNNER_TEMP/first-render.sha256" Design/Icon/output/render.sha256
+          git diff --exit-code -- TrollRoute/Assets.xcassets
+      - name: Upload icon approval comparison
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: icon-approval-${{ github.sha }}
+          path: Design/Icon/output/
+          if-no-files-found: error
+          retention-days: 30
+
   build:
     runs-on: macos-15
     timeout-minutes: 30

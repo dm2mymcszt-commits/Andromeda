@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <mask id="shade-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024">
+      <path d="M226 270 H352 C449 270 489 320 489 401 V542 C489 633 539 695 632 695 H801"
+        fill="none" stroke="white" stroke-width="149" stroke-linecap="round"/>
+    </mask>
+    <filter id="shade-soft" x="-0.5" y="-0.5" width="2" height="2"><feGaussianBlur stdDeviation="22"/></filter>
+    <filter id="shade-frost" x="-0.5" y="-0.5" width="2" height="2"><feGaussianBlur stdDeviation="9"/></filter>
+    <linearGradient id="shade-edge" x1="0" y1="0" x2="0.1" y2="1">
+      <stop stop-color="#fff" stop-opacity="0.98"/>
+      <stop offset="0.42" stop-color="#fff" stop-opacity="0.16"/>
+      <stop offset="0.78" stop-color="#fff" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0.24"/>
+    </linearGradient>
+    <linearGradient id="shade-glass" x2="1" y2="1">
+      <stop stop-color="#fff" stop-opacity="0.65"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+  <g mask="url(#shade-mask)">
+    <path d="M194 305 H335 C397 305 431 334 431 408 V558 C431 679 507 750 638 750 H828"
+      fill="none" stroke="#66738b" stroke-opacity="0.31" stroke-width="57" stroke-linecap="round" filter="url(#shade-soft)"/>
+    <path d="M203 226 H350 C456 226 535 288 535 401 V527 C535 603 561 650 640 650 H806"
+      fill="none" stroke="#fff" stroke-opacity="0.76" stroke-width="35" stroke-linecap="round" filter="url(#shade-frost)"/>
+    <path d="M197 224 C207 215 220 213 239 213 H352 C468 213 546 284 546 401 V530 C546 607 576 640 644 640 H791 C818 640 840 651 850 671"
+      fill="none" stroke="url(#shade-edge)" stroke-width="16" stroke-linecap="round"/>
+    <path d="M195 232 C195 246 192 255 186 267 C174 251 177 230 191 215 C207 203 224 200 250 201 H349 C424 201 484 226 523 279 L505 303 C466 249 421 231 352 231 H239 C217 231 203 228 195 232 Z"
+      fill="url(#shade-glass)"/>
+    <path d="M181 314 C194 332 211 339 226 339 H351 C390 339 423 366 423 409 V542 C423 675 486 756 632 756 H801 C833 756 851 737 860 715"
+      fill="none" stroke="#fafbff" stroke-opacity="0.52" stroke-width="20" filter="url(#shade-frost)"/>
+    <path d="M164 302 C174 329 198 344 225 344 H349 C396 344 414 366 414 409 V542 C414 684 483 769 631 769 H801 C828 769 851 755 863 732"
+      fill="none" stroke="#fff" stroke-opacity="0.26" stroke-width="4"/>
+  </g>
+</svg>

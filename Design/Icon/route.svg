@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="route-pearl" x1="0" y1="0" x2="0.7" y2="1">
+      <stop stop-color="#fff"/>
+      <stop offset="0.22" stop-color="#e4eaf5"/>
+      <stop offset="0.43" stop-color="#aab5c9"/>
+      <stop offset="0.62" stop-color="#d4dceb"/>
+      <stop offset="0.81" stop-color="#eef2fb"/>
+      <stop offset="1" stop-color="#ccd4e3"/>
+    </linearGradient>
+    <filter id="route-shadow" x="-0.4" y="-0.4" width="1.8" height="1.9" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="24"/>
+      <feOffset dx="-6" dy="26"/>
+    </filter>
+  </defs>
+  <path d="M226 270 H352 C449 270 489 320 489 401 V542 C489 633 539 695 632 695 H801"
+    fill="none" stroke="#000" stroke-opacity="0.66" stroke-width="168" stroke-linecap="round" filter="url(#route-shadow)"/>
+  <path d="M226 270 H352 C449 270 489 320 489 401 V542 C489 633 539 695 632 695 H801"
+    fill="none" stroke="#f7f9ff" stroke-opacity="0.85" stroke-width="153" stroke-linecap="round"/>
+  <path d="M226 270 H352 C449 270 489 320 489 401 V542 C489 633 539 695 632 695 H801"
+    fill="none" stroke="url(#route-pearl)" stroke-width="150" stroke-linecap="round"/>
+</svg>
