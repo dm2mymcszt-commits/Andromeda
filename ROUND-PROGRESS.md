@@ -15,7 +15,7 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 7. Per-mode speeds, mode routes, and swap | done | `191ecf8` - CI 34697693135 passed every check; dark/light mode controls reviewed |
 | 8. Main-map route controls, seeking, and live speed | done | `b6a1244` - CI 34713045215 passed every check; expanded/collapsed playback reviewed |
 | 9. Finish actions and notifications | done | `b4b2282` - CI 34714016327 passed every check; Settings and collapsed controls reviewed |
-| 10. Persistent automatic/custom altitude | in progress | `e878442` - CI 34745274343 running |
+| 10. Persistent automatic/custom altitude | done | `e878442` - CI 34745274343 passed every check; altitude screens and package reviewed |
 
 ## Items 1-3 verified
 
@@ -85,7 +85,7 @@ CI 34714016327 for b4b2282 passed every check. Settings and collapsed playback s
 
 Choices: changing finish settings affects the next trip, stated in Settings; canceling a required Go-to-place picker keeps the previous option; reject starting an invalid Go-to-place configuration; loop/repeat notifications only on first arrival; elapsed resets for each leg; delayed repeat legs are counted without replaying every missed update; map shows the active leg with correctly oriented endpoints while running.
 
-## Item 10 candidate
+## Item 10 verified
 
 Added saved Automatic/Custom altitude, a numeric sheet with sign control and comma/dot validation, and central application before every location injection. Removed the old unsaved altitude alert and route-only altitude argument. All entry paths, including finish jumps, now share it. Automatic uses free worldwide Open-Meteo/Copernicus terrain; missing altitude uses negative vertical accuracy. Async updates retain the latest location and motion; Stop/custom changes invalidate pending responses. Added persistence, stale-response, Stop, parsing, and motion tests, live elevation CI, and automatic/custom/negative simulator captures. A direct live Talence lookup returned 22 m. Version prepared as 2.6.0 (4).
 
@@ -94,3 +94,7 @@ Candidate e878442 committed and pushed after item 9 passed. CI 34745274343 is ru
 Native build, motion, altitude persistence/races/live terrain, all seven addresses, sharing, and route-map checks passed. Expanded playback reviewed. Candidate package inspected: version 2.6.0 (4), ARM64 app/helper/extension with expected entitlements, Andromeda share action, location background mode, new altitude/finish/playback symbols and no removed feature classes. SHA-256: 14b26e84a91c2c923e83cd3b76fada74ea19524c1c844b45e52a1a08b0188334. Still awaiting altitude workspace captures and final picker checks; do not call item 10 done yet.
 
 Choices: 90 m terrain dataset; cache 2,048 samples within 45 m; one single-coordinate lookup per 10 seconds, 60-second failure backoff, persisted request reservation; missing elevation stays unknown while waiting or offline. Custom changes require Apply to avoid injecting half-typed numbers, Automatic applies immediately. Negative sign button supplements the decimal keyboard; sheet expands if needed. Existing iOS deployment compatibility retained. Altitude refreshes preserve speed/course/accuracy and refresh the timestamp for an active stationary location.
+
+Final CI 34745274343 passed every check, including workspace and shared picker regressions. Automatic light, custom 250 m dark, and negative -12.5 m dark captures inspected: values, sign control, Apply and Reset all fit in the compact sheet. Final package copied to build/Andromeda-2.6.0.tipa with the inspected checksum above. All ten items are implemented; phone acceptance remains for real injection/gestures, notifications, locked operation, sharing activation, and Snapchat.
+
+Exact next: replace BUILD-TROLLSTORE.md with the prepared short build/checklist notes, delete ROUND-PLAN.md and ROUND-PROGRESS.md in the last commit, push, and confirm a clean checkout. No implementation work remains.
