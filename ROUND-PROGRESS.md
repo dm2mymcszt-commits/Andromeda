@@ -5,7 +5,7 @@
 - Source of truth: ROUND-PLAN.md (exact copy of the owner's attached document).
 - Baseline: `546ffb2`, branch `experiment/route-motion`, repository `dm2mymcszt-commits/Andromeda`.
 - Current phase: **Phase 0, in progress**. No application behavior changed.
-- Next step: audit step 0.5, complete the entitlement approval table, then commit and push.
+- Next step: audit step 0.6, write the shared-state architecture and approval questions, then commit and push.
 - User instruction: persist every audit step so usage-limit interruptions cannot lose findings.
 - Latest verified existing CI: [34745274343](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34745274343), success, application source `e878442`. Later baseline commits only changed Markdown.
 - CI currently ignores Markdown-only pushes. Phase 0 must remain documentation only; manually dispatch the workflow for the completed audit to verify the exact documentation commit without changing application code.
@@ -19,7 +19,7 @@
 | 0.2 Confirm six bug causes, citations and reproductions | Done | This audit commit; runtime regression cases specified below |
 | 0.3 Classify every old-identity occurrence | Done | Baseline inventory appendix below |
 | 0.4 Prove unused code and resources | Done | Evidence and retain/remove boundaries below |
-| 0.5 Entitlement table and owner approval | Not started | Audit all signing inputs; remove nothing before approval |
+| 0.5 Entitlement table and owner approval | Audit done; waiting approval | Exact table below; no entitlement changed |
 | 0.6 Shared-state architecture note | Not started | LocationSession, route session, command channel |
 | 0 acceptance | Not started | Publish audit/table/questions; green CI |
 | 1 identity and migration | Not started | R1, read-only import, fixture checks |
@@ -738,3 +738,65 @@ Confirmed obsolete catalog keys below have no current application call site and 
 - Welcome to Geranium, a toolbox for TrollStore that allows you to disable some daemons, simulate your location, clean your phone's storage and other. We need to configure a few things before you can use the app. This will only take a minute. You will still be able to change the settings later.
 
 Next implementation validation: remove closed dead-call islands, update project/CI extraction references, compile both targets, run every existing suite. No production test result for deletion is claimed in this docs-only audit.
+
+### 0.5 Entitlement audit ? awaiting owner approval
+
+Step 0.4 saved and pushed as `a788fe0`. Signing inputs inspected: the app's two identical 23-key files (`entitlements.plist`, `Geranium/Geranium.entitlements`); extension's two identical one-key files (`Bookmark Location in Geranium/entitlements.plist` and matching .entitlements); helper's 15-key `RootHelper/entitlements.plist` (Theos signs it). Xcode CODE_SIGNING_ALLOWED=NO; ipabuild.sh explicitly signs app/share and Theos signs the helper. Changes must update every applicable signing input, not only Xcode's file.
+
+Recommendations distinguish current code calls from runtime requirements. Platform apps can require IOKit and container exceptions even without explicit source calls. [TrollStore's own documentation](https://github.com/opa334/TrollStore#unsandboxing) supports retaining no-sandbox, platform-application, rendering user clients and AppDataContainers. Private-service requirements must also be tested on the phone; source inspection alone cannot guarantee entitlement sufficiency.
+
+| App entitlement | Current use / reason | Recommendation |
+|---|---|---|
+| `platform-application` | Existing privileged simulation configuration; TrollStore notes this may be needed for unsandboxing. | Keep. |
+| `com.apple.security.iokit-user-client-class` | Array: AGXDeviceUserClient, IOHDIXControllerUserClient, IOSurfaceRootUserClient. Graphics/MapKit may implicitly need AGX and IOSurface under platform-application; no disk-image mounting feature remains. | Keep AGXDeviceUserClient and IOSurfaceRootUserClient; remove only IOHDIXControllerUserClient. |
+| `com.apple.security.exception.files.absolute-path.read-write` | Root-wide filesystem exception; old helper/file utilities. checkSandbox and read-only migration remain, protected by retained no-sandbox/container access. | Remove redundant root-wide exception; verify probe and import on phone. |
+| `com.apple.mobile.deleted.AllowFreeSpace` | Deleted/cleaner service access; no live caller. | Remove. |
+| `com.apple.private.security.container-manager` | Old helper MCM dependency; upcoming old-container discovery may require it. | Keep for migration implementation; revisit only with evidence and approval. |
+| `com.apple.private.security.no-container` | Alternative unsandboxing form; conflicts with goal of predictable per-app storage ownership. no-sandbox already retained. | Remove, preserve a normal data container; fixture and phone migration check required. |
+| `com.apple.private.security.no-sandbox` | Current checkSandbox and private location simulation environment. | Keep. |
+| `com.apple.private.persona-mgmt` | spawnRoot persona path in TSUtil only. | Remove with root helper. |
+| `com.apple.private.WebClips.read-write` | No live web-clip writer. | Remove. |
+| `com.apple.locationd.simulation` | CLSimulationManager via LocSimManager. | Keep. |
+| `com.apple.SystemConfiguration.SCDynamicStore-write-access` | No live SCDynamicStore write; timezone uses Darwin notification instead. | Remove; phone timezone check. |
+| `com.apple.private.security.system-application` | No explicit caller; legacy runtime privilege whose necessity is not established from source. | Keep in first cleanup; do not remove speculatively. |
+| `com.apple.private.coreservices.canmaplsdatabase` | Old broad CoreServices interface; new registration detection / migration lookup will query LaunchServices. | Keep for those tasks. |
+| `com.apple.lsapplicationworkspace.rebuildappdatabases` | Only dead root-helper icon-cache rebuild uses this API. | Remove. |
+| `com.apple.private.MobileContainerManager.allowed` | Old MCM access; may be needed for reliable old-data discovery. | Keep for migration implementation. |
+| `com.apple.private.MobileInstallationHelperService.InstallDaemonOpsEnabled` | No live installation service operation. | Remove. |
+| `com.apple.private.MobileInstallationHelperService.allowed` | No live installation service operation. | Remove. |
+| `com.apple.private.uninstall.deletion` | No uninstall feature; migration is read-only. | Remove. |
+| `com.apple.private.security.storage.MobileDocuments` | GPX fileImporter may select an iCloud Drive document. | Keep until actual document-picker access proves it unnecessary; preserve GPX. |
+| `com.apple.managedconfiguration.profiled-access` | Removed supervision/profile management. | Remove. |
+| `com.apple.private.security.storage.AppDataContainers` | Platform/no-sandbox apps can need this to read their own container; also migration. | Keep. |
+| `com.apple.developer.icloud-container-identifiers` | Current value is Boolean true, not an identifier array; no CloudKit/iCloud ubiquity container use. GPX document picker is distinct. | Remove malformed unused entitlement; retain MobileDocuments access. |
+| `com.apple.security.application-groups` | Favorites and command inbox. | Keep; Phase 1 use group.com.dm2mymcszt.trollroute for new storage, retain old group.live.cclerc.geraniumBookmarks only as read-only migration bridge in main app. |
+
+The existing share extension only has `com.apple.security.application-groups`: keep it, switch to the new group with the new app identity. The share extension does not need old-app migration access. Adding simulation/launch capabilities is a separate Phase 5 change, not implied by approval of the removals.
+
+Helper-only signing surface (remove the entire unused executable and this signing file; do not transfer these privileges into the app):
+
+| Helper entitlement | Use in obsolete helper | Recommendation |
+|---|---|---|
+| `platform-application` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.private.security.container-required` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.security.exception.files.absolute-path.read-write` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.private.security.container-manager` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.private.coreservices.canmaplsdatabase` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.lsapplicationworkspace.rebuildappdatabases` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.private.security.storage.AppBundles` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.private.MobileContainerManager.allowed` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.private.MobileInstallationHelperService.InstallDaemonOpsEnabled` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.private.MobileInstallationHelperService.allowed` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.private.uninstall.deletion` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.backboardd.launchapplications` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.multitasking.termination` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.private.security.storage-exempt.heritable` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+| `com.apple.mobile.deleted.AllowFreeSpace` | Root/persona-launched file operations, app registration, cleanup or process control; no supported feature invokes them | Remove with helper executable. |
+
+Proposed later additions, **not applied or treated as approved**:
+
+- Phase 1: new app group on app/share; old group retained read-only in app for migration. Group entitlement itself is not read-only: enforce read-only behavior in migration code and verify old files/defaults stay byte-for-byte unchanged.
+- Phase 5: share-extension `com.apple.locationd.simulation` for direct Go there now. Any platform/no-sandbox or LaunchServices launch exception will be separately justified by the chosen API and brought for approval before use; do not grant the app's entire entitlement set to the extension.
+- Phase 7: app `com.apple.developer.usernotifications.time-sensitive=true` for the requested optional notification level; widget uses the new app group. ActivityKit uses availability checks and Info.plist capability configuration, not a made-up entitlement.
+
+Approval request scope: the exact app removals/IOKit array edit above and removal of the unused helper with its signing file. All Keep recommendations remain unchanged except Phase 1's explicitly requested new identity and migration group. No approval has been received yet. Proposed future private extension privileges remain a separate decision.
