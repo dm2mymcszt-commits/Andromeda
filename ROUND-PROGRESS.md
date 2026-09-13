@@ -8,7 +8,7 @@
 - Next step: run exact-head Phase 0 CI and publish audit/approval questions; then begin Phase 1 items that do not depend on unanswered approvals.
 - User instruction: persist every audit step so usage-limit interruptions cannot lose findings.
 - Latest verified existing CI: [34745274343](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34745274343), success, application source `e878442`. Later baseline commits only changed Markdown.
-- Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), dispatched on `f2c2a4256ca6782cf904dad0dd607f109fdb6896`; running. All six audit steps are pushed. Approval questions for 0.5 removals, exact R2 operations and return-leg destination were posted in chat; no answer received yet.
+- Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), dispatched on `f2c2a4256ca6782cf904dad0dd607f109fdb6896`; running. All six audit steps are pushed. Owner approved 0.5 removals and exact R2 operations; current-leg endpoint chosen for Live Activity. Decisions committed in 575d61d.
 - CI currently ignores Markdown-only pushes. Phase 0 must remain documentation only; manually dispatch the workflow for the completed audit to verify the exact documentation commit without changing application code.
 - Commits: `30cbf19` saved plan and checklist, pushed. Each following audit commit records the preceding hash (a commit cannot contain its own hash).
 
@@ -16,12 +16,12 @@
 
 | Step | Status | Commit / next action |
 |---|---|---|
-| 0.1 Verify every Part B fact | Done | This audit commit; source baseline `546ffb2` |
-| 0.2 Confirm six bug causes, citations and reproductions | Done | This audit commit; runtime regression cases specified below |
-| 0.3 Classify every old-identity occurrence | Done | Baseline inventory appendix below |
-| 0.4 Prove unused code and resources | Done | Evidence and retain/remove boundaries below |
-| 0.5 Entitlement table and owner approval | Done; approved | Exact table at c3ba6b9; no entitlement changed yet |
-| 0.6 Shared-state architecture note | Done | Architecture and exact approval command list below |
+| 0.1 Verify every Part B fact | Done | `1f7dadf`; source baseline `546ffb2` |
+| 0.2 Confirm six bug causes, citations and reproductions | Done | `cb74fc1`, coverage detail `f586be7` |
+| 0.3 Classify every old-identity occurrence | Done | `ad85d73`; baseline inventory below |
+| 0.4 Prove unused code and resources | Done | `a788fe0`; evidence below |
+| 0.5 Entitlement table and owner approval | Done; approved | `c3ba6b9`, approval `575d61d`; unchanged files |
+| 0.6 Shared-state architecture note | Done | `f2c2a42`; exact commands and architecture below |
 | 0 acceptance | In progress | Exact-head CI and owner-facing audit summary pending |
 | 1 identity and migration | Not started | R1, read-only import, fixture checks |
 | 1 icon | Not started | R4, reference/layers/comparison; keep existing icon until approval |
@@ -896,3 +896,5 @@ Read-only source verification identified the exact persisted inputs:
 | old group group.live.cclerc.geraniumBookmarks | bookmarks array, each name/lat/long, **WGS-84** |
 
 Preserve stored coordinate formats and stable favorite names/recents ordering; do not transform every imported coordinate as if it were WGS-84. Old transient inbox requests, active sessions, throttle reservation and obsolete language/first-run keys are not part of the requested import. Shared new settings storage can avoid new-app preference relocation when removing no-container; verify this before choosing the final storage adapter. Migration discovery must use existing old preference locations and container discovery with creation disabled; never write old defaults or mark an unreadable import successful. Tests must preserve source bytes as well as decoded values.
+
+Audit package verification: downloaded CI 34759000421 package to build/trollroute-phase0/package/Geranium.tipa. ZIP integrity, ARM64 executable slices, and embedded XML entitlements all passed for app/helper/share. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`. Route-map preview suite passed; inspected light route map/cards and dark playback render. These are baseline component fixtures, not evidence that the reported production-composition bugs are fixed. Workspace/picker CI still running at this checkpoint.
