@@ -3,8 +3,8 @@
 ## Resume
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
-- Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/Andromeda`. Application baseline `546ffb2`; no application code changed yet.
-- Current checkpoint: Phase 0 complete. Next: Phase 1 repository preflight and already-approved operations, then identity/import work. Do not redo completed audits.
+- Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; no application code changed yet.
+- Current checkpoint: Phase 0 complete. Next: Phase 1 identity/import work. Do not redo completed audits.
 - Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
 - Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
@@ -13,7 +13,7 @@
 ## Decisions already approved
 
 - **Entitlement removal table approved** on 2026-09-13 (exact section 0.5 at `c3ba6b9`, approval recorded `575d61d`). Apply in Phase 2, not before. Keep rows stay; future extension privileges need separate review.
-- **Exact GitHub list approved**: rename to TrollRoute; description "Location simulation and route playback for TrollStore."; default `experiment/route-motion`; keep `main`; delete only the 14 tags listed with SHAs in audit; update origin. Commands prepared in audit, **not executed yet**. No need to ask again.
+- **Exact GitHub list approved**: rename to TrollRoute; description "Location simulation and route playback for TrollStore."; default `experiment/route-motion`; keep `main`; delete only the 14 tags listed with SHAs in audit; update origin. Executed and verified: new identity/default/description, all 14 tags removed, main preserved.
 - **Live Activity destination = current leg endpoint**, including original start on return legs.
 - Icon comparison/shipment approval still pending; retain old app icon until approved.
 - No GitHub Release authorized or created. No private extension fallback or unreadable-data migration success authorized.
@@ -31,7 +31,7 @@
 | 0.6 architecture | Done | `f2c2a42`; migration detail `bcab51e` |
 | 0 acceptance | Done | Audit posted; CI 34759000421 SUCCESS; source unchanged by subsequent documentation commits |
 | 1 R1 identity + import | Not started | Rename project/targets/IDs/UI/docs/UA; read-only migration fixtures |
-| 1 R2 repository | Approved, not executed | Preflight tags/releases; run exact commands; record each operation |
+| 1 R2 repository | Done | Approved operations executed; verified zero tags/releases; main still bc1e1d3; origin updated |
 | 1 R4 icon | Not started | Save reference; deterministic vector layers/render; comparison in chat+CI; wait for approval |
 | 1 F6 data credits | Not started | Generic About line, complete linked notices |
 | 1 acceptance | Not started | New .tipa IDs/signing; migration tests; icon comparison; no Release |
