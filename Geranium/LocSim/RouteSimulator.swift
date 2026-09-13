@@ -365,7 +365,6 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         return meters >= 1000 ? String(format: "%.1f km", meters / 1000) : "\(Int(ceil(meters))) m"
     }
     private var timer: Timer? = nil
-    private var altitude: Double = 0.0
     @Published private var speeds = RouteSpeeds()
     @Published private var modeCache = RouteModeCache()
     @Published private(set) var modeErrors: [TravelMode: String] = [:]
@@ -509,7 +508,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         progress = 0
     }
     
-    func startSimulation(altitude: Double = 0.0) {
+    func startSimulation() {
         guard !isSimulating, let track = track else { return }
         let settings = RouteFinishSettings.shared
         startError = nil
@@ -520,7 +519,6 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         finishState = RouteFinishState(action: settings.action)
         finishDestination = settings.destination
         timer?.invalidate()
-        self.altitude = altitude
         journey = RouteJourney(track: track, speedKmh: speeds[travelMode])
         isSimulating = true
         isPaused = false
@@ -664,7 +662,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
             if let destination = finishDestination {
                 currentPosition = CoordTransform.wgs84ToGcj02(destination.coordinate)
                 LocSimManager.startLocSim(location: RouteLocationSample.make(coordinate: destination.coordinate,
-                    altitude: altitude, course: 0, speed: 0, timestamp: Date()))
+                    course: 0, speed: 0, timestamp: Date()))
             }
         case .hold: break
         }
@@ -701,7 +699,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         let motion = journey.motion(paused: isPaused || isSeeking)
         progress = journey.progress
         currentPosition = CoordTransform.wgs84ToGcj02(motion.coordinate)
-        let location = RouteLocationSample.make(coordinate: motion.coordinate, altitude: altitude,
+        let location = RouteLocationSample.make(coordinate: motion.coordinate,
             course: motion.course, speed: motion.speed, timestamp: Date())
         LocSimManager.startLocSim(location: location)
     }

@@ -24,6 +24,12 @@ struct LocationSampleTests {
         precondition(unknown.speed < 0 && unknown.speedAccuracy < 0)
         precondition(unknown.course < 0 && unknown.courseAccuracy < 0)
 
+        let noElevation = RouteLocationSample.make(coordinate: coordinate,
+            course: 271.5, speed: 13.9, timestamp: timestamp)
+        precondition(noElevation.verticalAccuracy < 0)
+        precondition(noElevation.speed == 13.9 && noElevation.speedAccuracy == 0)
+        precondition(noElevation.course == 271.5 && noElevation.courseAccuracy == 0)
+
         let legacy = CLLocation(coordinate: coordinate, altitude: 17,
             horizontalAccuracy: 5, verticalAccuracy: 5,
             course: 271.5, speed: 13.9, timestamp: timestamp)

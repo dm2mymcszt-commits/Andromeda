@@ -14,7 +14,7 @@ import CoreLocation
 enum RouteLocationSample {
     static func make(
         coordinate: CLLocationCoordinate2D,
-        altitude: CLLocationDistance,
+        altitude: CLLocationDistance? = nil,
         course: CLLocationDirection,
         speed: CLLocationSpeed,
         timestamp: Date
@@ -23,9 +23,9 @@ enum RouteLocationSample {
         let validCourse = course.isFinite && course >= 0 && course < 360
         return CLLocation(
             coordinate: coordinate,
-            altitude: altitude,
+            altitude: altitude?.isFinite == true ? altitude! : 0,
             horizontalAccuracy: 5,
-            verticalAccuracy: 5,
+            verticalAccuracy: altitude?.isFinite == true ? 5 : -1,
             course: validCourse ? course : -1,
             // The route model has an exact bearing while moving. At rest retain
             // the last numeric bearing, but do not describe it as a travel direction.
@@ -41,6 +41,7 @@ enum RouteLocationSample {
 
 class LocSimManager {
     static let simManager = CLSimulationManager()
+    static let altitudeController = AltitudeController(deliver: inject)
     
     /// Updates timezone
     static func post_required_timezone_update(){
@@ -48,8 +49,11 @@ class LocSimManager {
     }
     
     /// Starts a location simulation of specified argument "location"
-    // TODO: save
     static func startLocSim(location: CLLocation) {
+        altitudeController.receive(location)
+    }
+
+    private static func inject(_ location: CLLocation) {
         simManager.stopLocationSimulation()
         simManager.clearSimulatedLocations()
         simManager.appendSimulatedLocation(location)
@@ -60,6 +64,7 @@ class LocSimManager {
     
     /// Stops location simulation
     static func stopLocSim(){
+        altitudeController.stop()
         simManager.stopLocationSimulation()
         simManager.clearSimulatedLocations()
         simManager.flush()

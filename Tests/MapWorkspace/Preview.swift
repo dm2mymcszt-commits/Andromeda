@@ -14,6 +14,8 @@ struct WorkspacePreview: View {
         span: MKCoordinateSpan(latitudeDelta: 0.07, longitudeDelta: 0.07))
     @State private var showSettings = false
     @State private var showSearch = false
+    @State private var showAltitude = false
+    @StateObject private var altitude = AltitudeController(deliver: { _ in })
     @State private var routeActive = false
     @State private var tapped: EquatableCoordinate?
     // Deterministic address fixture for the confirmation screenshot, not a live lookup.
@@ -60,11 +62,16 @@ struct WorkspacePreview: View {
                             enabled: tapEnabled, ask: askBeforeMoving, routeRunning: routeActive) { _ in }
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
+        .sheet(isPresented: $showAltitude) { AltitudeSheet(settings: .shared, controller: altitude) }
         .sheet(isPresented: $showSearch) {
             RouteLocationPicker(title: "Find a place", region: nil, selectedCoordinate: nil,
                 recents: places, initialQuery: "125 Cr Gambetta, 33400 Talence", select: { _ in })
         }
         .task {
+            AltitudeSettings.shared.reset()
+            if screen == "altitude-custom" { AltitudeSettings.shared.setCustom(250) }
+            if screen == "altitude-negative" { AltitudeSettings.shared.setCustom(-12.5) }
+            if screen.hasPrefix("altitude-") { showAltitude = true }
             tapEnabled = screen == "settings-enabled"
             if screen == "settings" || screen == "settings-enabled" { showSettings = true }
             if screen == "search" { showSearch = true }

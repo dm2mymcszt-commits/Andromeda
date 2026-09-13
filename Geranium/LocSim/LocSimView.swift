@@ -26,7 +26,7 @@ struct LocSimView: View {
     @State private var locationManager = CLLocationManager()
     @State private var lat: Double = 0.0
     @State private var long: Double = 0.0
-    @State private var altitude: String = "0.0"
+    @State private var showAltitude = false
     @State private var tappedCoordinate: EquatableCoordinate? = nil
     @State private var bookmarkSheetToggle: Bool = false
     @State private var showRouteSheet: Bool = false
@@ -72,7 +72,7 @@ struct LocSimView: View {
                             displayCoordinate: CoordTransform.gcj02ToWgs84(coord.coordinate),
                             enabled: tapMapToSetLocation, ask: askBeforeMoving,
                             routeRunning: routeSimulator.isSimulating) { coordinate in
-                            startSimulation(at: coordinate, altitude: Double(altitude) ?? 0)
+                            startSimulation(at: coordinate)
                         }
                     }
                     .ignoresSafeArea()
@@ -97,7 +97,7 @@ struct LocSimView: View {
                     isActive: $joystickActive,
                     onMove: { newCoord in
                         joystickCoordinate = newCoord
-                        let location = CLLocation(coordinate: newCoord, altitude: Double(altitude) ?? 0, horizontalAccuracy: 5, verticalAccuracy: 5, timestamp: Date())
+                        let location = RouteLocationSample.make(coordinate: newCoord, course: -1, speed: -1, timestamp: Date())
                         LocSimManager.startLocSim(location: location)
                         lat = newCoord.latitude
                         long = newCoord.longitude
@@ -133,6 +133,9 @@ struct LocSimView: View {
         .onChange(of: askBeforeMoving) { _ in mapMove.cancel() }
         .onAppear(perform: offerSharedPlace)
         .onChange(of: scenePhase) { phase in if phase == .active { offerSharedPlace() } }
+        .sheet(isPresented: $showAltitude, onDismiss: offerSharedPlace) {
+            AltitudeSheet(settings: .shared, controller: LocSimManager.altitudeController)
+        }
         .sheet(isPresented: $showSettings, onDismiss: offerSharedPlace) { SettingsView() }
         .sheet(isPresented: $showSearchBar, onDismiss: offerSharedPlace) {
             RouteLocationPicker(title: "Find a place", region: mapRegion,
@@ -141,7 +144,7 @@ struct LocSimView: View {
                 let coordinate = place.coordinate
                 mapRegion = MKCoordinateRegion(center: coordinate,
                     span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-                startSimulation(at: coordinate, altitude: Double(altitude) ?? 0)
+                startSimulation(at: coordinate)
             }
         }
         .sheet(isPresented: $bookmarkSheetToggle, onDismiss: offerSharedPlace) {
@@ -155,7 +158,7 @@ struct LocSimView: View {
                 let coord = CoordTransform.wgs84ToGcj02(CLLocationCoordinate2D(latitude: favLat, longitude: favLong))
                 let region = MKCoordinateRegion(center: coord, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
                 mapRegion = region
-                startSimulation(at: coord, altitude: Double(altitude) ?? 0.0)
+                startSimulation(at: coord)
                 AlertKitAPI.present(title: "📍 \(name)", icon: .done, style: .iOS17AppleMusic, haptic: .success)
             }
         }
@@ -176,8 +179,8 @@ struct LocSimView: View {
         guard scenePhase == .active, incomingPlace == nil,
               let request = SharedPlaceInbox().pending().first else { return }
         mapMove.cancel()
-        if showSettings || showSearchBar || bookmarkSheetToggle || showRouteSheet || showFavorites {
-            showSettings = false; showSearchBar = false; bookmarkSheetToggle = false
+        if showAltitude || showSettings || showSearchBar || bookmarkSheetToggle || showRouteSheet || showFavorites {
+            showAltitude = false; showSettings = false; showSearchBar = false; bookmarkSheetToggle = false
             showRouteSheet = false; showFavorites = false
             return // onDismiss offers it after the current sheet has closed.
         }
@@ -195,7 +198,7 @@ struct LocSimView: View {
             case .go:
                 mapRegion = MKCoordinateRegion(center: place.coordinate,
                     span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
-                startSimulation(at: place.coordinate, altitude: Double(altitude) ?? 0)
+                startSimulation(at: place.coordinate)
             case .start, .destination:
                 routeDraft.accept(request)
                 openSharedRoute = true
@@ -208,7 +211,7 @@ struct LocSimView: View {
         }
     }
     
-    private func startSimulation(at gcjCoordinate: CLLocationCoordinate2D, altitude: Double) {
+    private func startSimulation(at gcjCoordinate: CLLocationCoordinate2D) {
         mapMove.cancel()
         if routeSimulator.isSimulating { routeSimulator.stopSimulation() }
         joystickActive = false
@@ -217,7 +220,7 @@ struct LocSimView: View {
         self.lat = wgsCoordinate.latitude
         self.long = wgsCoordinate.longitude
         
-        let location = CLLocation(coordinate: wgsCoordinate, altitude: altitude,horizontalAccuracy:5,verticalAccuracy: 5,timestamp: Date())
+        let location = RouteLocationSample.make(coordinate: wgsCoordinate, course: 0, speed: 0, timestamp: Date())
         LocSimManager.startLocSim(location: location)
         
         joystickCoordinate = wgsCoordinate
@@ -258,16 +261,7 @@ struct LocSimView: View {
             joystickActive = false
             showRouteSheet.toggle()
         case .altitude:
-            UIApplication.shared.TextFieldAlert(
-                title: "Set Altitude",
-                message: "Enter the altitude in meters.",
-                textFieldPlaceHolder: "Altitude (m)"
-            ) { altitudeText, _ in
-                if let altText = altitudeText, !altText.isEmpty {
-                    self.altitude = altText
-                    AlertKitAPI.present(title: "Altitude Set!", icon: .done, style: .iOS17AppleMusic, haptic: .success)
-                }
-            }
+            showAltitude = true
         case .settings:
             showSettings = true
         case .stop:

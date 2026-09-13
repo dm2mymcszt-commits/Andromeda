@@ -24,6 +24,7 @@ xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   Geranium/LocSim/CustomMapView.swift Geranium/LocSim/FloatingQuickMenu.swift \
   Geranium/LocSim/RouteLocationPicker.swift Geranium/LocSim/PlaceModels.swift Geranium/LocSim/PlaceInput.swift Geranium/LocSim/AddressQuery.swift Geranium/LocSim/PlaceSearch.swift Geranium/SettingsView.swift \
   Geranium/LocSim/MapMoveConfirmation.swift \
+  Geranium/LocSim/Altitude.swift Geranium/LocSim/AltitudeSheet.swift \
   Geranium/LocSim/CoordTransform.swift Geranium/LocSim/RouteFinish.swift "$QA_DIR/Bookmarks.swift" \
   "$QA_DIR/AppSettings.swift" Tests/MapWorkspace/Preview.swift \
   -o "$PREVIEW_APP/MapWorkspacePreview"
@@ -32,7 +33,7 @@ import plistlib, sys
 with open(sys.argv[1], 'wb') as f:
     plistlib.dump(dict(CFBundleIdentifier='local.andromeda.workspacepreview',
         CFBundleExecutable='MapWorkspacePreview', CFBundleName='MapWorkspacePreview',
-        CFBundleShortVersionString='2.5.2', CFBundleVersion='3',
+        CFBundleShortVersionString='2.6.0', CFBundleVersion='4',
         CFBundlePackageType='APPL', MinimumOSVersion='17.0', UIDeviceFamily=[1],
         UILaunchScreen={}, NSLocationWhenInUseUsageDescription='Preview the map.'), f)
 PY
@@ -46,7 +47,7 @@ xcrun simctl install "$DEVICE" "$PREVIEW_APP"
 CONTAINER=$(xcrun simctl get_app_container "$DEVICE" local.andromeda.workspacepreview data)
 for appearance in dark light; do
   xcrun simctl ui "$DEVICE" appearance "$appearance"
-  for screen in map settings settings-enabled confirmation search; do
+  for screen in map settings settings-enabled confirmation search altitude-automatic altitude-custom altitude-negative; do
     xcrun simctl terminate "$DEVICE" local.andromeda.workspacepreview 2>/dev/null || true
     xcrun simctl launch "$DEVICE" local.andromeda.workspacepreview --screen "$screen" --appearance "$appearance"
     if test "$screen" = search; then sleep 20; else sleep 5; fi

@@ -36,7 +36,7 @@ struct BookMarkSlider: View {
                 ForEach(bookmarks) { bookmark in
                     Button(action: {
                         close()
-                        LocSimManager.startLocSim(location: CLLocation(coordinate: CLLocationCoordinate2D(latitude: bookmark.lat, longitude: bookmark.long), altitude: 0, horizontalAccuracy: 5, verticalAccuracy: 5, timestamp: Date()))
+                        LocSimManager.startLocSim(location: RouteLocationSample.make(coordinate: CLLocationCoordinate2D(latitude: bookmark.lat, longitude: bookmark.long), course: 0, speed: 0, timestamp: Date()))
                         AlertKitAPI.present(
                             title: "Started !",
                             icon: .done,

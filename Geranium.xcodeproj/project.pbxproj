@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BDA110100000000000000003 /* AltitudeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110100000000000000004 /* AltitudeSheet.swift */; };
+		BDA110100000000000000001 /* Altitude.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110100000000000000002 /* Altitude.swift */; };
 		BDA110090000000000000001 /* RouteFinish.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110090000000000000002 /* RouteFinish.swift */; };
 		BDA110050000000000000305 /* CoordTransform.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = F82C58032E37786D00F76DFA /* CoordTransform.swift */; };
 		BDA110050000000000000304 /* PlaceSearch.swift in Extension Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000042 /* PlaceSearch.swift */; };
@@ -115,6 +117,8 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BDA110100000000000000004 /* AltitudeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AltitudeSheet.swift; sourceTree = "<group>"; };
+		BDA110100000000000000002 /* Altitude.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Altitude.swift; sourceTree = "<group>"; };
 		BDA110090000000000000002 /* RouteFinish.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteFinish.swift; sourceTree = "<group>"; };
 		BDA110050000000000000102 /* SharePlaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/SharePlaceView.swift"; sourceTree = SOURCE_ROOT; };
 		BDA110050000000000000101 /* SharedPlace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Geranium/LocSim/SharedPlace.swift"; sourceTree = SOURCE_ROOT; };
@@ -255,6 +259,8 @@
 				7989FD022B347EEA00FBAB8D /* LocSimView.swift */,
 				F82C58052E37790000F76DFA /* RouteSimulator.swift */,
 				BDA110090000000000000002 /* RouteFinish.swift */,
+				BDA110100000000000000004 /* AltitudeSheet.swift */,
+				BDA110100000000000000002 /* Altitude.swift */,
 				F82C58072E37790100F76DFA /* RouteSimView.swift */,
 				BDA080010000000000000002 /* RouteLocationPicker.swift */,
 			);
@@ -560,6 +566,8 @@
 				79BA958A2B30D91600380D83 /* RootHelperMan.swift in Sources */,
 				F82C58062E37790000F76DFA /* RouteSimulator.swift in Sources */,
 				BDA110090000000000000001 /* RouteFinish.swift in Sources */,
+				BDA110100000000000000003 /* AltitudeSheet.swift in Sources */,
+				BDA110100000000000000001 /* Altitude.swift in Sources */,
 				F82C58082E37790100F76DFA /* RouteSimView.swift in Sources */,
 				BDA110050000000000000201 /* SharedPlace.swift in Sources */,
 				BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */,
@@ -620,7 +628,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "Bookmark Location in Geranium/Bookmark Location in Geranium.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Bookmark Location in Geranium/Info.plist";
@@ -632,7 +640,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.son3ra1n.andromeda.bookmark";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -648,7 +656,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "Bookmark Location in Geranium/Bookmark Location in Geranium.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Bookmark Location in Geranium/Info.plist";
@@ -660,7 +668,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.son3ra1n.andromeda.bookmark";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -799,7 +807,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Geranium/Geranium.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"Geranium/Preview Content\"";
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				ENABLE_PREVIEWS = YES;
@@ -821,7 +829,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.2;
+				MARKETING_VERSION = 2.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.son3ra1n.andromeda;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -839,7 +847,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Geranium/Geranium.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_ASSET_PATHS = "\"Geranium/Preview Content\"";
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				ENABLE_PREVIEWS = YES;
@@ -861,7 +869,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.5.2;
+				MARKETING_VERSION = 2.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.son3ra1n.andromeda;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -877,11 +885,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.son3ra1n.andromedaTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -897,11 +905,11 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.son3ra1n.andromedaTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -916,10 +924,10 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.son3ra1n.andromedaUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -934,10 +942,10 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.6.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.son3ra1n.andromedaUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;

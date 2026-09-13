@@ -544,7 +544,7 @@ struct RouteSimSheet: View {
             await RouteNotifications.shared.requestPermissionIfNeeded()
             isStarting = false
             guard isPresented, routeReady, !routeSimulator.availableRoutes.isEmpty else { return }
-            routeSimulator.startSimulation(altitude: 0.0)
+            routeSimulator.startSimulation()
             guard routeSimulator.isSimulating else {
                 UIApplication.shared.alert(body: routeSimulator.startError ?? "Unable to start this route.")
                 return
