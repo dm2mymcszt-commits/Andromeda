@@ -5,7 +5,7 @@
 - Source of truth: ROUND-PLAN.md (exact copy of the owner's attached document).
 - Baseline: `546ffb2`, branch `experiment/route-motion`, repository `dm2mymcszt-commits/Andromeda`.
 - Current phase: **Phase 0, in progress**. No application behavior changed.
-- Next step: audit step 0.2, record the six bug causes and baseline reproduction cases, then commit and push.
+- Next step: audit step 0.3, enumerate and classify identity occurrences, then commit and push.
 - User instruction: persist every audit step so usage-limit interruptions cannot lose findings.
 - Latest verified existing CI: [34745274343](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34745274343), success, application source `e878442`. Later baseline commits only changed Markdown.
 - CI currently ignores Markdown-only pushes. Phase 0 must remain documentation only; manually dispatch the workflow for the completed audit to verify the exact documentation commit without changing application code.
@@ -16,7 +16,7 @@
 | Step | Status | Commit / next action |
 |---|---|---|
 | 0.1 Verify every Part B fact | Done | This audit commit; source baseline `546ffb2` |
-| 0.2 Confirm six bug causes, citations and reproductions | Not started | R6, R9, R14, F1, F2, F3 |
+| 0.2 Confirm six bug causes, citations and reproductions | Done | This audit commit; runtime regression cases specified below |
 | 0.3 Classify every old-identity occurrence | Not started | Rename / keep / technical |
 | 0.4 Prove unused code and resources | Not started | Helper, Addon, first-run, translations, media |
 | 0.5 Entitlement table and owner approval | Not started | Audit all signing inputs; remove nothing before approval |
@@ -108,6 +108,8 @@ Findings will be appended and committed after each Phase 0 step. Existing source
 
 ### 0.1 Part B verification
 
+Saved and pushed in `1f7dadf`.
+
 Verified against tracked source at `546ffb2` and GitHub on 2026-09-13. No behavior changes.
 
 | Claim | Result and evidence |
@@ -135,5 +137,20 @@ Verified against tracked source at `546ffb2` and GitHub on 2026-09-13. No behavi
 | F3 scrubbing | Confirmed preview sets seeking state, resets tick baseline and delivers motion as paused; advanceRoute rejects seeking. |
 
 Current package contains one share extension with display name Andromeda. Source alone cannot identify which installed app or cached registration owns the additional Geranium share action in the screenshot. Do not delete another app or assert its origin without device evidence.
+
+### 0.2 Root causes and regression cases
+
+All line references below are baseline source; no fix is claimed. Phase 0 is documentation only. The failing behavioral cases are specified here for implementation alongside their fixes; no intentionally failing CI test is installed in the green delivery workflow. Static inspection and arithmetic are available locally; UIKit/Swift production execution is not.
+
+| Item | Confirmed source cause | Baseline reproduction / future regression assertion |
+|---|---|---|
+| R6 | `LocSimView.swift:81–94`: vertical ScrollView receives only a width constraint inside top-trailing ZStack. Its viewport occupies the offered height although FloatingQuickMenu's material background is content-sized. No independent toolbar drag recognizer is present. Thus the scroll viewport extends below visible Stop. | In the real LocSimView composition, drag vertically inside the toolbar's x-range just below visible Stop. Assert map center changes and toolbar frame remains fixed. Existing previews instantiate components separately, so their screenshots do not prove this hit test. Test both content-fitting and small-height overflowing menus in Phase 3. Source confirms layout mismatch; runtime gesture consequence still needs simulator verification. |
+| R9 / F4 | `SharePlaceView.swift:74–75` writes JSON and reports manual-open; `SharedPlace.swift:60–67` writes atomically but posts no event. `LocSimView.swift:134–156,178–189` reads only on appearance, activation or sheet dismissal. No URL handler or Darwin observer bridges new requests to an already-active view. | After initial onAppear has drained an empty inbox, enqueue while app remains active. With no lifecycle callback, no consumer runs: recognition latency is unbounded, not a fixed minute. Phase 5 harness must enqueue after initial activation and observe handled UUID within 1 s without forcing another appearance; also background/launch exactly-once cases. Reading `scenePhase` again is unnecessary and will be removed from command delivery, but a SwiftUI stale-value race has not been reproduced. |
+| R14 | `LocSimView.swift:111–130`: playback and credits are sibling branches; credits test only cycling + nonempty routes, not creation state. | Active cycling + available routes makes both conditions true. Assert no creation-credit view exists outside playback while active, and required OSM attribution exists inside playback. Check paused/collapsed as well as moving. Screenshot 4 matches this source condition. |
+| F1 | `Altitude.swift:78,115–130,143–159`: 10-second reservation, cache restricted to 45 m, refresh immediately delivers unknown whenever outside cache; async result is cached at request coordinate and may already be behind the route. | At 50 km/h, leave 45 m after 3.24 s; at 500 km/h after 0.324 s. A straight 10-second interval covers 138.89 m or 1388.89 m respectively. Latency can cause even a successful response to miss the current point. Mock a known profile along a straight route and assert every moving sample stays known after initial data arrives; include delayed batch, reverse, seeking and custom mode. Existing tests intentionally reject stale distant elevation; preserve coordinate correctness while replacing the no-profile policy. |
+| F2 | `RouteSimulator.swift` updateInterval=0.25 and `updateLiveSpeed:561–566`; `LocSimManager.swift:56–62` stop/clear/append/flush/start/timezone unconditionally; AltitudeController can reissue additional samples. | Ten seconds of timer updates alone invoke 40 restarts + 40 timezone notifications, excluding initial update, slider events and elevation completions. Spy on the injection adapter before/after: continuous route updates must not restart or post timezone per tick, burst speed changes coalesce to the latest value, and starts/jumps still notify. Preserve sample speed/course/accuracies; isolated implementation commit + phone Bitmoji check required. This is call-path counting, not a measured device energy/performance result. |
+| F3 | `RouteSimulator.swift:569–581` sets seekFraction and clears lastTick; `advanceRoute:619` excludes isSeeking; `updateLocation:699` treats isSeeking as paused. | Start moving, begin preview at 46%, let two ticks elapse without release. Baseline distance freezes and injected speed becomes 0. Required test asserts journey advances at current speed while preview marker follows finger; release commits jump; paused preview remains 0; cancel removes preview; seek to 100% invokes completion. Existing math tests alone do not exercise this engine coupling. |
+
+Root-cause fixes planned: constrain measured toolbar viewport to visible content/available height; event-driven request delivery independent of view lifecycle; mutually exclusive creation/playback credit ownership; route elevation profile + pending-value continuity; session-owned injection adapter; scrub preview state separate from playback state. No arbitrary delays or polling proposed.
 
 Open verification limits: no local iOS runtime; gesture recognition and lifecycle timing require the planned simulator harness. Root-helper removal and new private APIs require phone checks. CI ignores Markdown-only pushes, so existing green source remains unchanged; manual exact-head CI will close Phase 0 acceptance.
