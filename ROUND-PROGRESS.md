@@ -4,10 +4,10 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/Andromeda`. Application baseline `546ffb2`; no application code changed yet.
-- Current checkpoint: Phase 0 audit done; final CI status needs checking. Next: check run **34759000421**, record outcome, then start Phase 1. Do not redo completed audits.
-- Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`. Last observed: package, all model/live checks, route-map and workspace previews passed; picker running.
+- Current checkpoint: Phase 0 complete. Next: Phase 1 repository preflight and already-approved operations, then identity/import work. Do not redo completed audits.
+- Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
-- Current docs-only checkpoint before compaction: `17b784c`, pushed. Long audit moved intact to ROUND-AUDIT.md per latest owner instruction; commit/push this move first.
+- Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
 - Persist each finished step and its next action. Keep this file short; append detailed findings to audit. Delete **all three ROUND files** in the final commit.
 
 ## Decisions already approved
@@ -29,7 +29,7 @@
 | 0.4 unused-code proof | Done | `a788fe0` |
 | 0.5 entitlement audit | Done, approved | `c3ba6b9`, approval `575d61d` |
 | 0.6 architecture | Done | `f2c2a42`; migration detail `bcab51e` |
-| 0 acceptance | In progress | Audit posted; final CI conclusion pending |
+| 0 acceptance | Done | Audit posted; CI 34759000421 SUCCESS; source unchanged by subsequent documentation commits |
 | 1 R1 identity + import | Not started | Rename project/targets/IDs/UI/docs/UA; read-only migration fixtures |
 | 1 R2 repository | Approved, not executed | Preflight tags/releases; run exact commands; record each operation |
 | 1 R4 icon | Not started | Save reference; deterministic vector layers/render; comparison in chat+CI; wait for approval |
