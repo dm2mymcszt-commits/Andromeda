@@ -885,3 +885,14 @@ This section supersedes historical pending-approval notes above. Received explic
 3. **Current leg's endpoint (original start while returning).** Use this for Live Activity destination, including reverse/repeat legs.
 
 Next: finish audit CI, then execute approved Phase 1 repository operations with preflight and sequential error checks. The icon remains awaiting a future comparison/approval. Approval does not authorize shortcuts for private extension execution or unreadable migration data.
+
+### Migration audit detail (preparation, no implementation)
+
+Read-only source verification identified the exact persisted inputs:
+
+| Source | Data |
+|---|---|
+| old standard domain com.son3ra1n.andromeda | routeRecentPlaces.v1 (JSON RoutePlace array, **map coordinates**); routeFinishAction; routeFinishDestination (JSON **WGS-84**); routeSpeedKmh.walking/cycling/driving; altitudeProfile; mapAppearance; mapStyle; mapButtonLabels; mapHaptics; tapMapToSetLocation; askBeforeMoving |
+| old group group.live.cclerc.geraniumBookmarks | bookmarks array, each name/lat/long, **WGS-84** |
+
+Preserve stored coordinate formats and stable favorite names/recents ordering; do not transform every imported coordinate as if it were WGS-84. Old transient inbox requests, active sessions, throttle reservation and obsolete language/first-run keys are not part of the requested import. Shared new settings storage can avoid new-app preference relocation when removing no-container; verify this before choosing the final storage adapter. Migration discovery must use existing old preference locations and container discovery with creation disabled; never write old defaults or mark an unreadable import successful. Tests must preserve source bytes as well as decoded values.
