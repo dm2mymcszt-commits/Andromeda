@@ -3,6 +3,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 import math
 import hashlib
+import sys
 
 root = Path(__file__).resolve().parent
 output = root / 'output'
@@ -13,13 +14,19 @@ assert render.getchannel('A').getextrema() == (255, 255), 'Icon must be opaque a
 # Check the approved frame was not carried into the artwork: corners stay dark.
 assert all(max(render.getpixel(point)[:3]) < 100 for point in [(0, 0), (1023, 0), (0, 1023), (1023, 1023)])
 render.convert('RGB').save(output / 'icon.png')
+if '--verify-installed' in sys.argv:
+    installed = Image.open(root.parents[1] / 'TrollRoute/Assets.xcassets/AppIcon.appiconset/TrollRoute.png')
+    # Windows and Linux PNG encoders produce different compressed bytes. Compare
+    # the actual artwork, including every pixel, rather than the compression.
+    assert installed.mode == 'RGB' and installed.size == (1024, 1024)
+    assert installed.tobytes() == render.convert('RGB').tobytes(), 'Installed icon differs from the approved layers'
 (output / 'render.sha256').write_text(hashlib.sha256((output / 'icon.png').read_bytes()).hexdigest() + '\n')
 board = Image.new('RGB', (2144, 1490), '#17191e')
 draw = ImageDraw.Draw(board)
 font = ImageFont.load_default(size=27)
 small = ImageFont.load_default(size=23)
 draw.text((32, 22), 'APPROVED REFERENCE  /  1024 px', font=font, fill='white')
-draw.text((1088, 22), 'VECTOR RENDER  /  1024 px  /  AWAITING APPROVAL', font=font, fill='white')
+draw.text((1088, 22), 'APPROVED VECTOR RENDER  /  1024 px', font=font, fill='white')
 board.paste(reference, (32, 68))
 board.paste(render.convert('RGB'), (1088, 68))
 

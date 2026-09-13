@@ -4,7 +4,7 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: Phase 1. Next: finish migration CI 34778446157 and icon artifact, post comparison for approval, then Phase 2. Do not redo completed audits.
+- Current checkpoint: Phase 1. Next: finish final Phase 1 preview checks, then Phase 2 approved dead-code/entitlement cleanup. Icon approved and shipped in `e6d9569`; pixel-validation follow-up pushed next. Do not redo completed audits.
 - Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
 - Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
@@ -32,9 +32,9 @@
 | 0 acceptance | Done | Audit posted; CI 34759000421 SUCCESS; source unchanged by subsequent documentation commits |
 | 1 R1 identity + import | In progress | Naming `db74fc5`: full CI 34777564932 SUCCESS. Migration `9d16061` pushed; fix `75eba4a` pushed. CI 34778446157: package, migration fixtures and model/live checks passed; final previews pending |
 | 1 R2 repository | Done, `674ee30` | Approved operations executed; verified zero tags/releases; main still bc1e1d3; origin updated |
-| 1 R4 icon | Approved, packaging | `1349f7f`: comparison posted; CI icon artifact passed; owner approved. Exact render replaces old icon; final app build pending |
+| 1 R4 icon | Approved and committed | `e6d9569`: exact approved render installed; old icon sources removed. CI compression differs by OS but all pixels identical; pixel-check follow-up pending |
 | 1 F6 data credits | Done | `db74fc5`: generic About line links exact notices; full CI 34777564932 SUCCESS |
-| 1 acceptance | Not started | New .tipa IDs/signing; migration tests; icon comparison; no Release |
+| 1 acceptance | In progress | Build 6 downloaded: IDs, ARM64 and embedded app/helper/share entitlements verified. All migration/model/live tests passed; final picker preview pending. Icon approved; no Release |
 | 2 R3 foundation | Not started | Approved cleanup, shared LocationSession, previous spoof snapshot; preserve checkSandbox |
 | 2 F2 injection | Not started | Separate commit; adapter cadence/coalescing/timezone tests and phone check |
 | 2 F1 altitude | Not started | Batched route profile, interpolation, continuity; custom unchanged |
