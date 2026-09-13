@@ -832,3 +832,7 @@ Owner explicitly approved shipping the render shown on the right of the comparis
 Downloaded CI 34778446157 build 6 to build/phase1-migration-package/TrollRoute.tipa; package SHA256 `61bf6750013d5d49e08a0c72271f9b3fa82f5e0396d0a7adb6e96a3b8cbce0a1`. Tests/Identity/check.py and package-signing.py both passed: new bundle identities, executable ARM64 components and exact embedded signing entitlements. Migration/model/live tests and route-map/workspace previews passed; final picker preview still running at checkpoint.
 
 Icon shipment committed/pushed `e6d9569`. Downloaded icon CI artifact and compared decoded RGB: identical every pixel (raw SHA256 `89a5ff1e04b1bd7f63e18189e1c722804f9885840a59f1683536cd384b8cbf10`). Windows/Linux PNG compression bytes differ although pixels match. Fixed asset comparison to require exact RGB pixels/dimensions/mode; retained repeated render byte-determinism within each CI environment. No artwork change.
+
+### Phase 1 acceptance complete
+
+CI 34778446157 completed SUCCESS: package, migration and every regression/live check, route-map/workspace/picker previews. Icon validation follow-up `2b53a12` pushed; CI 34779276915 icon-review and app build/package (including embedded entitlements check) SUCCESS. Phase 1 acceptance satisfied; only physical migration/install check remains for owner. Begin Phase 2 approved cleanup.

@@ -4,7 +4,7 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: Phase 1. Next: finish final Phase 1 preview checks, then Phase 2 approved dead-code/entitlement cleanup. Icon approved and shipped in `e6d9569`; pixel-validation follow-up pushed next. Do not redo completed audits.
+- Current checkpoint: Phase 2 begins. Next: remove audited dead code/helper and apply only approved entitlement removals, then build/test. Phase 1 accepted; do not redo it. Do not redo completed audits.
 - Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
 - Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
@@ -30,12 +30,12 @@
 | 0.5 entitlement audit | Done, approved | `c3ba6b9`, approval `575d61d` |
 | 0.6 architecture | Done | `f2c2a42`; migration detail `bcab51e` |
 | 0 acceptance | Done | Audit posted; CI 34759000421 SUCCESS; source unchanged by subsequent documentation commits |
-| 1 R1 identity + import | In progress | Naming `db74fc5`: full CI 34777564932 SUCCESS. Migration `9d16061` pushed; fix `75eba4a` pushed. CI 34778446157: package, migration fixtures and model/live checks passed; final previews pending |
+| 1 R1 identity + import | Done; phone import check | `db74fc5`, `9d16061`, `75eba4a`: full CI 34778446157 SUCCESS; signed package verified; read-only fixtures pass |
 | 1 R2 repository | Done, `674ee30` | Approved operations executed; verified zero tags/releases; main still bc1e1d3; origin updated |
-| 1 R4 icon | Approved and committed | `e6d9569`: exact approved render installed; old icon sources removed. CI compression differs by OS but all pixels identical; pixel-check follow-up pending |
+| 1 R4 icon | Approved and committed | `e6d9569`: exact approved render installed; old icon sources removed. `2b53a12` compares identical pixels across OS; CI 34779276915 icon and app package passed |
 | 1 F6 data credits | Done | `db74fc5`: generic About line links exact notices; full CI 34777564932 SUCCESS |
-| 1 acceptance | In progress | Build 6 downloaded: IDs, ARM64 and embedded app/helper/share entitlements verified. All migration/model/live tests passed; final picker preview pending. Icon approved; no Release |
-| 2 R3 foundation | Not started | Approved cleanup, shared LocationSession, previous spoof snapshot; preserve checkSandbox |
+| 1 acceptance | Done | Full CI 34778446157 SUCCESS, downloaded package signing verified. Approved icon built in CI 34779276915; exact pixel check passed. No Release |
+| 2 R3 foundation | In progress | First: audited helper/dead code and approved entitlements. Then shared LocationSession and previous spoof snapshot; preserve checkSandbox |
 | 2 F2 injection | Not started | Separate commit; adapter cadence/coalescing/timezone tests and phone check |
 | 2 F1 altitude | Not started | Batched route profile, interpolation, continuity; custom unchanged |
 | 2 acceptance | Not started | Session/profile/adapter tests and existing regression; build timing |
