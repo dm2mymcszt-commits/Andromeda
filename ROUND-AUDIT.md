@@ -822,3 +822,7 @@ Migration CI 34778175751 failed compiling MigrationLaunchView because the C dict
 Copied owner's reference unchanged to Design/Icon/reference-approved.png. Recreated separate background, route and shading SVG layers; full-square dark background, one large pearl route, no outer frame or extra symbol. Pinned build-only resvg-js 2.6.2 and Pillow 12.2.0; renderer has no external assets/system fonts/randomness. Output is opaque RGB 1024 square, not pre-rounded. Comparison contains reference and render at 1024px and 180px (60pt @3x) light/dark wallpaper previews; continuous-corner mask is a documented approximation used only on review thumbnails. Repeated render SHA256 verified identical locally. CI separately renders, checks determinism and uploads icon-approval artifact. No app asset changed. No speculative .icon document or Xcode upgrade; vector layers remain suitable for future Icon Composer import. Visual owner approval remains required.
 
 Migration fix 75eba4a pushed. Run 34778446157 now passed iOS package, migration fixtures and all model/live checks; final simulator previews pending.
+
+## Phase 1 icon shipment approval
+
+Owner explicitly approved shipping the render shown on the right of the comparison at `1349f7f` on 2026-09-13. CI 34778704780 icon-review passed and uploaded the comparison. Copied the exact local deterministic opaque 1024px PNG (SHA256 `1b81a3886ddd2f1aa32f081f2efd7d436e3e78f08cc07e7c631c62b12558d3eb`) into the app catalog as TrollRoute.png; removed geranium.png and icon.sketch. No new visual changes. App build pending after push.

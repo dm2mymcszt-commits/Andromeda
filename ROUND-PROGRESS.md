@@ -15,7 +15,7 @@
 - **Entitlement removal table approved** on 2026-09-13 (exact section 0.5 at `c3ba6b9`, approval recorded `575d61d`). Apply in Phase 2, not before. Keep rows stay; future extension privileges need separate review.
 - **Exact GitHub list approved**: rename to TrollRoute; description "Location simulation and route playback for TrollStore."; default `experiment/route-motion`; keep `main`; delete only the 14 tags listed with SHAs in audit; update origin. Executed and verified: new identity/default/description, all 14 tags removed, main preserved.
 - **Live Activity destination = current leg endpoint**, including original start on return legs.
-- Icon comparison/shipment approval still pending; retain old app icon until approved.
+- Icon comparison at `1349f7f` explicitly approved on 2026-09-13; ship that exact render, without the rim.
 - No GitHub Release authorized or created. No private extension fallback or unreadable-data migration success authorized.
 - Injection changes need separate commit and phone Bitmoji test. Physical TrollStore and Dynamic Island behavior must not be claimed from simulator tests.
 
@@ -32,7 +32,7 @@
 | 0 acceptance | Done | Audit posted; CI 34759000421 SUCCESS; source unchanged by subsequent documentation commits |
 | 1 R1 identity + import | In progress | Naming `db74fc5`: full CI 34777564932 SUCCESS. Migration `9d16061` pushed; fix `75eba4a` pushed. CI 34778446157: package, migration fixtures and model/live checks passed; final previews pending |
 | 1 R2 repository | Done, `674ee30` | Approved operations executed; verified zero tags/releases; main still bc1e1d3; origin updated |
-| 1 R4 icon | In progress, awaiting approval | Reference saved; vector layers + deterministic PNG/comparison verified locally. Commit/push CI artifact step, post comparison and request visual approval; old app icon retained |
+| 1 R4 icon | Approved, packaging | `1349f7f`: comparison posted; CI icon artifact passed; owner approved. Exact render replaces old icon; final app build pending |
 | 1 F6 data credits | Done | `db74fc5`: generic About line links exact notices; full CI 34777564932 SUCCESS |
 | 1 acceptance | Not started | New .tipa IDs/signing; migration tests; icon comparison; no Release |
 | 2 R3 foundation | Not started | Approved cleanup, shared LocationSession, previous spoof snapshot; preserve checkSandbox |

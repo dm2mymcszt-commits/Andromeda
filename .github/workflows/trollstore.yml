@@ -28,6 +28,7 @@ jobs:
           node Design/Icon/render.cjs
           "$RUNNER_TEMP/icon-env/bin/python" Design/Icon/compare.py
           cmp "$RUNNER_TEMP/first-render.sha256" Design/Icon/output/render.sha256
+          cmp Design/Icon/output/icon.png TrollRoute/Assets.xcassets/AppIcon.appiconset/TrollRoute.png
           git diff --exit-code -- TrollRoute/Assets.xcassets
       - name: Upload icon approval comparison
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -79,6 +80,7 @@ jobs:
           test -s build/TrollRoute.tipa
           unzip -t build/TrollRoute.tipa
           python3 Tests/Identity/check.py build/TrollRoute.tipa
+          python3 Tests/Identity/package-signing.py build/TrollRoute.tipa
 
       - name: Check read-only data migration
         run: bash Tests/Migration/check.sh
