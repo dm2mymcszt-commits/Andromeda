@@ -5,7 +5,7 @@
 - Source of truth: ROUND-PLAN.md (exact copy of the owner's attached document).
 - Baseline: `546ffb2`, branch `experiment/route-motion`, repository `dm2mymcszt-commits/Andromeda`.
 - Current phase: **Phase 0, in progress**. No application behavior changed.
-- Next step: audit step 0.6, write the shared-state architecture and approval questions, then commit and push.
+- Next step: run exact-head Phase 0 CI and publish audit/approval questions; then begin Phase 1 items that do not depend on unanswered approvals.
 - User instruction: persist every audit step so usage-limit interruptions cannot lose findings.
 - Latest verified existing CI: [34745274343](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34745274343), success, application source `e878442`. Later baseline commits only changed Markdown.
 - CI currently ignores Markdown-only pushes. Phase 0 must remain documentation only; manually dispatch the workflow for the completed audit to verify the exact documentation commit without changing application code.
@@ -20,8 +20,8 @@
 | 0.3 Classify every old-identity occurrence | Done | Baseline inventory appendix below |
 | 0.4 Prove unused code and resources | Done | Evidence and retain/remove boundaries below |
 | 0.5 Entitlement table and owner approval | Audit done; waiting approval | Exact table below; no entitlement changed |
-| 0.6 Shared-state architecture note | Not started | LocationSession, route session, command channel |
-| 0 acceptance | Not started | Publish audit/table/questions; green CI |
+| 0.6 Shared-state architecture note | Done | Architecture and exact approval command list below |
+| 0 acceptance | In progress | Exact-head CI and owner-facing audit summary pending |
 | 1 identity and migration | Not started | R1, read-only import, fixture checks |
 | 1 icon | Not started | R4, reference/layers/comparison; keep existing icon until approval |
 | 1 repository operations | Not started | R2, exact commands and explicit yes before execution |
@@ -800,3 +800,48 @@ Proposed later additions, **not applied or treated as approved**:
 - Phase 7: app `com.apple.developer.usernotifications.time-sensitive=true` for the requested optional notification level; widget uses the new app group. ActivityKit uses availability checks and Info.plist capability configuration, not a made-up entitlement.
 
 Approval request scope: the exact app removals/IOKit array edit above and removal of the unused helper with its signing file. All Keep recommendations remain unchanged except Phase 1's explicitly requested new identity and migration group. No approval has been received yet. Proposed future private extension privileges remain a separate decision.
+
+### 0.6 Architecture and implementation boundaries
+
+Step 0.5 saved and pushed as `c3ba6b9`. No app behavior or entitlements changed.
+
+1. **LocationSession owns spoofing.** One main-actor observable owner exposes active kind (none/static/joystick/route), WGS-84 position, effective altitude + validity/accuracy, altitude profile, motion sample and session revision. Views derive their map-space position through CoordTransform; they do not maintain competing lat/long values. Starting a route snapshots the previous active spoof, including altitude, before replacing it. Reading Current Location from iOS is not evidence of a previous app-owned spoof. Persist only the cross-process state needed for commands, previous spoof and activity display; validate stale session ownership after relaunch.
+2. **RouteSession owns the trip.** Retain RouteTrack/RouteJourney distance math and cached mode routes. Own original start/destination, current leg/direction, live speed, per-trip finish action/place, previous spoof, and stop-dialog snapshot. Snapshot the current coordinate when Stop is pressed so Stay uses that exact point even if the route continues while the user decides; Cancel leaves playback running. All Route Stop controls call this same flow. Main Stop is a distinct full-spoof stop; natural arrival is a distinct finish transition. Changing a finish action applies at the end of the current leg and never writes the Settings default. Reverse remains the same path reversed.
+3. **Separate injection from display updates.** The adapter emits RouteLocationSample with consistent speed/course/accuracies; UI can animate independently. Profile-backed altitude is applied centrally, then the adapter controls delivery cadence and timezone start/jump events. Coalesce pending speed samples by session revision; Stop/jump invalidates pending work. Do not modify injection sequencing until an isolated adapter test establishes actual CLSimulationManager streaming behavior; compile-time API presence is not proof of device behavior. Keep F2 in a separate revertible commit, and test Snapchat on the phone.
+4. **Scrubbing is preview only until release.** Preview marker state must not pause RouteJourney or zero motion. Release performs a jump in the current leg, with consistent speed/course; 100% goes through natural finish. A route that finishes or changes legs during a drag invalidates the old-leg preview so a delayed release cannot move a different leg accidentally. This edge needs an explicit regression test.
+5. **Shared command channel, no polling.** Durable UUID commands in the new app group, URL opening carrying the UUID, and Darwin notifications for a running consumer. Commands have validated payloads, ordered session revision, claimed/handled state and persisted acknowledgments. State mutation and command claim are serialized across processes with a short filesystem lock/atomic replacement. Injection must check ownership under the same serialization boundary; a route tick from the old owner must never overwrite a direct extension move. Notification alone cannot wake a terminated app or guarantee execution of a suspended process. Go-there success requires actual injection plus a durable ownership transition/acknowledgment; never equate enqueue with success. Auto-opening route endpoints requires verified TrollStore-compatible private launching. Unsupported behavior is a blocking item to bring to the owner, not a manual-open fallback.
+6. **Reuse for Live Activity.** Intents dispatch the same pause/resume/Route Stop commands and use the same stop-choice state. Activity snapshot is derived from RouteSession, not another navigation engine. ActivityKit types stay behind availability boundaries and the widget's deployment target; iOS 15 must still load the app. Compact/minimal/expanded/system screenshot acceptance needs actual simulator surfaces, not a SwiftUI imitation.
+7. **Migration and altitude.** Read old standard preferences and old group through a dedicated read-only adapter; write only new storage and a once-only migration marker after successful import. Store migration provenance/counts; don't report successful import when old data could not be read. Batch elevation samples along prepared paths, interpolate by distance, reuse in reverse and hold the latest known altitude while refreshing. Custom altitude remains immediate and saved. Network limits/cancellation apply independently of map animation.
+
+### Approval requests and unresolved details
+
+- **Entitlements:** approve/reject the precise 0.5 removal table. No removal before an explicit answer; pending does not block identity work that preserves entitlements.
+- **R2 repository operations:** approve the exact list below before execution. No visibility change, no branch deletion/rename, no release deletion/creation. Re-check tag identities and absence of new releases immediately before executing; any unexpected change returns for review.
+- **R23 return-leg destination:** recommend display the endpoint of the current leg (the original start while returning), rather than always the original outbound destination. Owner answer required before implementing that field.
+- **R4 icon:** comparison not created yet, old icon remains. Separate visual approval required later.
+- **Private extension execution:** feasibility must be established for supported versions; no fallback authorized. Additional entitlements will be proposed with actual API evidence.
+- **Live Activity Stop layout:** no compromise approved. If actual expanded-island layout cannot fit the required choices legibly, post a concrete alternative for the owner.
+
+Exact R2 command list, **prepared only, not executed**:
+
+```powershell
+gh repo rename TrollRoute -R dm2mymcszt-commits/Andromeda --yes
+gh repo edit dm2mymcszt-commits/TrollRoute --description 'Location simulation and route playback for TrollStore.' --default-branch experiment/route-motion
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.0
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.0-RC1
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.0-RC2
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.0.1
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.0.2
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.0.3
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.0.4
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.1
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.1.1
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.1.2
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/1.1.3
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/v2.5.0
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/v2.5.1
+gh api --method DELETE repos/dm2mymcszt-commits/TrollRoute/git/refs/tags/v2.5.2
+git remote set-url origin https://github.com/dm2mymcszt-commits/TrollRoute.git
+```
+
+Execute sequentially with exit-status checks, stop on failure, record partial completion before any retry. Update source/documentation links after rename. Keep original upstream credit links. Delete no releases (none exist). `main` remains at its existing commit. The --yes CLI flag will only be used after the owner's explicit chat approval of this command list.
