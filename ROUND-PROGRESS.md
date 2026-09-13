@@ -4,7 +4,7 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: Phase 2 begins. Next: remove audited dead code/helper and apply only approved entitlement removals, then build/test. Phase 1 accepted; do not redo it. Do not redo completed audits.
+- Current checkpoint: Phase 2 begins. Next: confirm cleanup CI build/tests, then implement shared LocationSession and previous-spoof snapshot. Phase 1 accepted; do not redo it. Do not redo completed audits.
 - Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
 - Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
@@ -35,7 +35,7 @@
 | 1 R4 icon | Approved and committed | `e6d9569`: exact approved render installed; old icon sources removed. `2b53a12` compares identical pixels across OS; CI 34779276915 icon and app package passed |
 | 1 F6 data credits | Done | `db74fc5`: generic About line links exact notices; full CI 34777564932 SUCCESS |
 | 1 acceptance | Done | Full CI 34778446157 SUCCESS, downloaded package signing verified. Approved icon built in CI 34779276915; exact pixel check passed. No Release |
-| 2 R3 foundation | In progress | First: audited helper/dead code and approved entitlements. Then shared LocationSession and previous spoof snapshot; preserve checkSandbox |
+| 2 R3 foundation | In progress | Cleanup ready: helper, dead utilities/media/33 catalog keys removed; approved entitlements applied, build 7. CI pending. Next shared LocationSession and previous spoof snapshot; checkSandbox retained |
 | 2 F2 injection | Not started | Separate commit; adapter cadence/coalescing/timezone tests and phone check |
 | 2 F1 altitude | Not started | Batched route profile, interpolation, continuity; custom unchanged |
 | 2 acceptance | Not started | Session/profile/adapter tests and existing regression; build timing |

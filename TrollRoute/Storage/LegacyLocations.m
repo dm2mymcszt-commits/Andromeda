@@ -1,5 +1,18 @@
 #import "LegacyLocations.h"
-#import "../Libs/TrollStore/CoreServices.h"
+// Narrow read-only declarations for old data discovery. No install/uninstall APIs.
+@interface LSBundleProxy : NSObject
+@property (nonatomic, readonly) NSURL *dataContainerURL;
+@end
+@interface LSApplicationProxy : LSBundleProxy
++ (instancetype)applicationProxyForIdentifier:(NSString *)identifier;
+@property (nonatomic, readonly) NSURL *bundleURL;
+@property (nonatomic, readonly) NSDictionary *groupContainerURLs;
+@property (getter=isInstalled, nonatomic, readonly) BOOL installed;
+@end
+@interface MCMContainer : NSObject
++ (id)containerWithIdentifier:(id)identifier createIfNecessary:(BOOL)create existed:(BOOL *)existed error:(id *)error;
+@property (nonatomic, readonly) NSURL *url;
+@end
 #import <dlfcn.h>
 
 NSDictionary<NSString *, id> *TRLegacyLocations(void) {

@@ -9,7 +9,7 @@ enum SharedPreferences {
         // Preserve any preferences created by the intermediate new-identity
         // build, before group storage was introduced. This is TrollRoute's own
         // domain, never the old app's domain.
-        let ownKeys = ["TSBypass", "isFirstRun", "languageCode", "routeFinishAction",
+        let ownKeys = ["TSBypass", "isFirstRun", "routeFinishAction",
             "routeFinishDestination", "routeRecentPlaces.v1", "routeSpeedKmh.walking",
             "routeSpeedKmh.cycling", "routeSpeedKmh.driving", "altitudeProfile",
             "mapAppearance", "mapStyle", "mapButtonLabels", "mapHaptics",

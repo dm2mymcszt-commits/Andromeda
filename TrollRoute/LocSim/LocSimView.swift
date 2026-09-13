@@ -28,7 +28,6 @@ struct LocSimView: View {
     @State private var long: Double = 0.0
     @State private var showAltitude = false
     @State private var tappedCoordinate: EquatableCoordinate? = nil
-    @State private var bookmarkSheetToggle: Bool = false
     @State private var showRouteSheet: Bool = false
     @State private var showSearchBar: Bool = false
     @State private var showSettings = false
@@ -147,9 +146,6 @@ struct LocSimView: View {
                 startSimulation(at: coordinate)
             }
         }
-        .sheet(isPresented: $bookmarkSheetToggle, onDismiss: offerSharedPlace) {
-            BookMarkSlider(lat: $lat, long: $long)
-        }
         .sheet(isPresented: $showRouteSheet, onDismiss: offerSharedPlace) {
             RouteSimSheet(routeSimulator: routeSimulator, draft: routeDraft, mapRegion: $mapRegion, isPresented: $showRouteSheet)
         }
@@ -179,8 +175,8 @@ struct LocSimView: View {
         guard scenePhase == .active, incomingPlace == nil,
               let request = SharedPlaceInbox().pending().first else { return }
         mapMove.cancel()
-        if showAltitude || showSettings || showSearchBar || bookmarkSheetToggle || showRouteSheet || showFavorites {
-            showAltitude = false; showSettings = false; showSearchBar = false; bookmarkSheetToggle = false
+        if showAltitude || showSettings || showSearchBar || showRouteSheet || showFavorites {
+            showAltitude = false; showSettings = false; showSearchBar = false
             showRouteSheet = false; showFavorites = false
             return // onDismiss offers it after the current sheet has closed.
         }

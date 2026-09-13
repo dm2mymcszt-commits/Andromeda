@@ -29,15 +29,6 @@ xcodebuild -project "$WORKING_LOCATION/$APPLICATION_NAME.xcodeproj" \
     CODE_SIGNING_ALLOWED="NO" \
     ENABLE_DEBUG_DYLIB="NO"
     
-# Build helper
-# xcodebuild -project "$WORKING_LOCATION/$APPLICATION_NAME.xcodeproj" \
-#     -scheme RootHelper \
-#     -configuration Debug \
-#     -derivedDataPath "$WORKING_LOCATION/build/DerivedData" \
-#     -destination 'generic/platform=iOS' \
-#     ONLY_ACTIVE_ARCH="NO" \
-#     CODE_SIGNING_ALLOWED="NO" \
-
 DD_APP_PATH="$WORKING_LOCATION/build/DerivedData/Build/Products/$CONFIGURATION-iphoneos/$APPLICATION_NAME.app"
 TARGET_APP="$WORKING_LOCATION/build/$APPLICATION_NAME.app"
 cp -r "$DD_APP_PATH" "$TARGET_APP"
@@ -52,15 +43,6 @@ fi
 if [ -e "$TARGET_APP/embedded.mobileprovision" ]; then
     rm -rf "$TARGET_APP/embedded.mobileprovision"
 fi
-
-git submodule update --init --recursive
-cd "$WORKING_LOCATION/RootHelper"
-make clean
-make
-cp "$WORKING_LOCATION/RootHelper/.theos/obj/debug/GeraniumRootHelper" "$TARGET_APP/GeraniumRootHelper"
-cd -
-
-#cp $WORKING_LOCATION/build/DerivedData/Build/Products/$CONFIGURATION-iphoneos/RootHelper $WORKING_LOCATION/build/TrollRoute.app/RootHelper
 
 # Is ldid installed ?
 if command -v ldid &> /dev/null; then
@@ -79,11 +61,8 @@ fi
 # Add entitlements
 echo "Adding entitlements"
 ldid -S"$WORKING_LOCATION/entitlements.plist" "$TARGET_APP/$APPLICATION_NAME"
-# Inject into the Maps thingy
+# Sign the share extension
 ldid -S"$WORKING_LOCATION/TrollRouteShare/entitlements.plist" "$TARGET_APP/PlugIns/TrollRouteShare.appex/TrollRouteShare"
-# idk if this is usefull but uhm
-# ldid -S"$WORKING_LOCATION/TrollRouteShare/entitlements.plist" "$TARGET_APP/PlugIns/TrollRouteShare.appex/TrollRouteShare.debug.dylib"
-# ldid -S"$WORKING_LOCATION/entitlements.plist" "$TARGET_APP/RootHelper"
 
 # Package .ipa
 rm -rf Payload

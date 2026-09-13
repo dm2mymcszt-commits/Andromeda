@@ -29,12 +29,10 @@
 		BBDA11005000000000000011 /* PlaceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBDA11005000000000000012 /* PlaceModels.swift */; };
 		BDA110030000000000000001 /* MapMoveConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA110030000000000000002 /* MapMoveConfirmation.swift */; };
 		BDA080010000000000000001 /* RouteLocationPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDA080010000000000000002 /* RouteLocationPicker.swift */; };
-		AA222222222222220000BEEF /* GeraniumRootHelper in Resources */ = {isa = PBXBuildFile; fileRef = AA111111111111110000CAFE /* GeraniumRootHelper */; };
 		790301C12B377EA70044E30A /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 790301C02B377EA70044E30A /* Localizable.xcstrings */; };
 		790301C52B3794480044E30A /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 790301C42B3794480044E30A /* SettingsView.swift */; };
 		7930B46D2B4B2AD800A5B0CB /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7930B4592B4B267F00A5B0CB /* MobileCoreServices.framework */; };
 		7930B46E2B4B2ADD00A5B0CB /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 790301BC2B3774F90044E30A /* CoreServices.framework */; };
-		7956C4542B4DF122004D3A1A /* Beta.png in Resources */ = {isa = PBXBuildFile; fileRef = 7956C4532B4DF122004D3A1A /* Beta.png */; };
 		796072E02B4F4FAE00737B5D /* UniformTypeIdentifiers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 796072DF2B4F4FAE00737B5D /* UniformTypeIdentifiers.framework */; };
 		796072E32B4F4FAE00737B5D /* Media.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 796072E22B4F4FAE00737B5D /* Media.xcassets */; };
 		796072E52B4F4FAE00737B5D /* ActionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 796072E42B4F4FAE00737B5D /* ActionViewController.swift */; };
@@ -42,12 +40,8 @@
 		7969F91A2B5E57DE0010DBE5 /* AlertKit in Frameworks */ = {isa = PBXBuildFile; productRef = 7969F9192B5E57DE0010DBE5 /* AlertKit */; };
 		7989FD032B347EEA00FBAB8D /* LocSimView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7989FD022B347EEA00FBAB8D /* LocSimView.swift */; };
 		7989FD062B3486B100FBAB8D /* CustomMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7989FD052B3486B100FBAB8D /* CustomMapView.swift */; };
-		7989FD082B34894400FBAB8D /* BookMarkSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7989FD072B34894400FBAB8D /* BookMarkSlider.swift */; };
 		7989FD0A2B348A0200FBAB8D /* BookMarkHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7989FD092B348A0200FBAB8D /* BookMarkHelper.swift */; };
 		799488A62B347E2C00AFFDCF /* LocSimManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799488A52B347E2C00AFFDCF /* LocSimManager.swift */; };
-		79BA958A2B30D91600380D83 /* RootHelperMan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79BA95892B30D91600380D83 /* RootHelperMan.swift */; };
-		79D7891D2B41BDE700FEBD32 /* Bouquet.png in Resources */ = {isa = PBXBuildFile; fileRef = 79D7891C2B41BDE700FEBD32 /* Bouquet.png */; };
-		79D7891F2B41BEA600FEBD32 /* Flore.png in Resources */ = {isa = PBXBuildFile; fileRef = 79D7891E2B41BEA600FEBD32 /* Flore.png */; };
 		79DF26992B31C90C005D81D2 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79DF26982B31C90C005D81D2 /* WelcomeView.swift */; };
 		F82C58042E37786D00F76DFA /* CoordTransform.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82C58032E37786D00F76DFA /* CoordTransform.swift */; };
 		F82C58062E37790000F76DFA /* RouteSimulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82C58052E37790000F76DFA /* RouteSimulator.swift */; };
@@ -56,7 +50,6 @@
 		FAA456D72B265FEA00FC7287 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA456D62B265FEA00FC7287 /* ContentView.swift */; };
 		FAA456D92B265FEC00FC7287 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FAA456D82B265FEC00FC7287 /* Assets.xcassets */; };
 		FAA456DC2B265FEC00FC7287 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FAA456DB2B265FEC00FC7287 /* Preview Assets.xcassets */; };
-		FAA457122B2661E300FC7287 /* TSUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = FAA457102B2661E300FC7287 /* TSUtil.m */; };
 		FAA457232B26654700FC7287 /* Addon.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA457222B26654700FC7287 /* Addon.swift */; };
 		BB110001000000010000AA01 /* FavoritesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110001000000010000BB01 /* FavoritesView.swift */; };
 		BB110002000000020000AA02 /* JoystickView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB110002000000020000BB02 /* JoystickView.swift */; };
@@ -102,24 +95,6 @@
 		};
 /* End PBXCopyFilesBuildPhase section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		AA333333333333330000BEEF /* Copy RootHelper */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/TrollRoute/GeraniumRootHelper",
-			);
-			name = "Copy RootHelper";
-			outputPaths = (
-				"$(TARGET_BUILD_DIR)/$(WRAPPER_NAME)/GeraniumRootHelper",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cp \"${SRCROOT}/TrollRoute/GeraniumRootHelper\" \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/GeraniumRootHelper\"\nchmod +x \"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/GeraniumRootHelper\"\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
 		CDA100010000000000000104 /* MigrationLaunchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/Storage/MigrationLaunchView.swift"; sourceTree = SOURCE_ROOT; };
@@ -143,7 +118,6 @@
 		790301C02B377EA70044E30A /* Localizable.xcstrings */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; tabWidth = 2; };
 		790301C42B3794480044E30A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		7930B4592B4B267F00A5B0CB /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
-		7956C4532B4DF122004D3A1A /* Beta.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Beta.png; sourceTree = "<group>"; };
 		796072DE2B4F4FAE00737B5D /* TrollRouteShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "TrollRouteShare.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
 		796072DF2B4F4FAE00737B5D /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
 		796072E22B4F4FAE00737B5D /* Media.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Media.xcassets; sourceTree = "<group>"; };
@@ -153,14 +127,9 @@
 		796072F22B4F616B00737B5D /* TrollRouteShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "TrollRouteShare.entitlements"; sourceTree = "<group>"; };
 		7989FD022B347EEA00FBAB8D /* LocSimView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocSimView.swift; sourceTree = "<group>"; };
 		7989FD052B3486B100FBAB8D /* CustomMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomMapView.swift; sourceTree = "<group>"; };
-		7989FD072B34894400FBAB8D /* BookMarkSlider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMarkSlider.swift; sourceTree = "<group>"; };
 		7989FD092B348A0200FBAB8D /* BookMarkHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMarkHelper.swift; sourceTree = "<group>"; };
-		AA111111111111110000CAFE /* GeraniumRootHelper */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = GeraniumRootHelper; sourceTree = "<group>"; };
 		799488A52B347E2C00AFFDCF /* LocSimManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocSimManager.swift; sourceTree = "<group>"; };
 		799488A72B347E2F00AFFDCF /* LocSimPrivateHeaders.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocSimPrivateHeaders.h; sourceTree = "<group>"; };
-		79BA95892B30D91600380D83 /* RootHelperMan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootHelperMan.swift; sourceTree = "<group>"; };
-		79D7891C2B41BDE700FEBD32 /* Bouquet.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Bouquet.png; sourceTree = "<group>"; };
-		79D7891E2B41BEA600FEBD32 /* Flore.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Flore.png; sourceTree = "<group>"; };
 		79DF26982B31C90C005D81D2 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		F82C58032E37786D00F76DFA /* CoordTransform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordTransform.swift; sourceTree = "<group>"; };
 		F82C58052E37790000F76DFA /* RouteSimulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteSimulator.swift; sourceTree = "<group>"; };
@@ -173,9 +142,6 @@
 		FAA456E12B265FED00FC7287 /* TrollRouteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrollRouteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAA456EB2B265FED00FC7287 /* TrollRouteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrollRouteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAA457042B2660AC00FC7287 /* TrollRoute-Bringing-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TrollRoute-Bringing-Header.h"; sourceTree = "<group>"; };
-		FAA4570F2B2661E200FC7287 /* CoreServices.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CoreServices.h; sourceTree = "<group>"; };
-		FAA457102B2661E300FC7287 /* TSUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TSUtil.m; sourceTree = "<group>"; };
-		FAA457112B2661E300FC7287 /* TSUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TSUtil.h; sourceTree = "<group>"; };
 		FAA457222B26654700FC7287 /* Addon.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Addon.swift; sourceTree = "<group>"; };
 		BB110001000000010000BB01 /* FavoritesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/FavoritesView.swift"; sourceTree = SOURCE_ROOT; };
 		BB110002000000020000BB02 /* JoystickView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TrollRoute/LocSim/JoystickView.swift"; sourceTree = SOURCE_ROOT; };
@@ -253,7 +219,6 @@
 			isa = PBXGroup;
 			children = (
 				7989FD092B348A0200FBAB8D /* BookMarkHelper.swift */,
-				7989FD072B34894400FBAB8D /* BookMarkSlider.swift */,
 			);
 			path = BookMark;
 			sourceTree = "<group>";
@@ -275,16 +240,6 @@
 				BDA080010000000000000002 /* RouteLocationPicker.swift */,
 			);
 			path = LocSim;
-			sourceTree = "<group>";
-		};
-		79D789072B40930A00FEBD32 /* Icons */ = {
-			isa = PBXGroup;
-			children = (
-				7956C4532B4DF122004D3A1A /* Beta.png */,
-				79D7891E2B41BEA600FEBD32 /* Flore.png */,
-				79D7891C2B41BDE700FEBD32 /* Bouquet.png */,
-			);
-			path = Icons;
 			sourceTree = "<group>";
 		};
 		FAA456C82B265FEA00FC7287 = {
@@ -326,7 +281,6 @@
 				799488A42B347E1100AFFDCF /* LocSim */,
 				790301BF2B377E850044E30A /* Translations */,
 				FAA456D82B265FEC00FC7287 /* Assets.xcassets */,
-				79D789072B40930A00FEBD32 /* Icons */,
 				FAA456DA2B265FEC00FC7287 /* Preview Content */,
 			);
 			path = TrollRoute;
@@ -344,20 +298,8 @@
 			isa = PBXGroup;
 			children = (
 				FAA457222B26654700FC7287 /* Addon.swift */,
-				79BA95892B30D91600380D83 /* RootHelperMan.swift */,
-				FAA4570E2B2661D200FC7287 /* TrollStore */,
 			);
 			path = Libs;
-			sourceTree = "<group>";
-		};
-		FAA4570E2B2661D200FC7287 /* TrollStore */ = {
-			isa = PBXGroup;
-			children = (
-				FAA4570F2B2661E200FC7287 /* CoreServices.h */,
-				FAA457112B2661E300FC7287 /* TSUtil.h */,
-				FAA457102B2661E300FC7287 /* TSUtil.m */,
-			);
-			path = TrollStore;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -388,7 +330,6 @@
 				FAA456CE2B265FEA00FC7287 /* Frameworks */,
 				FAA456CF2B265FEA00FC7287 /* Resources */,
 				796072ED2B4F4FAE00737B5D /* Embed Foundation Extensions */,
-				AA333333333333330000BEEF /* Copy RootHelper */,
 			);
 			buildRules = (
 			);
@@ -523,10 +464,6 @@
 				FAA456DC2B265FEC00FC7287 /* Preview Assets.xcassets in Resources */,
 				FAA456D92B265FEC00FC7287 /* Assets.xcassets in Resources */,
 				790301C12B377EA70044E30A /* Localizable.xcstrings in Resources */,
-				79D7891F2B41BEA600FEBD32 /* Flore.png in Resources */,
-				79D7891D2B41BDE700FEBD32 /* Bouquet.png in Resources */,
-				7956C4542B4DF122004D3A1A /* Beta.png in Resources */,
-				AA111111111111110000BEEF /* GeraniumRootHelper in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -567,8 +504,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7989FD082B34894400FBAB8D /* BookMarkSlider.swift in Sources */,
-				FAA457122B2661E300FC7287 /* TSUtil.m in Sources */,
 				7989FD062B3486B100FBAB8D /* CustomMapView.swift in Sources */,
 				FAA457232B26654700FC7287 /* Addon.swift in Sources */,
 				F82C58042E37786D00F76DFA /* CoordTransform.swift in Sources */,
@@ -583,7 +518,6 @@
 				CDA100010000000000000203 /* LegacyMigration.swift in Sources */,
 				CDA100010000000000000204 /* MigrationLaunchView.swift in Sources */,
 				FAA456D52B265FEA00FC7287 /* TrollRouteApp.swift in Sources */,
-				79BA958A2B30D91600380D83 /* RootHelperMan.swift in Sources */,
 				F82C58062E37790000F76DFA /* RouteSimulator.swift in Sources */,
 				BDA110090000000000000001 /* RouteFinish.swift in Sources */,
 				BDA110100000000000000003 /* AltitudeSheet.swift in Sources */,
@@ -648,7 +582,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "TrollRouteShare/TrollRouteShare.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "TrollRouteShare/Info.plist";
@@ -676,7 +610,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = "TrollRouteShare/TrollRouteShare.entitlements";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "TrollRouteShare/Info.plist";
@@ -827,7 +761,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TrollRoute/TrollRoute.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"TrollRoute/Preview Content\"";
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				ENABLE_PREVIEWS = YES;
@@ -866,7 +800,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = TrollRoute/TrollRoute.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"TrollRoute/Preview Content\"";
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				ENABLE_PREVIEWS = YES;
@@ -903,7 +837,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -923,7 +857,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -942,7 +876,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 3.0.0;
@@ -960,7 +894,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 7G89J82G2A;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 3.0.0;

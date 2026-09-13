@@ -50,7 +50,6 @@ with zipfile.ZipFile(package) as archive:
         print(path, ': arm64, executable, expected entitlements present')
 
     inspect_binary(app+'TrollRoute', 'entitlements.plist')
-    inspect_binary(app+'GeraniumRootHelper', 'RootHelper/entitlements.plist')
     inspect_binary(app+'PlugIns/TrollRouteShare.appex/TrollRouteShare', 'TrollRouteShare/entitlements.plist')
 
 print('SHA256:', hashlib.sha256(package.read_bytes()).hexdigest())

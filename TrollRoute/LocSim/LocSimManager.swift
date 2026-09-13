@@ -80,31 +80,3 @@ struct EquatableCoordinate: Equatable {
         lhs.coordinate.latitude == rhs.coordinate.latitude && lhs.coordinate.longitude == rhs.coordinate.longitude
     }
 }
-
-
-// https://stackoverflow.com/a/75703059
-
-class LocationModel: NSObject, ObservableObject {
-    private let locationManager = CLLocationManager()
-    @Published var authorisationStatus: CLAuthorizationStatus = .notDetermined
-
-    override init() {
-        super.init()
-        self.locationManager.delegate = self
-    }
-
-    public func requestAuthorisation(always: Bool = false) {
-        if always {
-            self.locationManager.requestAlwaysAuthorization()
-        } else {
-            self.locationManager.requestWhenInUseAuthorization()
-        }
-    }
-}
-
-extension LocationModel: CLLocationManagerDelegate {
-
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        self.authorisationStatus = status
-    }
-}

@@ -7,7 +7,7 @@ python3 - "$QA_DIR/AppSettings.swift" <<'PY'
 from pathlib import Path
 import sys
 source = Path('TrollRoute/TrollRouteApp.swift').read_text()
-models = source.split('class AppSettings: ObservableObject {')[1].split('var langaugee')[0]
+models = source.split('class AppSettings: ObservableObject {')[1]
 Path(sys.argv[1]).write_text('import SwiftUI\nclass AppSettings: ObservableObject {' + models)
 content = Path('TrollRoute/ContentView.swift').read_text()
 assert 'TabView' not in content and 'LocSimView()' in content
