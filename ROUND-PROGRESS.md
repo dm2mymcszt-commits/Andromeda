@@ -20,7 +20,7 @@
 | 0.2 Confirm six bug causes, citations and reproductions | Done | This audit commit; runtime regression cases specified below |
 | 0.3 Classify every old-identity occurrence | Done | Baseline inventory appendix below |
 | 0.4 Prove unused code and resources | Done | Evidence and retain/remove boundaries below |
-| 0.5 Entitlement table and owner approval | Audit done; waiting approval | Exact table below; no entitlement changed |
+| 0.5 Entitlement table and owner approval | Done; approved | Exact table at c3ba6b9; no entitlement changed yet |
 | 0.6 Shared-state architecture note | Done | Architecture and exact approval command list below |
 | 0 acceptance | In progress | Exact-head CI and owner-facing audit summary pending |
 | 1 identity and migration | Not started | R1, read-only import, fixture checks |
@@ -96,10 +96,10 @@ R15–R16 and R18–R21 are grouped in the source plan; this ledger divides thei
 
 ## Decisions and approval queue
 
-- Entitlement removals: **not approved**, table pending.
-- Repository rename/default branch/tag deletion: **not approved**, exact command list pending.
+- Entitlement removals: **approved** by explicit owner reply on 2026-09-13, exact section 0.5 table at `c3ba6b9`; apply in Phase 2 only.
+- Repository rename/default branch/tag deletion: **approved** by explicit owner reply on 2026-09-13, exact listed operations; execute in Phase 1 after Phase 0 acceptance.
 - New icon shipment: **not approved**, comparison pending; existing icon stays installed meanwhile.
-- Live Activity destination on return legs: owner clarification required before implementing that field.
+- Live Activity destination: owner chose current leg endpoint, including original start on the return leg.
 - No GitHub Release authorized; none created.
 - Motion injection/cadence changes and TrollStore-only interactions require phone checks; no such changes made yet.
 
@@ -874,3 +874,13 @@ Tag references recorded for exact-scope review (no changes made):
 | v2.5.0 | ece06a7a9cf1a29fd2f904ac9823d7f35c5e93f2 |
 | v2.5.1 | ad335e5b5739ce6726425a3f2fe7f225b593d392 |
 | v2.5.2 | ad7a9413551f6a5a0f6504f8ea43dbec6290a189 |
+
+### Owner decisions received 2026-09-13
+
+This section supersedes historical pending-approval notes above. Received explicit replies to the three posted questions:
+
+1. **Yes, approve the section 0.5 removal table.** Scope is exactly the table committed in c3ba6b9: listed app removals, only IOHDIXControllerUserClient removed from the graphics array, unused helper and signing file removed. Keep rows remain; future extension privileges still need separate review.
+2. **Yes, approve this exact GitHub list.** Rename fork Andromeda -> TrollRoute; description Location simulation and route playback for TrollStore.; default experiment/route-motion; keep main; delete the exact 14 listed tags; update local origin. No release authorized.
+3. **Current leg's endpoint (original start while returning).** Use this for Live Activity destination, including reverse/repeat legs.
+
+Next: finish audit CI, then execute approved Phase 1 repository operations with preflight and sequential error checks. The icon remains awaiting a future comparison/approval. Approval does not authorize shortcuts for private extension execution or unreadable migration data.
