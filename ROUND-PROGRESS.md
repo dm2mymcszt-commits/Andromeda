@@ -14,8 +14,8 @@ CI is the only native build host. Each implementation commit is pushed as a cand
 | 6. Simulation times and fastest-route ranking | done | `71cd400` - CI 34696753573 passed every check; route map/cards reviewed |
 | 7. Per-mode speeds, mode routes, and swap | done | `191ecf8` - CI 34697693135 passed every check; dark/light mode controls reviewed |
 | 8. Main-map route controls, seeking, and live speed | done | `b6a1244` - CI 34713045215 passed every check; expanded/collapsed playback reviewed |
-| 9. Finish actions and notifications | in progress | `b4b2282` - CI 34714016327 running |
-| 10. Persistent automatic/custom altitude | not started | - |
+| 9. Finish actions and notifications | done | `b4b2282` - CI 34714016327 passed every check; Settings and collapsed controls reviewed |
+| 10. Persistent automatic/custom altitude | in progress | local implementation ready for native CI |
 
 ## Items 1-3 verified
 
@@ -77,10 +77,18 @@ CI 34713045215 passed every check, including native build, motion/seek/live-spee
 
 Choices: advance every 250 ms using monotonic elapsed time; distance/bearing measured in WGS-84; freeze and inject zero speed while scrubbing; releasing preserves prior pause state; cancelled gestures resume without moving; elapsed means actual moving time (excluding pause/scrub), seeking does not fabricate elapsed time; live +/- controls change one km/h without saving mode defaults; VoiceOver adjusts progress by five percent.
 
-## Item 9 candidate
+## Item 9 verified
 
 Added RouteFinish.swift with six persisted actions, a WGS-84 saved destination, repeat/reverse leg state, and foreground/background local notifications. Settings uses the existing place picker; first route start requests notification permission before movement begins. Engine snapshots finish settings at trip start, uses the same finish path for natural arrival and seeking, preserves timer/background/location updates across repeated legs, reverses the same geometry, and carries delayed elapsed time across legs. Added policy, notification-count, reverse seek/speed, and persistence regressions.
 
-Candidate b4b2282 reviewed, committed and pushed after item 8 passed completely. CI 34714016327 is running. Exact next: verify native build/tests and Settings screenshot, then mark item 9 done. Prepare item 10 locally while CI runs; do not commit it before item 9 verification.
+CI 34714016327 for b4b2282 passed every check. Settings and collapsed playback screenshots reviewed. Foreground/background notification delivery and locked-phone continuity require the user's phone. Item 10 can now be committed for CI.
 
 Choices: changing finish settings affects the next trip, stated in Settings; canceling a required Go-to-place picker keeps the previous option; reject starting an invalid Go-to-place configuration; loop/repeat notifications only on first arrival; elapsed resets for each leg; delayed repeat legs are counted without replaying every missed update; map shows the active leg with correctly oriented endpoints while running.
+
+## Item 10 local implementation
+
+Added saved Automatic/Custom altitude, a numeric sheet with sign control and comma/dot validation, and central application before every location injection. Removed the old unsaved altitude alert and route-only altitude argument. All entry paths, including finish jumps, now share it. Automatic uses free worldwide Open-Meteo/Copernicus terrain; missing altitude uses negative vertical accuracy. Async updates retain the latest location and motion; Stop/custom changes invalidate pending responses. Added persistence, stale-response, Stop, parsing, and motion tests, live elevation CI, and automatic/custom/negative simulator captures. A direct live Talence lookup returned 22 m. Version prepared as 2.6.0 (4).
+
+Exact next: commit/push item 10 candidate, run native CI and inspect altitude screenshots. Then inspect the final package, shorten BUILD-TROLLSTORE.md, and delete both round files in the final commit.
+
+Choices: 90 m terrain dataset; cache 2,048 samples within 45 m; one single-coordinate lookup per 10 seconds, 60-second failure backoff, persisted request reservation; missing elevation stays unknown while waiting or offline. Custom changes require Apply to avoid injecting half-typed numbers, Automatic applies immediately. Negative sign button supplements the decimal keyboard; sheet expands if needed. Existing iOS deployment compatibility retained. Altitude refreshes preserve speed/course/accuracy and refresh the timestamp for an active stationary location.
