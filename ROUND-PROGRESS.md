@@ -5,17 +5,17 @@
 - Source of truth: ROUND-PLAN.md (exact copy of the owner's attached document).
 - Baseline: `546ffb2`, branch `experiment/route-motion`, repository `dm2mymcszt-commits/Andromeda`.
 - Current phase: **Phase 0, in progress**. No application behavior changed.
-- Next step: commit and push these two files, then finish the Part B verification and commit/push audit step 0.1. Record each subsequent audit step separately before moving on.
+- Next step: audit step 0.2, record the six bug causes and baseline reproduction cases, then commit and push.
 - User instruction: persist every audit step so usage-limit interruptions cannot lose findings.
 - Latest verified existing CI: [34745274343](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34745274343), success, application source `e878442`. Later baseline commits only changed Markdown.
 - CI currently ignores Markdown-only pushes. Phase 0 must remain documentation only; manually dispatch the workflow for the completed audit to verify the exact documentation commit without changing application code.
-- Commits: initial plan/progress commit pending; its hash will be recorded by the following audit commit (a commit cannot contain its own hash).
+- Commits: `30cbf19` saved plan and checklist, pushed. Each following audit commit records the preceding hash (a commit cannot contain its own hash).
 
 ## Phase checklist
 
 | Step | Status | Commit / next action |
 |---|---|---|
-| 0.1 Verify every Part B fact | In progress | Finish identity/build/GitHub/behavior verification |
+| 0.1 Verify every Part B fact | Done | This audit commit; source baseline `546ffb2` |
 | 0.2 Confirm six bug causes, citations and reproductions | Not started | R6, R9, R14, F1, F2, F3 |
 | 0.3 Classify every old-identity occurrence | Not started | Rename / keep / technical |
 | 0.4 Prove unused code and resources | Not started | Helper, Addon, first-run, translations, media |
@@ -105,3 +105,35 @@ R15–R16 and R18–R21 are grouped in the source plan; this ledger divides thei
 ## Audit findings
 
 Findings will be appended and committed after each Phase 0 step. Existing source inspection is not a substitute for the required simulator/phone checks.
+
+### 0.1 Part B verification
+
+Verified against tracked source at `546ffb2` and GitHub on 2026-09-13. No behavior changes.
+
+| Claim | Result and evidence |
+|---|---|
+| Application and extension IDs / test IDs | Confirmed in `Geranium/Info.plist:13` and `Geranium.xcodeproj/project.pbxproj:644,672,833,873,893,913,931,949`. |
+| Old app group for favorites/inbox | Confirmed in both app entitlements, both extension entitlements, `SharedPlace.swift:53`, and `BookMarkHelper.swift`. |
+| Project, target, scheme, folders and executable names | Confirmed in project file, shared scheme, Info.plist and `ipabuild.sh`. Extension display name is **Andromeda**, even though its executable/target still says Bookmark Location in Geranium. |
+| Build output / artifact | Confirmed: `Geranium.tipa`, `Andromeda-route-motion-<sha>`. Xcode 16.4 and macOS 15 are pinned in workflow. |
+| Rough identity counts | Replace rough counts with the exhaustive tracked-tree inventory in step 0.3; binary artwork and path names must be counted separately from text. |
+| Display name, location purpose strings, background modes, URL scheme | Confirmed: Andromeda; three identical vague purpose strings; location + processing; no URL scheme. |
+| Icon | **Correction:** `geranium.png` is actually JPEG-encoded (JFIF magic), 1024×1024, verified using Pillow. The filename/asset setup claims PNG. The replacement must be a real opaque PNG. Apple's [Icon Composer integration](https://developer.apple.com/videos/play/wwdc2025/361/) belongs to the newer toolchain, not the pinned Xcode 16.4 build. |
+| Root helper | **Correction:** not literally unexecuted. `GeraniumApp.swift:19` calls `RootHelperMan.swift:50` with three empty strings. `RootHelper/main.m:99` creates `/var/mobile/testrebuild` and loads MCM **inside the child process**, then matches no action. This does not initialize MCM in the app. No useful current feature calls another helper command. Its removal eliminates the startup side effect too. |
+| Theos / SDK | Confirmed only needed by RootHelper; workflow setup and `ipabuild.sh` make/copy the helper. A tracked prebuilt helper is also copied by an Xcode build phase, then overwritten by packaging. |
+| Entitlements | Confirmed identical app signing files, identical group-only extension signing files. Helper has a third, broader entitlement set; include that in 0.5. Absence of simulation entitlement agrees with the extension having no injection code, but private service authorization still needs device verification. |
+| Build document heading | Confirmed prohibited owner-device heading exists; remove in Phase 1 without repeating the model here. |
+| GitHub fork / description / default branch | Confirmed public fork of Son3ra1n/Andromeda, current description matches Part B, default main at `bc1e1d3`. Origin still points to the owner's Andromeda fork. |
+| Releases / tags | Confirmed zero releases and exactly the 14 named tags. Read-only queries only; no repository setting or tag changed. |
+| Toolbar / credits | Confirmed source branches at `LocSimView.swift:81–94,111–130`; deeper reproduction in 0.2. |
+| Main Stop / Route Stop | Confirmed `LocSimView.swift:122,267–276`, `RouteSimView.swift:184,389` all reach `RouteSimulator.swift:605–615`, which calls full `stopLocSim`. |
+| Finish action snapshot | Confirmed `RouteSimulator.swift:511–521` reads shared settings at start; finishState is private and no active-action setter exists. |
+| Share queue / delay | Confirmed enqueue/manual-open state and only lifecycle/dismissal checks. **Qualification:** re-reading scenePhase is suspicious, not a proven cause of the reported minute-long delay. Missing notification/URL delivery is definite; no built-in one-minute delay exists. |
+| Scattered spoof state | Confirmed local lat/long/joystick state, route position, private altitude activeLocation and static injector. No pre-route spoof snapshot or shared active session. |
+| F2 cadence | Confirmed 0.25-second route ticks; every delivered sample restarts injection and posts timezone. Speed changes also call updateLocation directly. |
+| F1 altitude | Confirmed 10-second spacing and 45-m cache. **Qualification:** walking is not guaranteed fine: first lookup, latency/offline failures and leaving the cache radius still produce unknown altitude. |
+| F3 scrubbing | Confirmed preview sets seeking state, resets tick baseline and delivers motion as paused; advanceRoute rejects seeking. |
+
+Current package contains one share extension with display name Andromeda. Source alone cannot identify which installed app or cached registration owns the additional Geranium share action in the screenshot. Do not delete another app or assert its origin without device evidence.
+
+Open verification limits: no local iOS runtime; gesture recognition and lifecycle timing require the planned simulator harness. Root-helper removal and new private APIs require phone checks. CI ignores Markdown-only pushes, so existing green source remains unchanged; manual exact-head CI will close Phase 0 acceptance.
