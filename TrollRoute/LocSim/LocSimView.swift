@@ -16,7 +16,6 @@ struct LocSimView: View {
     @State private var openSharedRoute = false
     @State private var sharedPlaceError: String?
     @AppStorage("mapStyle", store: SharedPreferences.defaults) private var mapStyle = "standard"
-    @AppStorage("mapButtonLabels", store: SharedPreferences.defaults) private var mapButtonLabels = true
     @State private var routeControlsCollapsed = false
     @AppStorage("tapMapToSetLocation", store: SharedPreferences.defaults) private var tapMapToSetLocation = false
     @AppStorage("askBeforeMoving", store: SharedPreferences.defaults) private var askBeforeMoving = true
@@ -78,20 +77,6 @@ struct LocSimView: View {
                     }
                     .ignoresSafeArea()
                 
-            // MARK: - Map Controls
-            ScrollView(showsIndicators: false) {
-              FloatingQuickMenu(
-                onAction: { action in
-                    handleQuickMenuAction(action)
-                },
-                joystickActive: joystickActive,
-                routeActive: routeSimulator.isSimulating
-            )
-            .padding(.trailing, 12)
-            .padding(.top, 12)
-            }
-            .frame(width: mapButtonLabels ? 156 : 68)
-            
             // MARK: - Joystick Overlay
             if joystickActive {
                 JoystickView(
@@ -106,6 +91,8 @@ struct LocSimView: View {
             }
             
         }
+        .modifier(MapToolbarOverlay(onAction: handleQuickMenuAction,
+                                    joystickActive: joystickActive, routeActive: routeSimulator.isSimulating))
         .safeAreaInset(edge: .bottom) {
           VStack(spacing: 4) {
             if routeSimulator.isSimulating {

@@ -17,6 +17,7 @@ struct WorkspacePreview: View {
     @State private var showAltitude = false
     @StateObject private var altitude = AltitudeController(currentLocation: { nil }, deliver: { _ in })
     @State private var routeActive = false
+    @StateObject private var mainStop = MainStopController()
     @State private var tapped: EquatableCoordinate?
     // Deterministic address fixture for the confirmation screenshot, not a live lookup.
     @StateObject private var mapMove = MapMoveController(lookup: { _, completion in
@@ -36,24 +37,21 @@ struct WorkspacePreview: View {
                           allowsLocationSelection: tapEnabled, showsUserLocation: false, mapStyle: mapStyle,
                           proposedPosition: mapMove.pendingRequest?.coordinate)
                 .ignoresSafeArea()
-            FloatingQuickMenu(onAction: { action in
-                if action == .settings { showSettings = true }
-                if action == .search { showSearch = true }
-                if action == .route { routeActive.toggle() }
-            }, joystickActive: false, routeActive: routeActive)
-                .background(GeometryReader { geometry in
-                    Color.clear.onAppear {
-                        let width = geometry.size.width
-                        let result = width <= 150 && width >= 140
-                            ? "PASS: map menu width is \(width) points"
-                            : "FAIL: map menu expanded to \(width) points"
-                        let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                            .appendingPathComponent("menu-width.txt")
-                        try? result.write(to: path, atomically: true, encoding: .utf8)
-                    }
-                })
-                .padding(.trailing, 12).padding(.top, 12)
         }
+        .frame(height: screen == "gestures-short" ? 240 : nil)
+        .modifier(MapToolbarOverlay(onAction: { action in
+            if action == .settings { showSettings = true }
+            if action == .search { showSearch = true }
+            if action == .route { routeActive.toggle() }
+            if action == .stop { mainStop.request(confirm: true, routeRunning: routeActive) { routeActive = false } }
+        }, joystickActive: false, routeActive: routeActive))
+        .frame(maxHeight: .infinity, alignment: .top)
+        .overlay(alignment: .topLeading) {
+            if screen.hasPrefix("gestures") {
+                MapObservation().frame(width: 1, height: 1).allowsHitTesting(false)
+            }
+        }
+        .modifier(MainStopConfirmation(controller: mainStop))
         .modifier(MapMoveConfirmation(controller: mapMove))
         .onChange(of: tapped) { coordinate in
             guard let coordinate = coordinate else { return }
@@ -87,6 +85,12 @@ struct WorkspacePreview: View {
 }
 
 @main struct MapWorkspacePreview: App {
+    init() {
+        let args = ProcessInfo.processInfo.arguments
+        if let index = args.firstIndex(of: "--labels"), index + 1 < args.count {
+            SharedPreferences.defaults.set(args[index + 1] == "yes", forKey: "mapButtonLabels")
+        } else { SharedPreferences.defaults.set(true, forKey: "mapButtonLabels") }
+    }
     private func argument(_ key: String, fallback: String) -> String {
         let args = ProcessInfo.processInfo.arguments
         guard let index = args.firstIndex(of: key), index + 1 < args.count else { return fallback }
@@ -98,4 +102,31 @@ struct WorkspacePreview: View {
                              appearance: argument("--appearance", fallback: "dark"))
         }
     }
+}
+
+// UI-test observation only: reads the real MKMapView on accessibility demand.
+// No simulated gesture, map mutation, timer, or copied toolbar implementation.
+struct MapObservation: UIViewRepresentable {
+    final class Probe: UIView {
+        override var accessibilityValue: String? {
+            get {
+                func findMap(_ view: UIView) -> MKMapView? {
+                    if let map = view as? MKMapView { return map }
+                    for child in view.subviews { if let map = findMap(child) { return map } }
+                    return nil
+                }
+                guard let window = window, let map = findMap(window) else { return nil }
+                return "\(map.centerCoordinate.latitude),\(map.centerCoordinate.longitude),\(map.region.span.latitudeDelta),\(map.region.span.longitudeDelta)"
+            }
+            set {}
+        }
+    }
+    func makeUIView(context: Context) -> Probe {
+        let view = Probe()
+        view.isAccessibilityElement = true
+        view.accessibilityIdentifier = "map-observation"
+        view.accessibilityLabel = "Map state"
+        return view
+    }
+    func updateUIView(_ view: Probe, context: Context) {}
 }

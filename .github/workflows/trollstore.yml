@@ -124,7 +124,10 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: map-workspace-preview
-          path: build/map-workspace-qa/*.png
+          path: |
+            build/map-workspace-qa/*.png
+            build/map-workspace-qa/gestures.log
+            build/map-workspace-qa/Gestures.xcresult
           if-no-files-found: ignore
           retention-days: 14
 

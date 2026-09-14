@@ -4,7 +4,7 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: Phase 2 accepted at `13ee72e` build 13; full CI 34849262175 SUCCESS, package/signing verified. Phase 3 R5 main Stop confirmation implemented (build 14), pending CI; next R6 toolbar bounds and real gesture coverage.
+- Current checkpoint: Phase 2 accepted at `13ee72e` build 13; full CI 34849262175 SUCCESS, package/signing verified. Phase 3: R5 `f962922` build 14 pushed (CI 34882926556); R6 build 15 bounds + XCTest gesture host implemented. Next: verify both CI runs, then long-press routing R18-R21.
 - Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
 - Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
@@ -39,7 +39,7 @@
 | 2 F2 injection | Done; phone test required | `c5cbc37` build 9 pushed. Root cause: restart/timezone per sample, unbounded slider inputs. 4 Hz coalescing + immediate jump/pause/arrival + geometry UI. Full CI 34816390584 SUCCESS, including adapter/cancellation tests and all previews |
 | 2 F1 altitude | Done; phone check | `13ee72e` build 13: batched terrain, weighted quota, held/provisional refinement, separate prepared/active profiles. Full CI 34849262175 SUCCESS, including actual-owner terrain lifecycle tests |
 | 2 acceptance | Done | `13ee72e`: all model/live/UI checks SUCCESS; signed build 13 verified. Build/package 46 s; phone limitations in audit |
-| 3 R5, R6 | In progress | R5 implemented, build 14 pending CI (main Stop only, default ON, cancellation tests). Next R6 bounded toolbar + simulator drag test |
+| 3 R5, R6 | In progress | R5 `f962922` CI pending; R6 build 15 bounds + real map-drag XCTest added, awaiting CI. Next long-press routing |
 | 3 R18, R19, R20, R21 | Not started | Long press routing, enable/confirm/auto-start defaults and gesture tests |
 | 3 F5 + acceptance | Not started | Save favorite from result/map pin; tests and settings defaults |
 | 4 R11, R12, R13 | Not started | Default/per-trip/live finish action, including return legs |

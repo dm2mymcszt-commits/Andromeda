@@ -1,5 +1,41 @@
 import SwiftUI
 
+// Shared by the production map and the UI test host. The scroll view itself is
+// only as tall as its visible content (or the space above the playback panel).
+struct MapToolbarOverlay: ViewModifier {
+    let onAction: (QuickMenuAction) -> Void
+    var joystickActive: Bool
+    var routeActive: Bool
+    @AppStorage("mapButtonLabels", store: SharedPreferences.defaults) private var showLabels = true
+    @State private var contentHeight: CGFloat = 336
+
+    func body(content: Content) -> some View {
+        content.overlay(alignment: .topTrailing) {
+            GeometryReader { available in
+                ScrollView(showsIndicators: false) {
+                    FloatingQuickMenu(onAction: onAction, joystickActive: joystickActive, routeActive: routeActive)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .background(GeometryReader { geometry in
+                            Color.clear.preference(key: MenuHeightKey.self, value: geometry.size.height)
+                        })
+                }
+                .frame(width: showLabels ? 144 : 56,
+                       height: min(contentHeight, max(44, available.size.height - 24)))
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .accessibilityIdentifier("map-toolbar")
+                .onPreferenceChange(MenuHeightKey.self) { contentHeight = $0 }
+                .padding(.top, 12).padding(.trailing, 12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+            }
+        }
+    }
+}
+
+private struct MenuHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 336
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+}
+
 enum QuickMenuAction: String, CaseIterable {
     case search = "Search"
     case route = "Route"
