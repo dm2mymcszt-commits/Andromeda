@@ -920,3 +920,9 @@ Holding a route's terrain context exposed a second lifecycle boundary: preparing
 ### Phase 2 latest checkpoint
 
 Current code 13ee72e (build 13) pushed; CI 34849262175 running. b34cb4f full CI 34847031351 SUCCESS, including every preview. The intermediate held-profile builds e3cc19e / 974bc63 are not the current acceptance target; current owner integration tests additionally cover preparing the next trip without changing the held height or previous snapshot. Next exact step: inspect 34849262175; fix any failure; verify its package and final previews; mark Phase 2 accepted (phone conditions remain); proceed to Phase 3. Keep ROUND-PROGRESS short. No Phase 3 code started while Phase 2 verification remains pending.
+
+### Current package and preview inspection
+
+Downloaded build 13 from CI 34849262175 to build/phase2-terrain-package/TrollRoute.tipa. Source/package identity equality passed, including app/share build numbers and IDs. ZIP integrity, ARM64 executable bits and exact embedded app/share entitlements passed. SHA256 3911df797d3fb338264d8aac7b831bbcdcf7e9679465478273e604aeb0b8e2fd. Route preview artifacts downloaded to build/phase2-route-previews; visually inspected dark playback and light mode/card scenes for readable controls, route colors, endpoints and simulated timing. These are fixture previews, not proof of physical injection or the full production engine. Workspace and picker checks still running; full Phase 2 gate remains pending.
+
+Successful F2 test log reports exactly: 140 inputs / 10 s -> 41 coalesced deliveries, one start and one timezone post; old call path would issue 140 starts and 140 timezone posts. Immediate jump/pause/resume and cancellation-race tests passed. Physical phone check still required. Corrected the short build guide's obsolete icon-awaiting-approval and identity-in-progress wording; full final guide update remains Phase 8.

@@ -2,9 +2,9 @@
 
 CI uses macOS 15 / Xcode 16.4 on `experiment/route-motion`. Download a successful run's **TrollRoute-<version>-<commit>** artifact, extract `TrollRoute.tipa`, and install with TrollStore's **+** button.
 
-TrollRoute uses `com.dm2mymcszt.trollroute` and installs separately from Andromeda. Keep Andromeda until the migration reports a successful import. Both share actions can appear while both apps are installed. The first launch imports saved places and settings without changing the old data; failed imports remain on a retry screen. Check the summary and imported values before deleting Andromeda. The icon approval is still pending.
+TrollRoute uses `com.dm2mymcszt.trollroute` and installs separately from Andromeda. Keep Andromeda until the migration reports a successful import. Both share actions can appear while both apps are installed. The first launch imports saved places and settings without changing the old data; failed imports remain on a retry screen. Check the summary and imported values before deleting Andromeda. The approved TrollRoute icon is included.
 
-This round is in progress. The repository and application identity are being renamed; existing location and route behavior is preserved. Simulator/CI checks cannot verify TrollStore injection, background playback or Snapchat's driving Bitmoji on a physical device.
+This round is in progress. The repository and application identity have been renamed; map and route refinements are still in progress. Simulator/CI checks cannot verify TrollStore injection, background playback or Snapchat's driving Bitmoji on a physical device.
 
 ## Device checks
 
