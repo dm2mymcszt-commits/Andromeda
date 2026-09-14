@@ -77,3 +77,31 @@ controller.request(CLLocationCoordinate2D(latitude: 1000, longitude: 0), display
                    enabled: true, ask: false, routeRunning: false) { moves.append($0) }
 require(moves.isEmpty, "Invalid tap injected a location")
 print("PASS: every toggle combination; no movement before confirmation; Cancel; stale requests; exact-once Move; fast/slow addresses; route warning; invalid input")
+
+let mainStop = MainStopController()
+var stopped = 0
+for running in [false, true] {
+    mainStop.request(confirm: true, routeRunning: running) { stopped += 1 }
+    let request = mainStop.presentedRequest!
+    require(stopped == 0, "Main Stop must not stop or pause before confirmation")
+    require(request.message.contains("running route") == running, "Main Stop warning must reflect the route")
+    mainStop.cancel()
+    mainStop.confirm(request)
+    require(stopped == 0, "Cancel must preserve spoofing and invalidate confirmation")
+}
+mainStop.request(confirm: true, routeRunning: true) { stopped += 1 }
+let obsolete = mainStop.presentedRequest!
+mainStop.request(confirm: true, routeRunning: false) { stopped += 1 }
+let current = mainStop.presentedRequest!
+mainStop.confirm(obsolete)
+require(stopped == 0, "A stale Stop prompt must not stop a new session")
+mainStop.presentedRequest = nil // SwiftUI dismisses before dispatching the button.
+mainStop.confirm(current)
+mainStop.confirm(current)
+require(stopped == 1, "Main Stop must commit once after dismissal")
+for running in [false, true] {
+    mainStop.request(confirm: false, routeRunning: running) { stopped += 1 }
+    require(mainStop.presentedRequest == nil, "Disabled main Stop confirmation must be immediate")
+}
+require(stopped == 3, "Immediate main Stop must stop exactly once per request")
+print("PASS: main Stop ON/OFF, route warning, Cancel, stale prompt and exact-once confirmation")

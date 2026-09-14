@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage("mapHaptics", store: SharedPreferences.defaults) private var mapHaptics = true
     @AppStorage("tapMapToSetLocation", store: SharedPreferences.defaults) private var tapMapToSetLocation = false
     @AppStorage("askBeforeMoving", store: SharedPreferences.defaults) private var askBeforeMoving = true
+    @AppStorage("confirmBeforeStoppingSpoofing", store: SharedPreferences.defaults) private var confirmBeforeStoppingSpoofing = true
     @ObservedObject private var finishSettings = RouteFinishSettings.shared
     @StateObject private var recentPlaces = RouteRecentPlaces()
     @State private var showFinishPlacePicker = false
@@ -34,6 +35,7 @@ struct SettingsView: View {
                     }
                 }
                 Section {
+                    Toggle("Confirm before stopping location spoofing", isOn: $confirmBeforeStoppingSpoofing)
                     Button("Location permissions") {
                         if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                     }

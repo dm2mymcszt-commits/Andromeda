@@ -21,6 +21,8 @@ struct LocSimView: View {
     @AppStorage("tapMapToSetLocation", store: SharedPreferences.defaults) private var tapMapToSetLocation = false
     @AppStorage("askBeforeMoving", store: SharedPreferences.defaults) private var askBeforeMoving = true
     @StateObject private var mapMove = MapMoveController()
+    @StateObject private var mainStop = MainStopController()
+    @AppStorage("confirmBeforeStoppingSpoofing", store: SharedPreferences.defaults) private var confirmBeforeStoppingSpoofing = true
     @StateObject private var routeSimulator = RouteSimulator()
     
     @ObservedObject private var locationSession = LocSimManager.session
@@ -125,6 +127,7 @@ struct LocSimView: View {
           }
         }
         .modifier(MapMoveConfirmation(controller: mapMove))
+        .modifier(MainStopConfirmation(controller: mainStop))
         .onChange(of: tapMapToSetLocation) { _ in mapMove.cancel() }
         .onChange(of: askBeforeMoving) { _ in mapMove.cancel() }
         .onAppear(perform: offerSharedPlace)
@@ -247,7 +250,8 @@ struct LocSimView: View {
         case .settings:
             showSettings = true
         case .stop:
-            stopSimulation()
+            mainStop.request(confirm: confirmBeforeStoppingSpoofing,
+                             routeRunning: routeSimulator.isSimulating, stop: stopSimulation)
         }
     }
     

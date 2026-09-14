@@ -926,3 +926,13 @@ Current code 13ee72e (build 13) pushed; CI 34849262175 running. b34cb4f full CI 
 Downloaded build 13 from CI 34849262175 to build/phase2-terrain-package/TrollRoute.tipa. Source/package identity equality passed, including app/share build numbers and IDs. ZIP integrity, ARM64 executable bits and exact embedded app/share entitlements passed. SHA256 3911df797d3fb338264d8aac7b831bbcdcf7e9679465478273e604aeb0b8e2fd. Route preview artifacts downloaded to build/phase2-route-previews; visually inspected dark playback and light mode/card scenes for readable controls, route colors, endpoints and simulated timing. These are fixture previews, not proof of physical injection or the full production engine. Workspace and picker checks still running; full Phase 2 gate remains pending.
 
 Successful F2 test log reports exactly: 140 inputs / 10 s -> 41 coalesced deliveries, one start and one timezone post; old call path would issue 140 starts and 140 timezone posts. Immediate jump/pause/resume and cancellation-race tests passed. Physical phone check still required. Corrected the short build guide's obsolete icon-awaiting-approval and identity-in-progress wording; full final guide update remains Phase 8.
+
+### Phase 2 accepted, 2026-09-14
+
+Re-read plan/progress and checked clean git state at 369e326. Full CI 34849262175 on code 13ee72e completed SUCCESS: all model/live checks, icon, route map, workspace and picker previews. App/package build took 46 seconds; dependencies one second, no Theos/extra SDK installation. Previously downloaded build 13 package and exact signing checks remain valid. Part D coverage and physical limitations are mapped above. Phase 2 accepted at a4df404; proceed in order to Phase 3.
+
+### Phase 3 R5 confirmed cause and implementation step
+
+LocSimView.handleQuickMenuAction(.stop) unconditionally invokes stopSimulation, which calls RouteSimulator.stopSimulation and restores real location. No intermediate confirmation state exists. Add a dedicated MainStopController and alert only to that toolbar entry; an injectable stop closure allows cancellation/confirmation to be tested without touching the route engine. Route Stop entries remain separate for Phase 4. Settings default ON; route-running prompt explicitly includes stopping the route.
+
+R5 implementation: dedicated MainStopConfirmation.swift, default-ON shared preference, only toolbar entry gated. Prompt warns about a running route; Cancel leaves route/joystick/injection untouched. Token invalidation prevents stale/repeated acceptance; tests cover presentation dismissal before callback. Existing Route Stop entries intentionally remain unchanged until Phase 4. Local identity/diff checks passed; Swift build/tests require CI on push.
