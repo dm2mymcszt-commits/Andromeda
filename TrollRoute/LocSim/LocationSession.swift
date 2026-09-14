@@ -188,6 +188,7 @@ final class LocationSession: ObservableObject {
     func beginRoute() {
         injectionQueue.flush()
         snapshot.beforeRoute = snapshot.current
+        altitudeController.activatePreparedRoute()
         snapshot.kind = .route
         firstRouteSample = true
         store.save(snapshot)

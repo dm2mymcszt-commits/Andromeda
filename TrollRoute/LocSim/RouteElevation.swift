@@ -99,19 +99,32 @@ actor ElevationRequestLimiter {
 
 /// One cancellable selected-route request, with an eight-route in-memory cache.
 /// Partial results become usable immediately; failures retry with a backoff.
+final class RouteElevationCache {
+    private var profiles: [RouteElevationProfile] = []
+    func get(_ plan: ElevationRoutePlan) -> RouteElevationProfile? { profiles.first { $0.plan == plan } }
+    func store(_ profile: RouteElevationProfile) {
+        profiles.removeAll { $0.plan == profile.plan }
+        profiles.append(profile)
+        if profiles.count > 8 { profiles.removeFirst() }
+    }
+}
+
 final class RouteElevationLoader {
+    let id: UUID
     private let lookup: ([CLLocationCoordinate2D]) async -> [Double?]?
     private let changed: (RouteElevationProfile) -> Void
     private let retryInterval: TimeInterval
-    private var cache: [RouteElevationProfile] = []
+    private let cache: RouteElevationCache
     private var task: Task<Void, Never>?
     private var token = UUID()
     private(set) var profile: RouteElevationProfile?
 
-    init(retryInterval: TimeInterval = 60,
+    init(id: UUID = UUID(), retryInterval: TimeInterval = 60, cache: RouteElevationCache = RouteElevationCache(),
          lookup: @escaping ([CLLocationCoordinate2D]) async -> [Double?]? = ElevationLookup.fetchBatch,
          changed: @escaping (RouteElevationProfile) -> Void) {
         self.retryInterval = retryInterval
+        self.id = id
+        self.cache = cache
         self.lookup = lookup
         self.changed = changed
     }
@@ -119,7 +132,7 @@ final class RouteElevationLoader {
         guard !plan.points.isEmpty else { cancel(); profile = nil; return }
         if profile?.plan == plan, task != nil { return }
         cancel()
-        if let cached = cache.first(where: { $0.plan == plan }) {
+        if let cached = cache.get(plan) {
             profile = cached; changed(cached); return
         }
         profile = RouteElevationProfile(plan: plan)
@@ -144,8 +157,7 @@ final class RouteElevationLoader {
                 offset = end
             }
             guard !Task.isCancelled, self.token == generation, let profile = self.profile else { return }
-            self.cache.append(profile)
-            if self.cache.count > 8 { self.cache.removeFirst() }
+            self.cache.store(profile)
             self.task = nil
         }
     }

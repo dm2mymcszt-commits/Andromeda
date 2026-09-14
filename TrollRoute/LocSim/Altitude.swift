@@ -83,11 +83,9 @@ final class AltitudeController: ObservableObject {
     private var lastRouteMeters: Double?
     private var routeProfile: RouteElevationProfile?
     private let batchLookup: ([CLLocationCoordinate2D]) async -> [Double?]?
-    private lazy var routeLoader = RouteElevationLoader(lookup: batchLookup) { [weak self] profile in
-        guard let self = self else { return }
-        self.routeProfile = profile
-        if self.routeDistance != nil { self.refresh() }
-    }
+    private let routeCache = RouteElevationCache()
+    private var preparedLoader: RouteElevationLoader?
+    private var activeLoader: RouteElevationLoader?
 
     init(settings: AltitudeSettings = .shared, defaults: UserDefaults = SharedPreferences.defaults,
          interval: TimeInterval = 10,
@@ -113,17 +111,39 @@ final class AltitudeController: ObservableObject {
     }
 
     func prepareRoute(_ plan: ElevationRoutePlan) {
-        if routeProfile?.plan != plan { lastRouteMeters = nil }
-        routeLoader.prepare(plan)
+        // Preparing another trip must not apply its terrain to a currently held
+        // location, or cancel that location's pending terrain refinement.
+        if activeLoader?.profile?.plan == plan {
+            if preparedLoader !== activeLoader { preparedLoader?.cancel() }
+            preparedLoader = activeLoader
+        }
+        if preparedLoader == nil || (preparedLoader === activeLoader && preparedLoader?.profile?.plan != plan) {
+            let id = UUID()
+            preparedLoader = RouteElevationLoader(id: id, cache: routeCache, lookup: batchLookup) { [weak self] profile in
+                guard let self = self, self.activeLoader?.id == id else { return }
+                self.routeProfile = profile
+                if self.routeDistance != nil { self.refresh() }
+            }
+        }
+        preparedLoader?.prepare(plan)
+    }
+
+    func activatePreparedRoute() {
+        if activeLoader !== preparedLoader { activeLoader?.cancel() }
+        activeLoader = preparedLoader
+        routeProfile = activeLoader?.profile
+        routeDistance = nil
+        lastRouteMeters = nil
     }
 
     func cancelPreparedRoute() {
-        routeLoader.cancel()
-        routeProfile = nil
+        if preparedLoader !== activeLoader { preparedLoader?.cancel() }
+        preparedLoader = nil
     }
 
     func receive(routeDistance: Double? = nil) {
         if self.routeDistance != nil && routeDistance == nil { finishRoute() }
+        if activeLoader == nil && routeDistance != nil { activatePreparedRoute() }
         self.routeDistance = routeDistance
         if routeDistance != nil { cancelLookup() }
         refresh(reissue: false)
@@ -136,12 +156,17 @@ final class AltitudeController: ObservableObject {
         }
         routeDistance = nil
         lastRouteMeters = nil
-        routeLoader.cancel()
+        activeLoader?.cancel()
+        activeLoader = nil
+        routeProfile = nil
     }
 
     func stop() {
         cancelLookup()
-        routeLoader.cancel()
+        activeLoader?.cancel()
+        preparedLoader?.cancel()
+        activeLoader = nil
+        routeProfile = nil
         routeDistance = nil
         lastRouteMeters = nil
         currentMeters = nil

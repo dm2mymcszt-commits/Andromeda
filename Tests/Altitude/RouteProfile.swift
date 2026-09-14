@@ -149,9 +149,18 @@ final class TerrainDriver: LocationSimulationDriver {
         precondition(abs(session.current!.meters! - 8910) < 0.001)
         session.finishHolding()
         precondition(session.current!.meters != nil && session.snapshot.kind == .stationary)
+        session.altitudeController.prepareRoute(other)
+        precondition(abs(session.current!.meters! - 8910) < 0.001,
+            "Preparing another trip cannot apply its heights to the held point")
         heldBatch.answer()
         await waitFor { abs((session.current?.meters ?? 0) - 17000) < 0.001 && heldBatch.requests.count == 1 }
         precondition(session.current!.speed == 0 && session.snapshot.kind == .stationary)
+        session.beginRoute()
+        session.receive(RouteLocationSample.make(coordinate: point(500), course: 92, speed: 50 / 3.6, timestamp: date),
+            kind: .route, routeDistance: 500)
+        precondition(abs(session.snapshot.beforeRoute!.meters! - 17000) < 0.001,
+            "Previous spoof records the old trip's terrain, not the newly prepared profile")
+        precondition(abs(session.current!.meters! - 500) < 0.001)
         // A subsequent static jump must not inherit that route's provisional
         // height, and an in-flight route response must not overwrite the jump.
         session.receive(RouteLocationSample.make(coordinate: point(50000), course: -1, speed: 0, timestamp: date), kind: .stationary)
