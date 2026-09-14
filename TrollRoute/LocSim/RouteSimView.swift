@@ -25,7 +25,8 @@ struct RouteSimSheet: View {
     @State private var routeReady: Bool = false
     @State private var showGPXPicker: Bool = false
     @State private var isStarting = false
-    @State private var autoStartAllowed = false
+    @StateObject private var preparation = RoutePreparationController()
+    @State private var startRequestID = UUID()
     
     enum ActiveField: String, Identifiable {
         case start, end
@@ -280,7 +281,8 @@ struct RouteSimSheet: View {
             }
         }
         .onDisappear {
-            autoStartAllowed = false
+            preparation.cancel()
+            startRequestID = UUID()
             currentLocation.cancel()
             draft.start = startCoord.map { RoutePlace(name: startText, coordinate: $0) }
             draft.destination = endCoord.map { RoutePlace(name: endText, coordinate: $0) }
@@ -524,21 +526,18 @@ struct RouteSimSheet: View {
 
     private func calculateRoute(autoStart: Bool) {
         guard let start = startCoord, let end = endCoord else { return }
-        autoStartAllowed = autoStart
-        
-        routeSimulator.calculateRoutes(from: start, to: end, mode: selectedMode) { success, error in
-            if success {
+        preparation.prepare(autoStart: autoStart, calculate: { completion in
+            routeSimulator.calculateRoutes(from: start, to: end, mode: selectedMode, completion: completion)
+        }, ready: {
                 routeReady = true
                 showRouteOnMap()
-                if autoStartAllowed && isPresented {
-                    autoStartAllowed = false
-                    routeSimulator.selectRoute(at: 0)
-                    startRoute()
-                }
-            } else {
-                UIApplication.shared.alert(body: error ?? "Failed to calculate route")
-            }
-        }
+        }, start: {
+            guard isPresented else { return }
+            routeSimulator.selectRoute(at: 0)
+            startRoute()
+        }, failure: { error in
+            UIApplication.shared.alert(body: error ?? "Failed to calculate route")
+        })
     }
     
     private func showRouteOnMap() {
@@ -555,8 +554,11 @@ struct RouteSimSheet: View {
     private func startRoute() {
         guard !isStarting, routeReady, !routeSimulator.availableRoutes.isEmpty else { return }
         isStarting = true
+        let request = UUID()
+        startRequestID = request
         Task { @MainActor in
             await RouteNotifications.shared.requestPermissionIfNeeded()
+            guard startRequestID == request else { return }
             isStarting = false
             guard isPresented, routeReady, !routeSimulator.availableRoutes.isEmpty else { return }
             routeSimulator.startSimulation()

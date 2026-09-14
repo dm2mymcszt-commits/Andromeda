@@ -94,3 +94,25 @@ struct LongPressRouteConfirmation: ViewModifier {
         })
     }
 }
+
+// Owns the once-only transition from directions completion to preview/auto-start.
+// Closing Navigation or replacing the calculation invalidates its continuation.
+final class RoutePreparationController: ObservableObject {
+    private var requestID: UUID?
+
+    func prepare(autoStart: Bool, calculate: (@escaping (Bool, String?) -> Void) -> Void,
+                 ready: @escaping () -> Void, start: @escaping () -> Void,
+                 failure: @escaping (String?) -> Void) {
+        let id = UUID()
+        requestID = id
+        calculate { [weak self] success, error in
+            guard let self = self, self.requestID == id else { return }
+            self.requestID = nil
+            guard success else { failure(error); return }
+            ready()
+            if autoStart { start() }
+        }
+    }
+
+    func cancel() { requestID = nil }
+}

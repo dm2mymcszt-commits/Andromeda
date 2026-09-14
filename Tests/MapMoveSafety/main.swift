@@ -167,3 +167,38 @@ lookups.last!(.failure(NSError(domain: "test", code: 1,
 require(created.count == count && routePress.error == "Precise Location is off." && !routePress.isLocating,
         "Denied/reduced/failed current location must explain the problem without creating a route")
 print("PASS: long press real/spoof start, coordinate transforms, confirmation/auto-start matrix, disabled/running guard, cancellation and failed location")
+
+let preparation = RoutePreparationController()
+var calculations: [(Bool, String?) -> Void] = []
+var events: [String] = []
+func prepare(_ auto: Bool) {
+    preparation.prepare(autoStart: auto, calculate: { calculations.append($0) },
+        ready: { events.append("preview") }, start: { events.append("start") },
+        failure: { events.append($0 ?? "failure") })
+}
+prepare(false)
+require(events.isEmpty, "Route preparation must wait for directions")
+calculations.last!(true, nil)
+calculations.last!(true, nil)
+require(events == ["preview"], "Default long press prepares once and must never auto-start")
+events = []
+prepare(true)
+calculations.last!(true, nil)
+require(events == ["preview", "start"], "Auto-start must occur once, after successful preparation")
+events = []
+prepare(true)
+calculations.last!(false, "No route")
+require(events == ["No route"], "Failed directions must never start")
+events = []
+prepare(true)
+let closedCalculation = calculations.last!
+preparation.cancel()
+closedCalculation(true, nil)
+require(events.isEmpty, "Closing Navigation must invalidate pending auto-start")
+prepare(true)
+let replacedCalculation = calculations.last!
+prepare(false)
+replacedCalculation(true, nil)
+calculations.last!(true, nil)
+require(events == ["preview"], "An obsolete calculation must not auto-start a newer preview")
+print("PASS: actual preparation-to-start workflow, default preview only, errors, duplicates, closure and replacement")
