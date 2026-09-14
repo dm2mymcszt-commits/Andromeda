@@ -52,3 +52,13 @@ let favorites = RouteFavoritePlaces.places(from: defaults.array(forKey: "bookmar
 require(favorites.count == 1 && favorites[0].name == place.name, "Shared favorite must use existing bookmark storage")
 require(abs(favorites[0].latitude - map.latitude) < 0.00003 && abs(favorites[0].longitude - map.longitude) < 0.00003, "Shared favorite must convert exactly once")
 print("PASS: four share actions, durable inbox, cancellation, invalid payloads, independent endpoints and WGS-84 Favorites")
+for autoStart in [false, true] {
+    draft.prepareFromMap(start: resolvedCurrent, destination: place, autoStart: autoStart)
+    require(draft.needsRecalculation && draft.start?.id == resolvedCurrent.id && draft.destination?.id == place.id,
+            "Long press must fill both Navigation endpoints")
+    require(draft.takeAutomaticPreparation() == autoStart && draft.takeAutomaticPreparation() == nil,
+            "Opening Navigation must calculate once, and never repeat auto-start after reopening")
+}
+draft.prepareFromMap(start: resolvedCurrent, destination: place, autoStart: true)
+draft.accept(requests[2])
+require(draft.takeAutomaticPreparation() == nil, "A later shared endpoint must invalidate earlier auto-start intent")

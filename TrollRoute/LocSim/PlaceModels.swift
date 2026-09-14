@@ -99,6 +99,8 @@ final class RouteCurrentLocation: NSObject, ObservableObject, CLLocationManagerD
     @Published private(set) var message: String?
     private let manager = CLLocationManager()
     private var timeout: DispatchWorkItem?
+    private var completion: ((Result<CLLocation, Error>) -> Void)?
+    private var requiresPrecise = false
 
     override init() {
         super.init()
@@ -106,8 +108,11 @@ final class RouteCurrentLocation: NSObject, ObservableObject, CLLocationManagerD
         manager.desiredAccuracy = kCLLocationAccuracyBest
     }
 
-    func request() {
+    func request(requirePrecise: Bool = false, completion: ((Result<CLLocation, Error>) -> Void)? = nil) {
         cancel()
+        self.completion = completion
+        requiresPrecise = requirePrecise
+        location = nil
         message = nil
         isLocating = true
         switch manager.authorizationStatus {
@@ -118,6 +123,7 @@ final class RouteCurrentLocation: NSObject, ObservableObject, CLLocationManagerD
     }
 
     func cancel() {
+        completion = nil
         timeout?.cancel()
         timeout = nil
         manager.stopUpdatingLocation()
@@ -125,6 +131,10 @@ final class RouteCurrentLocation: NSObject, ObservableObject, CLLocationManagerD
     }
 
     private func locate() {
+        guard !requiresPrecise || manager.accuracyAuthorization == .fullAccuracy else {
+            fail("Precise Location is off. Enable it in iOS Settings for an accurate route start, or choose the start in Navigation.")
+            return
+        }
         timeout?.cancel()
         let work = DispatchWorkItem { [weak self] in
             self?.fail("Couldn't get your location. Retry, search, or choose on map.")
@@ -148,8 +158,10 @@ final class RouteCurrentLocation: NSObject, ObservableObject, CLLocationManagerD
         guard isLocating, let fix = locations.last,
               fix.horizontalAccuracy >= 0, abs(fix.timestamp.timeIntervalSinceNow) < 60,
               CLLocationCoordinate2DIsValid(fix.coordinate) else { return }
+        let callback = completion
         cancel()
         location = fix
+        callback?(.success(fix))
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -158,8 +170,11 @@ final class RouteCurrentLocation: NSObject, ObservableObject, CLLocationManagerD
     }
 
     private func fail(_ text: String) {
+        let callback = completion
         cancel()
         message = text
+        callback?(.failure(NSError(domain: "TrollRoute.Location", code: 1,
+                                  userInfo: [NSLocalizedDescriptionKey: text])))
     }
 }
 

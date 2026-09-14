@@ -25,6 +25,7 @@ struct RouteSimSheet: View {
     @State private var routeReady: Bool = false
     @State private var showGPXPicker: Bool = false
     @State private var isStarting = false
+    @State private var autoStartAllowed = false
     
     enum ActiveField: String, Identifiable {
         case start, end
@@ -256,6 +257,9 @@ struct RouteSimSheet: View {
                         draft.needsRecalculation = false
                     } else { routeReady = !routeSimulator.availableRoutes.isEmpty }
                     if startCoord == nil && !routeSimulator.isSimulating { useCurrentStart() }
+                    if let autoStart = draft.takeAutomaticPreparation(), !routeSimulator.isSimulating {
+                        calculateRoute(autoStart: autoStart)
+                    }
                 } else if !routeSimulator.availableRoutes.isEmpty {
                     startCoord = routeSimulator.routeStart
                     endCoord = routeSimulator.routeEnd
@@ -276,6 +280,7 @@ struct RouteSimSheet: View {
             }
         }
         .onDisappear {
+            autoStartAllowed = false
             currentLocation.cancel()
             draft.start = startCoord.map { RoutePlace(name: startText, coordinate: $0) }
             draft.destination = endCoord.map { RoutePlace(name: endText, coordinate: $0) }
@@ -514,12 +519,22 @@ struct RouteSimSheet: View {
     }
 
     private func calculateRoute() {
+        calculateRoute(autoStart: false)
+    }
+
+    private func calculateRoute(autoStart: Bool) {
         guard let start = startCoord, let end = endCoord else { return }
+        autoStartAllowed = autoStart
         
         routeSimulator.calculateRoutes(from: start, to: end, mode: selectedMode) { success, error in
             if success {
                 routeReady = true
                 showRouteOnMap()
+                if autoStartAllowed && isPresented {
+                    autoStartAllowed = false
+                    routeSimulator.selectRoute(at: 0)
+                    startRoute()
+                }
             } else {
                 UIApplication.shared.alert(body: error ?? "Failed to calculate route")
             }

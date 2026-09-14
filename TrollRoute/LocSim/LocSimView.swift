@@ -21,6 +21,11 @@ struct LocSimView: View {
     @AppStorage("askBeforeMoving", store: SharedPreferences.defaults) private var askBeforeMoving = true
     @StateObject private var mapMove = MapMoveController()
     @StateObject private var mainStop = MainStopController()
+    @StateObject private var longPressRoute = LongPressRouteController()
+    @StateObject private var longPressLocation = RouteCurrentLocation()
+    @AppStorage("longPressToCreateRoute", store: SharedPreferences.defaults) private var longPressToCreateRoute = true
+    @AppStorage("confirmLongPressRoute", store: SharedPreferences.defaults) private var confirmLongPressRoute = false
+    @AppStorage("autoStartLongPressRoute", store: SharedPreferences.defaults) private var autoStartLongPressRoute = false
     @AppStorage("confirmBeforeStoppingSpoofing", store: SharedPreferences.defaults) private var confirmBeforeStoppingSpoofing = true
     @StateObject private var routeSimulator = RouteSimulator()
     
@@ -61,7 +66,8 @@ struct LocSimView: View {
                                   routeSimulator.selectRoute(at: index)
                               }, mapStyle: mapStyle,
                               proposedPosition: mapMove.pendingRequest?.coordinate ?? routeSimulator.previewPosition,
-                              proposalIsRoutePreview: mapMove.pendingRequest == nil && routeSimulator.previewPosition != nil)
+                              proposalIsRoutePreview: mapMove.pendingRequest == nil && routeSimulator.previewPosition != nil,
+                              onLongPress: longPressToCreateRoute ? requestLongPressRoute : nil)
                     .onAppear {
                         CLLocationManager().requestAlwaysAuthorization()
                     }
@@ -115,6 +121,24 @@ struct LocSimView: View {
         }
         .modifier(MapMoveConfirmation(controller: mapMove))
         .modifier(MainStopConfirmation(controller: mainStop))
+        .modifier(LongPressRouteConfirmation(controller: longPressRoute))
+        .alert("Create route", isPresented: Binding(get: { longPressRoute.error != nil }, set: { if !$0 { longPressRoute.error = nil } })) {
+            Button("OK", role: .cancel) { longPressRoute.error = nil }
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+            }
+        } message: { Text(longPressRoute.error ?? "") }
+        .overlay(alignment: .topLeading) {
+            if longPressRoute.isLocating {
+                HStack {
+                    ProgressView("Finding route start…")
+                    Button("Cancel") { longPressRoute.cancel() }
+                }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12)).padding(12)
+            }
+        }
+        .onChange(of: longPressToCreateRoute) { _ in longPressRoute.cancel() }
+        .onChange(of: confirmLongPressRoute) { _ in longPressRoute.cancel() }
+        .onChange(of: autoStartLongPressRoute) { _ in longPressRoute.cancel() }
         .onChange(of: tapMapToSetLocation) { _ in mapMove.cancel() }
         .onChange(of: askBeforeMoving) { _ in mapMove.cancel() }
         .onAppear(perform: offerSharedPlace)
@@ -195,6 +219,7 @@ struct LocSimView: View {
     }
     
     private func startSimulation(at gcjCoordinate: CLLocationCoordinate2D) {
+        longPressRoute.cancel()
         mapMove.cancel()
         if routeSimulator.isSimulating { routeSimulator.stopSimulation() }
         joystickActive = false
@@ -215,6 +240,7 @@ struct LocSimView: View {
     
     // MARK: - Quick Menu Handler
     private func handleQuickMenuAction(_ action: QuickMenuAction) {
+        longPressRoute.cancel()
         // A pending map proposal must not appear over a newly opened tool.
         mapMove.cancel()
         switch action {
@@ -243,10 +269,30 @@ struct LocSimView: View {
     }
     
     private func stopSimulation() {
+        longPressRoute.cancel()
         mapMove.cancel()
         routeSimulator.stopSimulation()
         joystickActive = false
         AlertKitAPI.present(title: "Stopped!", icon: .done, style: .iOS17AppleMusic, haptic: .success)
+    }
+
+    private func requestLongPressRoute(_ destination: CLLocationCoordinate2D) {
+        mapMove.cancel()
+        longPressRoute.request(destination: destination, enabled: longPressToCreateRoute,
+            confirm: confirmLongPressRoute, autoStart: autoStartLongPressRoute,
+            spoofedStart: locationSession.isActive ? locationSession.current?.coordinate : nil,
+            routeRunning: routeSimulator.isSimulating,
+            lookup: { completion in
+                longPressLocation.request(requirePrecise: true, completion: completion)
+                return { longPressLocation.cancel() }
+            }, create: { endpoints in
+                guard !routeSimulator.isSimulating else { return }
+                joystickActive = false
+                routeDraft.prepareFromMap(start: RoutePlace(name: endpoints.startName, coordinate: endpoints.start),
+                    destination: RoutePlace(name: "Map pin", coordinate: endpoints.destination),
+                    autoStart: endpoints.autoStart)
+                showRouteSheet = true
+            })
     }
     
 }

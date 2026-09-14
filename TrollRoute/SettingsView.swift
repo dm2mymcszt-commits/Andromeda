@@ -9,6 +9,9 @@ struct SettingsView: View {
     @AppStorage("tapMapToSetLocation", store: SharedPreferences.defaults) private var tapMapToSetLocation = false
     @AppStorage("askBeforeMoving", store: SharedPreferences.defaults) private var askBeforeMoving = true
     @AppStorage("confirmBeforeStoppingSpoofing", store: SharedPreferences.defaults) private var confirmBeforeStoppingSpoofing = true
+    @AppStorage("longPressToCreateRoute", store: SharedPreferences.defaults) private var longPressToCreateRoute = true
+    @AppStorage("confirmLongPressRoute", store: SharedPreferences.defaults) private var confirmLongPressRoute = false
+    @AppStorage("autoStartLongPressRoute", store: SharedPreferences.defaults) private var autoStartLongPressRoute = false
     @ObservedObject private var finishSettings = RouteFinishSettings.shared
     @StateObject private var recentPlaces = RouteRecentPlaces()
     @State private var showFinishPlacePicker = false
@@ -32,6 +35,11 @@ struct SettingsView: View {
                     Toggle("Tap map to set location", isOn: $tapMapToSetLocation)
                     if tapMapToSetLocation {
                         Toggle("Ask before moving", isOn: $askBeforeMoving)
+                    }
+                    Toggle("Long press to create route", isOn: $longPressToCreateRoute)
+                    if longPressToCreateRoute {
+                        Toggle("Confirm before creating route from long press", isOn: $confirmLongPressRoute)
+                        Toggle("Automatically start route after long press", isOn: $autoStartLongPressRoute)
                     }
                 }
                 Section {

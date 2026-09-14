@@ -23,6 +23,7 @@ struct CustomMapView: UIViewRepresentable {
     var mapStyle: String
     var proposedPosition: CLLocationCoordinate2D?
     var proposalIsRoutePreview: Bool
+    var onLongPress: ((CLLocationCoordinate2D) -> Void)?
 
     init(tappedCoordinate: Binding<EquatableCoordinate?>,
          moveToRegion: Binding<MKCoordinateRegion?>,
@@ -37,7 +38,8 @@ struct CustomMapView: UIViewRepresentable {
          showsUserLocation: Bool = true,
          mapStyle: String = "standard",
          proposedPosition: CLLocationCoordinate2D? = nil,
-         proposalIsRoutePreview: Bool = false) {
+         proposalIsRoutePreview: Bool = false,
+         onLongPress: ((CLLocationCoordinate2D) -> Void)? = nil) {
         self._tappedCoordinate = tappedCoordinate
         self._moveToRegion = moveToRegion
         self.routePolyline = routePolyline
@@ -52,6 +54,7 @@ struct CustomMapView: UIViewRepresentable {
         self.mapStyle = mapStyle
         self.proposedPosition = proposedPosition
         self.proposalIsRoutePreview = proposalIsRoutePreview
+        self.onLongPress = onLongPress
     }
 
     func makeUIView(context: Context) -> MKMapView {
@@ -71,6 +74,7 @@ struct CustomMapView: UIViewRepresentable {
     func updateUIView(_ mapView: MKMapView, context: Context) {
         // A representable is a value: delegates must use the latest bindings and callbacks.
         context.coordinator.parent = self
+        context.coordinator.longPress?.isEnabled = onLongPress != nil
         mapView.showsUserLocation = showsUserLocation
         let desiredType: MKMapType = mapStyle == "hybrid" ? .hybrid : .standard
         if mapView.mapType != desiredType { mapView.mapType = desiredType }
@@ -108,6 +112,7 @@ struct CustomMapView: UIViewRepresentable {
         private(set) var proposedAnnotation: ProposedPositionAnnotation?
         private(set) var singleTap: UITapGestureRecognizer?
         private(set) var doubleTapGuard: UITapGestureRecognizer?
+        private(set) var longPress: UILongPressGestureRecognizer?
         private var currentETAs: [String] = []
         private var routeAnnotations: [MKAnnotation] = []
         private let routeColors: [UIColor] = [.systemBlue, .systemOrange, .systemPurple, .systemPink]
@@ -127,6 +132,19 @@ struct CustomMapView: UIViewRepresentable {
             singleTap = tap
             doubleTapGuard = doubleTap
             tap.require(toFail: doubleTap)
+            let press = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+            press.minimumPressDuration = 0.5
+            press.delegate = self
+            press.isEnabled = parent.onLongPress != nil
+            mapView.addGestureRecognizer(press)
+            press.require(toFail: doubleTap)
+            tap.require(toFail: press)
+            longPress = press
+        }
+
+        @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+            guard gesture.state == .began, let map = gesture.view as? MKMapView else { return }
+            parent.onLongPress?(map.convert(gesture.location(in: map), toCoordinateFrom: map))
         }
 
         // The guard protects even when MapKit creates its zoom recognizers lazily.

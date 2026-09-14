@@ -58,4 +58,26 @@ final class MapGestureTests: XCTestCase {
         app.alerts.buttons["Cancel"].tap()
         XCTAssertFalse(app.alerts["Stop location spoofing?"].exists)
     }
+
+    func testLongPressSingleTapAndDoubleTapAreSeparate() {
+        let app = launch("gestures-long")
+        let spot = app.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.65))
+        spot.press(forDuration: 1)
+        XCTAssertEqual(app.staticTexts["gesture-counts"].label, "presses=1,taps=0")
+        let before = mapState(app)
+        XCTAssertEqual(before.count, 4)
+        guard before.count == 4 else { return }
+        spot.doubleTap()
+        let zoomed = NSPredicate { _, _ in
+            let after = self.mapState(app)
+            return after.count == 4 && after[2] < before[2] * 0.9
+        }
+        expectation(for: zoomed, evaluatedWith: app)
+        waitForExpectations(timeout: 5)
+        XCTAssertEqual(app.staticTexts["gesture-counts"].label, "presses=1,taps=0")
+        spot.tap()
+        let tapped = NSPredicate(format: "label == %@", "presses=1,taps=1")
+        expectation(for: tapped, evaluatedWith: app.staticTexts["gesture-counts"])
+        waitForExpectations(timeout: 5)
+    }
 }

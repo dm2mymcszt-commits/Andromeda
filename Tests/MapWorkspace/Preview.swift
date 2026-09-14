@@ -18,6 +18,8 @@ struct WorkspacePreview: View {
     @StateObject private var altitude = AltitudeController(currentLocation: { nil }, deliver: { _ in })
     @State private var routeActive = false
     @StateObject private var mainStop = MainStopController()
+    @State private var pressCount = 0
+    @State private var tapCount = 0
     @State private var tapped: EquatableCoordinate?
     // Deterministic address fixture for the confirmation screenshot, not a live lookup.
     @StateObject private var mapMove = MapMoveController(lookup: { _, completion in
@@ -35,7 +37,8 @@ struct WorkspacePreview: View {
         ZStack(alignment: .topTrailing) {
             CustomMapView(tappedCoordinate: $tapped, moveToRegion: $region,
                           allowsLocationSelection: tapEnabled, showsUserLocation: false, mapStyle: mapStyle,
-                          proposedPosition: mapMove.pendingRequest?.coordinate)
+                          proposedPosition: mapMove.pendingRequest?.coordinate,
+                          onLongPress: screen == "gestures-long" ? { _ in pressCount += 1 } : nil)
                 .ignoresSafeArea()
         }
         .frame(height: screen == "gestures-short" ? 240 : nil)
@@ -49,6 +52,8 @@ struct WorkspacePreview: View {
         .overlay(alignment: .topLeading) {
             if screen.hasPrefix("gestures") {
                 MapObservation().frame(width: 1, height: 1).allowsHitTesting(false)
+                Text("presses=\(pressCount),taps=\(tapCount)")
+                    .accessibilityIdentifier("gesture-counts").allowsHitTesting(false)
             }
         }
         .modifier(MainStopConfirmation(controller: mainStop))
@@ -56,6 +61,7 @@ struct WorkspacePreview: View {
         .onChange(of: tapped) { coordinate in
             guard let coordinate = coordinate else { return }
             tapped = nil
+            if screen == "gestures-long" { tapCount += 1; return }
             mapMove.request(coordinate.coordinate, displayCoordinate: coordinate.coordinate,
                             enabled: tapEnabled, ask: askBeforeMoving, routeRunning: routeActive) { _ in }
         }
@@ -70,7 +76,7 @@ struct WorkspacePreview: View {
             if screen == "altitude-custom" { AltitudeSettings.shared.setCustom(250) }
             if screen == "altitude-negative" { AltitudeSettings.shared.setCustom(-12.5) }
             if screen.hasPrefix("altitude-") { showAltitude = true }
-            tapEnabled = screen == "settings-enabled"
+            tapEnabled = screen == "settings-enabled" || screen == "gestures-long"
             if screen == "settings" || screen == "settings-enabled" { showSettings = true }
             if screen == "search" { showSearch = true }
             if screen == "confirmation" {

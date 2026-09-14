@@ -105,3 +105,65 @@ for running in [false, true] {
 }
 require(stopped == 3, "Immediate main Stop must stop exactly once per request")
 print("PASS: main Stop ON/OFF, route warning, Cancel, stale prompt and exact-once confirmation")
+
+let routePress = LongPressRouteController()
+var lookups: [(Result<CLLocation, Error>) -> Void] = []
+var created: [LongPressRouteEndpoints] = []
+let chinaWGS = CLLocationCoordinate2D(latitude: 31.2304, longitude: 121.4737)
+let destination = CLLocationCoordinate2D(latitude: 44.9, longitude: -0.6)
+func press(enabled: Bool = true, confirm: Bool = false, auto: Bool = false,
+           spoof: CLLocationCoordinate2D? = nil, running: Bool = false) {
+    routePress.request(destination: destination, enabled: enabled, confirm: confirm, autoStart: auto,
+        spoofedStart: spoof, routeRunning: running,
+        lookup: { lookups.append($0); return {} }, create: { created.append($0) })
+}
+press(enabled: false, auto: true, spoof: point)
+press(running: true, auto: true, spoof: point)
+require(created.isEmpty && lookups.isEmpty && routePress.presentedRequest == nil,
+        "Disabled/running-route long press must not calculate, locate or start")
+require(routePress.error?.contains("Stop the current route") == true, "Running route needs guidance")
+for ask in [false, true] {
+    for auto in [false, true] {
+        for spoof in [false, true] {
+            let count = created.count
+            let lookupCount = lookups.count
+            press(confirm: ask, auto: auto, spoof: spoof ? chinaWGS : nil)
+            if ask {
+                let pending = routePress.presentedRequest!
+                require(created.count == count && lookups.count == lookupCount,
+                        "No route preparation or location access before long-press confirmation")
+                routePress.presentedRequest = nil
+                routePress.confirmRequest(pending)
+                routePress.confirmRequest(pending) // Already resolved spoof must be exactly once.
+            }
+            if !spoof {
+                require(routePress.isLocating && created.count == count, "Real start must wait for a fix")
+                lookups.last!(.success(CLLocation(latitude: point.latitude, longitude: point.longitude)))
+            }
+            require(created.count == count + 1 && !routePress.isLocating, "Exactly one preview per long press")
+            let endpoints = created.last!
+            let expected = CoordTransform.wgs84ToGcj02(spoof ? chinaWGS : point)
+            require(endpoints.start.latitude == expected.latitude && endpoints.start.longitude == expected.longitude,
+                    "Current spoof/real WGS start must convert to map coordinates exactly once")
+            require(endpoints.destination.latitude == destination.latitude && endpoints.autoStart == auto,
+                    "Preview destination and explicit auto-start choice must survive resolution")
+        }
+    }
+}
+let count = created.count
+press(confirm: true, auto: true)
+let canceledPress = routePress.presentedRequest!
+routePress.cancel()
+routePress.confirmRequest(canceledPress)
+require(created.count == count && !routePress.isLocating, "Cancel confirmation must not create or move")
+press(auto: true)
+let oldLookup = lookups.last!
+routePress.cancel()
+oldLookup(.success(CLLocation(latitude: 1, longitude: 2)))
+require(created.count == count, "Canceled current-location lookup must never auto-start")
+press()
+lookups.last!(.failure(NSError(domain: "test", code: 1,
+    userInfo: [NSLocalizedDescriptionKey: "Precise Location is off."])))
+require(created.count == count && routePress.error == "Precise Location is off." && !routePress.isLocating,
+        "Denied/reduced/failed current location must explain the problem without creating a route")
+print("PASS: long press real/spoof start, coordinate transforms, confirmation/auto-start matrix, disabled/running guard, cancellation and failed location")

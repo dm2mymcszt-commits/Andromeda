@@ -96,6 +96,21 @@ final class RouteDraft: ObservableObject {
     @Published var destination: RoutePlace?
     // A shared endpoint invalidates a previous preview when the planner opens.
     var needsRecalculation = false
+    // Non-nil only for a newly requested long-press preview; consumed once by Navigation.
+    private var automaticPreparation: Bool?
+
+    func prepareFromMap(start: RoutePlace, destination: RoutePlace, autoStart: Bool) {
+        self.start = start
+        self.destination = destination
+        needsRecalculation = true
+        automaticPreparation = autoStart
+    }
+
+    func takeAutomaticPreparation() -> Bool? {
+        let value = automaticPreparation
+        automaticPreparation = nil
+        return value
+    }
 
     @discardableResult
     func swapEndpoints() -> Bool {
@@ -103,6 +118,7 @@ final class RouteDraft: ObservableObject {
         start = oldDestination
         destination = oldStart
         needsRecalculation = true
+        automaticPreparation = nil
         return true
     }
 
@@ -112,6 +128,7 @@ final class RouteDraft: ObservableObject {
         else if request.action == .destination { destination = place }
         else { return }
         needsRecalculation = true
+        automaticPreparation = nil
     }
 }
 
