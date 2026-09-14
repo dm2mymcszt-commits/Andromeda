@@ -191,8 +191,9 @@ final class LocationSession: ObservableObject {
     }
 
     func receive(_ location: CLLocation, kind: LocationSessionSnapshot.Kind,
-                 reason: LocationInjectionReason = .continuous) {
+                 reason: LocationInjectionReason = .continuous, routeDistance: Double? = nil) {
         guard SessionLocation(location).isValid else { return }
+        if kind != .route { altitudeController.finishRoute() }
         let stopped = location.speed == 0 && inputSample?.speed != 0
         deliveryReason = (kind == .stationary || firstRouteSample || reason == .jump) ? .jump :
             (stopped || reason == .stateChange ? .stateChange : .continuous)
@@ -200,13 +201,14 @@ final class LocationSession: ObservableObject {
         inputSample = location
         snapshot.kind = kind
         if kind != .route { snapshot.beforeRoute = nil }
-        altitudeController.receive()
+        altitudeController.receive(routeDistance: kind == .route ? routeDistance : nil)
         deliveryReason = .continuous
     }
 
     /// Natural arrival already emitted its zero-speed sample; only ownership changes.
     func finishHolding() {
         injectionQueue.flush()
+        altitudeController.finishRoute()
         snapshot.kind = snapshot.current == nil ? nil : .stationary
         snapshot.beforeRoute = nil
         store.save(snapshot)

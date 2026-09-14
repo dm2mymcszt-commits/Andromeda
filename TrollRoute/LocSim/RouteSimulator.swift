@@ -482,6 +482,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         route.polyline.getCoordinates(&coords, range: NSRange(location: 0, length: pointCount))
         
         track = RouteTrack(coordinates: coords.map(CoordTransform.gcj02ToWgs84))
+        prepareElevation()
         journey = nil
         routePolyline = route.polyline
         
@@ -495,6 +496,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func clearCalculatedRoutes() {
         guard !isSimulating else { return }
+        locationSession.altitudeController.cancelPreparedRoute()
         calculationID = UUID()
         pendingDirections.values.forEach { $0.cancel() }
         pendingDirections = [:]
@@ -524,6 +526,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
             startError = "Choose an after-route place in Settings before starting."
             return
         }
+        prepareElevation()
         locationSession.beginRoute()
         finishState = RouteFinishState(action: settings.action)
         finishDestination = settings.destination
@@ -711,7 +714,14 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         progress = journey.progress
         let location = RouteLocationSample.make(coordinate: motion.coordinate,
             course: motion.course, speed: motion.speed, timestamp: Date())
-        locationSession.receive(location, kind: .route, reason: reason)
+        let distance = finishState.returning ? (track?.length ?? journey.track.length) - journey.distance : journey.distance
+        locationSession.receive(location, kind: .route, reason: reason, routeDistance: distance)
+    }
+
+    private func prepareElevation() {
+        guard let track = track else { return }
+        locationSession.altitudeController.prepareRoute(ElevationRoutePlan(length: track.length,
+            position: { track.position(at: $0).coordinate }))
     }
 
     // MARK: - Background Task Management

@@ -24,7 +24,7 @@ xcrun --sdk iphonesimulator swiftc TrollRoute/Storage/SharedPreferences.swift -t
   TrollRoute/LocSim/CustomMapView.swift TrollRoute/LocSim/FloatingQuickMenu.swift \
   TrollRoute/LocSim/RouteLocationPicker.swift TrollRoute/LocSim/PlaceModels.swift TrollRoute/LocSim/PlaceInput.swift TrollRoute/LocSim/AddressQuery.swift TrollRoute/LocSim/PlaceSearch.swift TrollRoute/SettingsView.swift \
   TrollRoute/LocSim/MapMoveConfirmation.swift \
-  TrollRoute/LocSim/Altitude.swift TrollRoute/LocSim/AltitudeSheet.swift \
+  TrollRoute/LocSim/RouteElevation.swift TrollRoute/LocSim/Altitude.swift TrollRoute/LocSim/AltitudeSheet.swift \
   TrollRoute/LocSim/CoordTransform.swift TrollRoute/LocSim/RouteFinish.swift "$QA_DIR/Bookmarks.swift" \
   "$QA_DIR/AppSettings.swift" Tests/MapWorkspace/Preview.swift \
   -o "$PREVIEW_APP/MapWorkspacePreview"

@@ -7,6 +7,6 @@ mkdir -p "$QA_DIR"
 # class. This tests its actual operation order without pretending to inject GPS
 # on a hosted Mac. The phone test covers locationd and third-party consumers.
 xcrun swiftc -parse-as-library TrollRoute/Storage/SharedPreferences.swift \
-  TrollRoute/LocSim/Altitude.swift TrollRoute/LocSim/LocationSession.swift \
+  TrollRoute/LocSim/RouteElevation.swift TrollRoute/LocSim/Altitude.swift TrollRoute/LocSim/LocationSession.swift \
   TrollRoute/LocSim/LocSimManager.swift Tests/Injection/main.swift -o "$QA_DIR/injection-tests"
 "$QA_DIR/injection-tests"

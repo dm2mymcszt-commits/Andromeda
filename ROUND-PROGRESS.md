@@ -4,7 +4,7 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: Phase 2. Shared owner `0cd7066` pushed; build/model/live/route previews passed in CI 34815322711 (workspace/picker still running). F2 separate cadence commit prepared; next validate its CI, then implement F1 batched route elevation profiles. Phase 1 accepted; do not redo completed work.
+- Current checkpoint: Phase 2. Owner `0cd7066` full CI 34815322711 SUCCESS. F2 `c5cbc37` pushed: build and all model/live tests passed; previews pending. F1 build 10 profile integration prepared. Next: push/validate F1, resolve any CI failure, finish Phase 2 acceptance before Phase 3.
 - Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
 - Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
@@ -35,9 +35,9 @@
 | 1 R4 icon | Approved and committed | `e6d9569`: exact approved render installed; old icon sources removed. `2b53a12` compares identical pixels across OS; CI 34779276915 icon and app package passed |
 | 1 F6 data credits | Done | `db74fc5`: generic About line links exact notices; full CI 34777564932 SUCCESS |
 | 1 acceptance | Done | Full CI 34778446157 SUCCESS, downloaded package signing verified. Approved icon built in CI 34779276915; exact pixel check passed. No Release |
-| 2 R3 foundation | In progress | Cleanup `d40830b` CI SUCCESS (46s build/package, no Theos). Owner `0cd7066` build 8 pushed; transitions/persistence tests passed, last UI checks pending |
-| 2 F2 injection | In progress; phone test required | Root cause: restart + timezone per sample; unbounded slider injections. Prepared build 9: 4 Hz latest-sample queue; immediate jump/pause/arrival; one driver start; geometry-driven UI. Deterministic adapter/cancellation tests added; CI next |
-| 2 F1 altitude | Not started | Batched route profile, interpolation, continuity; custom unchanged |
+| 2 R3 foundation | In progress | Cleanup `d40830b` CI SUCCESS (46s build/package, no Theos). Owner `0cd7066` full CI SUCCESS, including transitions/persistence and all previews |
+| 2 F2 injection | In progress; phone test required | `c5cbc37` build 9 pushed. Root cause: restart/timezone per sample, unbounded slider inputs. 4 Hz coalescing + immediate jump/pause/arrival + geometry UI. New adapter/cancellation tests passed; full CI 34816390584 previews pending |
+| 2 F1 altitude | In progress | Root cause: 10 s lookup + 45 m cache. Prepared build 10: batched profile/interpolation, last-known hold, custom preserved, weighted persistent API budget. New continuity/budget/cancellation tests; CI next |
 | 2 acceptance | Not started | Session/profile/adapter tests and existing regression; build timing |
 | 3 R5, R6 | Not started | Main Stop confirmation; visible toolbar hit bounds |
 | 3 R18, R19, R20, R21 | Not started | Long press routing, enable/confirm/auto-start defaults and gesture tests |

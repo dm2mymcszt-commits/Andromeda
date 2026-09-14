@@ -38,22 +38,28 @@ final class AltitudeSettings: ObservableObject {
 
 enum ElevationLookup {
     static func decode(_ data: Data) -> Double? {
+        decodeBatch(data, count: 1)?.first ?? nil
+    }
+    static func decodeBatch(_ data: Data, count: Int) -> [Double?]? {
         struct Response: Decodable { let elevation: [Double?] }
         guard let response = try? JSONDecoder().decode(Response.self, from: data),
-              response.elevation.count == 1, let value = response.elevation[0],
-              value.isFinite, value != -9999 else { return nil }
-        return value
+              response.elevation.count == count else { return nil }
+        return response.elevation.map { value in value.flatMap { $0.isFinite && $0 != -9999 ? $0 : nil } }
     }
     static func fetch(_ coordinate: CLLocationCoordinate2D) async -> Double? {
-        guard CLLocationCoordinate2DIsValid(coordinate) else { return nil }
+        await fetchBatch([coordinate])?.first ?? nil
+    }
+    static func fetchBatch(_ coordinates: [CLLocationCoordinate2D]) async -> [Double?]? {
+        guard (1...100).contains(coordinates.count), coordinates.allSatisfy(CLLocationCoordinate2DIsValid),
+              await ElevationRequestLimiter.shared.reserve(coordinates.count), !Task.isCancelled else { return nil }
         var url = URLComponents(string: "https://api.open-meteo.com/v1/elevation")!
-        url.queryItems = [URLQueryItem(name: "latitude", value: String(coordinate.latitude)),
-                         URLQueryItem(name: "longitude", value: String(coordinate.longitude))]
+        url.queryItems = [URLQueryItem(name: "latitude", value: coordinates.map { String($0.latitude) }.joined(separator: ",")),
+                         URLQueryItem(name: "longitude", value: coordinates.map { String($0.longitude) }.joined(separator: ","))]
         var request = URLRequest(url: url.url!, timeoutInterval: 8)
         request.setValue("TrollRoute/\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "3.0.0") (https://github.com/dm2mymcszt-commits/TrollRoute)", forHTTPHeaderField: "User-Agent")
         guard let (data, response) = try? await URLSession.shared.data(for: request),
               (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
-        return decode(data)
+        return decodeBatch(data, count: coordinates.count)
     }
 }
 
@@ -73,16 +79,27 @@ final class AltitudeController: ObservableObject {
     private let interval: TimeInterval
     private let defaults: UserDefaults
     private var nextLookup: Date
+    private var routeDistance: Double?
+    private var lastRouteMeters: Double?
+    private var routeProfile: RouteElevationProfile?
+    private let batchLookup: ([CLLocationCoordinate2D]) async -> [Double?]?
+    private lazy var routeLoader = RouteElevationLoader(lookup: batchLookup) { [weak self] profile in
+        guard let self = self else { return }
+        self.routeProfile = profile
+        if self.routeDistance != nil { self.refresh() }
+    }
 
     init(settings: AltitudeSettings = .shared, defaults: UserDefaults = SharedPreferences.defaults,
          interval: TimeInterval = 10,
          lookup: @escaping (CLLocationCoordinate2D) async -> Double? = ElevationLookup.fetch,
+         batchLookup: @escaping ([CLLocationCoordinate2D]) async -> [Double?]? = ElevationLookup.fetchBatch,
          currentLocation: @escaping () -> CLLocation?,
          deliver: @escaping (CLLocation) -> Void) {
         self.profile = settings.profile
         self.defaults = defaults
         self.interval = interval
         self.lookup = lookup
+        self.batchLookup = batchLookup
         self.deliver = deliver
         self.currentLocation = currentLocation
         // Persist the reservation so relaunching cannot bypass the free API limit.
@@ -95,12 +112,38 @@ final class AltitudeController: ObservableObject {
         }
     }
 
-    func receive() {
+    func prepareRoute(_ plan: ElevationRoutePlan) {
+        if routeProfile?.plan != plan { lastRouteMeters = nil }
+        routeLoader.prepare(plan)
+    }
+
+    func cancelPreparedRoute() {
+        routeLoader.cancel()
+        routeProfile = nil
+    }
+
+    func receive(routeDistance: Double? = nil) {
+        if self.routeDistance != nil && routeDistance == nil { finishRoute() }
+        self.routeDistance = routeDistance
+        if routeDistance != nil { cancelLookup() }
         refresh(reissue: false)
+    }
+
+    func finishRoute() {
+        if let coordinate = currentLocation()?.coordinate, let meters = lastRouteMeters {
+            cache.append((coordinate, meters))
+            if cache.count > 2048 { cache.removeFirst() }
+        }
+        routeDistance = nil
+        lastRouteMeters = nil
+        routeLoader.cancel()
     }
 
     func stop() {
         cancelLookup()
+        routeLoader.cancel()
+        routeDistance = nil
+        lastRouteMeters = nil
         currentMeters = nil
     }
 
@@ -119,11 +162,18 @@ final class AltitudeController: ObservableObject {
 
     private func refresh(reissue: Bool = true) {
         guard let location = currentLocation() else { return }
-        let meters = profile.mode == .custom ? profile.customMeters : cached(location.coordinate)
+        let terrain: Double?
+        if let distance = routeDistance {
+            terrain = routeProfile?.meters(at: distance) ?? lastRouteMeters ?? cached(location.coordinate)
+            if let terrain = terrain { lastRouteMeters = terrain }
+        } else {
+            terrain = cached(location.coordinate)
+        }
+        let meters = profile.mode == .custom ? profile.customMeters : terrain
         currentMeters = meters
         deliver(Self.applying(meters, to: location, accuracy: profile.mode == .custom ? 1 : 90,
                               timestamp: reissue ? Date() : nil))
-        guard profile.mode == .automatic, meters == nil, task == nil else { return }
+        guard routeDistance == nil, profile.mode == .automatic, meters == nil, task == nil else { return }
         let token = generation
         task = Task { @MainActor [weak self] in
             guard let self = self else { return }

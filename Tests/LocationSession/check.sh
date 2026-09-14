@@ -10,6 +10,6 @@ source = Path('TrollRoute/LocSim/LocSimManager.swift').read_text()
 Path(sys.argv[1]).write_text(source.split('class LocSimManager {')[0])
 PY
 xcrun swiftc -parse-as-library TrollRoute/Storage/SharedPreferences.swift \
-  TrollRoute/LocSim/Altitude.swift TrollRoute/LocSim/LocationSession.swift \
+  TrollRoute/LocSim/RouteElevation.swift TrollRoute/LocSim/Altitude.swift TrollRoute/LocSim/LocationSession.swift \
   "$QA_DIR/RouteLocationSample.swift" Tests/LocationSession/main.swift -o "$QA_DIR/session-tests"
 "$QA_DIR/session-tests"
