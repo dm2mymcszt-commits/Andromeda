@@ -11,7 +11,7 @@ import CoreLocation
 struct JoystickView: View {
     @Binding var isActive: Bool
     var onMove: (CLLocationCoordinate2D) -> Void
-    @Binding var currentCoordinate: CLLocationCoordinate2D
+    let currentCoordinate: () -> CLLocationCoordinate2D
     
     @State private var dragOffset: CGSize = .zero
     @State private var isDragging = false
@@ -178,11 +178,11 @@ struct JoystickView: View {
             // Screen coordinates: right=+x, down=+y
             // Map: right=+longitude, down=-latitude
             let latDelta = -(metersPerTick * Double(sin(angle))) / 111320.0
-            let longDelta = (metersPerTick * Double(cos(angle))) / (111320.0 * cos(currentCoordinate.latitude * .pi / 180))
+            let longDelta = (metersPerTick * Double(cos(angle))) / (111320.0 * cos(currentCoordinate().latitude * .pi / 180))
             
             let newCoordinate = CLLocationCoordinate2D(
-                latitude: currentCoordinate.latitude + latDelta,
-                longitude: currentCoordinate.longitude + longDelta
+                latitude: currentCoordinate().latitude + latDelta,
+                longitude: currentCoordinate().longitude + longDelta
             )
             
             DispatchQueue.main.async {

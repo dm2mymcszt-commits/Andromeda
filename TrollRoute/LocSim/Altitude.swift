@@ -61,9 +61,9 @@ enum ElevationLookup {
 // before injection, without changing any of the caller's motion metadata.
 final class AltitudeController: ObservableObject {
     @Published private(set) var currentMeters: Double?
-    @Published private(set) var isActive = false
+    var isActive: Bool { currentLocation() != nil }
     private var profile: AltitudeProfile
-    private var activeLocation: CLLocation?
+    private let currentLocation: () -> CLLocation?
     private var cache: [(coordinate: CLLocationCoordinate2D, meters: Double)] = []
     private var task: Task<Void, Never>?
     private var generation = UUID()
@@ -77,15 +77,17 @@ final class AltitudeController: ObservableObject {
     init(settings: AltitudeSettings = .shared, defaults: UserDefaults = SharedPreferences.defaults,
          interval: TimeInterval = 10,
          lookup: @escaping (CLLocationCoordinate2D) async -> Double? = ElevationLookup.fetch,
+         currentLocation: @escaping () -> CLLocation?,
          deliver: @escaping (CLLocation) -> Void) {
         self.profile = settings.profile
         self.defaults = defaults
         self.interval = interval
         self.lookup = lookup
         self.deliver = deliver
+        self.currentLocation = currentLocation
         // Persist the reservation so relaunching cannot bypass the free API limit.
         nextLookup = defaults.object(forKey: "elevationNextLookup") as? Date ?? .distantPast
-        observation = settings.$profile.sink { [weak self] profile in
+        observation = settings.$profile.dropFirst().sink { [weak self] profile in
             guard let self = self else { return }
             self.profile = profile
             self.cancelLookup()
@@ -93,16 +95,12 @@ final class AltitudeController: ObservableObject {
         }
     }
 
-    func receive(_ location: CLLocation) {
-        activeLocation = location
-        isActive = true
+    func receive() {
         refresh(reissue: false)
     }
 
     func stop() {
         cancelLookup()
-        activeLocation = nil
-        isActive = false
         currentMeters = nil
     }
 
@@ -120,7 +118,7 @@ final class AltitudeController: ObservableObject {
     }
 
     private func refresh(reissue: Bool = true) {
-        guard let location = activeLocation else { return }
+        guard let location = currentLocation() else { return }
         let meters = profile.mode == .custom ? profile.customMeters : cached(location.coordinate)
         currentMeters = meters
         deliver(Self.applying(meters, to: location, accuracy: profile.mode == .custom ? 1 : 90,
@@ -134,7 +132,7 @@ final class AltitudeController: ObservableObject {
                 try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
             }
             guard !Task.isCancelled, self.generation == token,
-                  let coordinate = self.activeLocation?.coordinate else { return }
+                  let coordinate = self.currentLocation()?.coordinate else { return }
             self.nextLookup = Date().addingTimeInterval(self.interval)
             self.defaults.set(self.nextLookup, forKey: "elevationNextLookup")
             let result = await self.lookup(coordinate)

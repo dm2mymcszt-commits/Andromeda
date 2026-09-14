@@ -23,9 +23,10 @@ struct LocSimView: View {
     @StateObject private var mapMove = MapMoveController()
     @StateObject private var routeSimulator = RouteSimulator()
     
-    @State private var locationManager = CLLocationManager()
-    @State private var lat: Double = 0.0
-    @State private var long: Double = 0.0
+    @ObservedObject private var locationSession = LocSimManager.session
+    private var referenceCoordinate: CLLocationCoordinate2D {
+        locationSession.current?.coordinate ?? locationSession.lastKnown?.coordinate ?? CLLocationCoordinate2D(latitude: 0, longitude: 0)
+    }
     @State private var showAltitude = false
     @State private var tappedCoordinate: EquatableCoordinate? = nil
     @State private var showRouteSheet: Bool = false
@@ -36,7 +37,6 @@ struct LocSimView: View {
     
     // Joystick
     @State private var joystickActive: Bool = false
-    @State private var joystickCoordinate: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 41.0082, longitude: 28.9784)
     
     // Favorites
     @State private var showFavorites: Bool = false
@@ -52,7 +52,7 @@ struct LocSimView: View {
                               routePolyline: routeSimulator.routePolyline,
                               allRoutePolylines: routeSimulator.displayedPolylines,
                               selectedRouteIndex: routeSimulator.isSimulating ? 0 : routeSimulator.selectedRouteIndex,
-                              movingPosition: routeSimulator.currentPosition,
+                              movingPosition: locationSession.current.map { CoordTransform.wgs84ToGcj02($0.coordinate) },
                               routeETAs: routeSimulator.simulatedRouteETAs,
                               allowsLocationSelection: tapMapToSetLocation,
                               onSelectRoute: { index in
@@ -95,13 +95,10 @@ struct LocSimView: View {
                 JoystickView(
                     isActive: $joystickActive,
                     onMove: { newCoord in
-                        joystickCoordinate = newCoord
                         let location = RouteLocationSample.make(coordinate: newCoord, course: -1, speed: -1, timestamp: Date())
-                        LocSimManager.startLocSim(location: location)
-                        lat = newCoord.latitude
-                        long = newCoord.longitude
+                        locationSession.receive(location, kind: .joystick)
                     },
-                    currentCoordinate: $joystickCoordinate
+                    currentCoordinate: { referenceCoordinate }
                 )
                 .transition(.opacity.combined(with: .scale(scale: 0.8)))
             }
@@ -133,7 +130,7 @@ struct LocSimView: View {
         .onAppear(perform: offerSharedPlace)
         .onChange(of: scenePhase) { phase in if phase == .active { offerSharedPlace() } }
         .sheet(isPresented: $showAltitude, onDismiss: offerSharedPlace) {
-            AltitudeSheet(settings: .shared, controller: LocSimManager.altitudeController)
+            AltitudeSheet(settings: .shared, controller: locationSession.altitudeController)
         }
         .sheet(isPresented: $showSettings, onDismiss: offerSharedPlace) { SettingsView() }
         .sheet(isPresented: $showSearchBar, onDismiss: offerSharedPlace) {
@@ -150,7 +147,7 @@ struct LocSimView: View {
             RouteSimSheet(routeSimulator: routeSimulator, draft: routeDraft, mapRegion: $mapRegion, isPresented: $showRouteSheet)
         }
         .sheet(isPresented: $showFavorites, onDismiss: offerSharedPlace) {
-            FavoritesView(isPresented: $showFavorites, currentLat: lat, currentLong: long) { favLat, favLong, name in
+            FavoritesView(isPresented: $showFavorites, currentLat: referenceCoordinate.latitude, currentLong: referenceCoordinate.longitude) { favLat, favLong, name in
                 let coord = CoordTransform.wgs84ToGcj02(CLLocationCoordinate2D(latitude: favLat, longitude: favLong))
                 let region = MKCoordinateRegion(center: coord, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
                 mapRegion = region
@@ -213,13 +210,10 @@ struct LocSimView: View {
         joystickActive = false
         let wgsCoordinate = CoordTransform.gcj02ToWgs84(gcjCoordinate)
         
-        self.lat = wgsCoordinate.latitude
-        self.long = wgsCoordinate.longitude
         
         let location = RouteLocationSample.make(coordinate: wgsCoordinate, course: 0, speed: 0, timestamp: Date())
-        LocSimManager.startLocSim(location: location)
+        locationSession.receive(location, kind: .stationary)
         
-        joystickCoordinate = wgsCoordinate
         
         AlertKitAPI.present(
             title: "Started!",
@@ -240,18 +234,10 @@ struct LocSimView: View {
             showFavorites.toggle()
         case .joystick:
             if !joystickActive && routeSimulator.isSimulating {
-                if let position = routeSimulator.currentPosition {
-                    let coordinate = CoordTransform.gcj02ToWgs84(position)
-                    lat = coordinate.latitude
-                    long = coordinate.longitude
-                }
                 routeSimulator.stopSimulation()
             }
             withAnimation(.spring(response: 0.3)) {
                 joystickActive.toggle()
-                if joystickActive {
-                    joystickCoordinate = CLLocationCoordinate2D(latitude: lat, longitude: long)
-                }
             }
         case .route:
             joystickActive = false

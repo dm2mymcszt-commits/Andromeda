@@ -8,8 +8,9 @@ from pathlib import Path
 import sys
 source = Path('TrollRoute/LocSim/LocSimManager.swift').read_text()
 Path(sys.argv[1]).write_text(source.split('class LocSimManager {')[0])
-assert 'altitudeController.receive(location)' in source
-assert 'altitudeController.stop()' in source
+session = Path('TrollRoute/LocSim/LocationSession.swift').read_text()
+assert 'altitudeController.receive()' in session
+assert 'altitudeController.stop()' in session
 for path in ['LocSimView.swift', 'RouteSimulator.swift', 'RouteSimView.swift']:
     text = Path('TrollRoute/LocSim', path).read_text()
     assert 'altitude: 0' not in text and 'Double(altitude)' not in text, path

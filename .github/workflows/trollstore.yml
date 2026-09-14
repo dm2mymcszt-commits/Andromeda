@@ -75,6 +75,9 @@ jobs:
       - name: Check simulated motion metadata
         run: bash Tests/RouteMotion/check-location.sh
 
+      - name: Check shared location ownership and previous spoof
+        run: bash Tests/LocationSession/check.sh
+
       - name: Check route calculation and movement
         run: bash Tests/RouteSimulation/check.sh
 

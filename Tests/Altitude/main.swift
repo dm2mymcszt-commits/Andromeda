@@ -39,15 +39,17 @@ import CoreLocation
 
         let pending = PendingElevation()
         var delivered: [CLLocation] = []
+        var inputLocation: CLLocation?
         let controller = AltitudeController(settings: settings, defaults: defaults, interval: 0,
-            lookup: { await pending.lookup($0) }, deliver: { delivered.append($0) })
+            lookup: { await pending.lookup($0) }, currentLocation: { inputLocation }, deliver: { delivered.append($0) })
+        func receive(_ location: CLLocation) { inputLocation = location; controller.receive() }
         let start = CLLocationCoordinate2D(latitude: 44.817, longitude: -0.585)
         let next = CLLocationCoordinate2D(latitude: 44.827, longitude: -0.575)
         let timestamp = Date(timeIntervalSince1970: 1_700_000_000)
         func sample(_ coordinate: CLLocationCoordinate2D, speed: Double = 13.9) -> CLLocation {
             RouteLocationSample.make(coordinate: coordinate, course: 271.5, speed: speed, timestamp: timestamp)
         }
-        controller.receive(sample(start))
+        receive(sample(start))
         precondition(delivered.last!.altitude == 250 && delivered.last!.verticalAccuracy > 0)
         precondition(delivered.last!.speed == 13.9 && delivered.last!.speedAccuracy == 0)
         precondition(delivered.last!.course == 271.5 && delivered.last!.courseAccuracy == 0)
@@ -59,7 +61,7 @@ import CoreLocation
         precondition(delivered.last!.verticalAccuracy < 0)
         precondition(AltitudeSettings(defaults: defaults).profile.mode == .automatic)
         await waitFor { pending.requests.count == 1 }
-        controller.receive(sample(next, speed: 120 / 3.6))
+        receive(sample(next, speed: 120 / 3.6))
         pending.answer(18)
         await waitFor { pending.requests.count == 1 }
         precondition(delivered.last!.coordinate.latitude == next.latitude)
@@ -69,13 +71,13 @@ import CoreLocation
         await waitFor { controller.currentMeters == 37 }
         precondition(delivered.last!.altitude == 37 && delivered.last!.verticalAccuracy > 0)
         precondition(delivered.last!.speed == 120 / 3.6 && delivered.last!.courseAccuracy == 0)
-        controller.receive(sample(next, speed: 0))
+        receive(sample(next, speed: 0))
         precondition(delivered.last!.speed == 0 && delivered.last!.courseAccuracy < 0)
-        controller.receive(sample(start))
+        receive(sample(start))
         precondition(delivered.last!.altitude == 18) // Repeated route uses cached terrain.
 
         let distant = CLLocationCoordinate2D(latitude: 45, longitude: 1)
-        controller.receive(sample(distant))
+        receive(sample(distant))
         await waitFor { pending.requests.count == 1 }
         settings.setCustom(-20)
         pending.answer(999)
@@ -83,6 +85,7 @@ import CoreLocation
         precondition(delivered.last!.altitude == -20) // Late result cannot override Custom.
         settings.reset()
         await waitFor { pending.requests.count == 1 }
+        inputLocation = nil
         controller.stop()
         let count = delivered.count
         pending.answer(123)

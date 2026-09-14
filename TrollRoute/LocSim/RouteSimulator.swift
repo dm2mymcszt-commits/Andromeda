@@ -332,7 +332,8 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var isSimulating: Bool = false
     @Published var isPaused: Bool = false
     @Published var routePolyline: MKPolyline? = nil
-    @Published var currentPosition: CLLocationCoordinate2D? = nil
+    let locationSession: LocationSession
+    var currentPosition: CLLocationCoordinate2D? { locationSession.current.map { CoordTransform.wgs84ToGcj02($0.coordinate) } }
     @Published var progress: Double = 0.0
     @Published var isCalculatingRoute: Bool = false
     @Published var travelMode: TravelMode = .driving
@@ -386,7 +387,8 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     private let locationManager = CLLocationManager()
     
-    override init() {
+    init(locationSession: LocationSession = LocSimManager.session) {
+        self.locationSession = locationSession
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -516,6 +518,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
             startError = "Choose an after-route place in Settings before starting."
             return
         }
+        locationSession.beginRoute()
         finishState = RouteFinishState(action: settings.action)
         finishDestination = settings.destination
         timer?.invalidate()
@@ -609,10 +612,9 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         isSimulating = false
         isPaused = false
         clearCalculatedRoutes()
-        currentPosition = nil
         locationManager.stopUpdatingLocation()
         endBackgroundTask()
-        LocSimManager.stopLocSim()
+        locationSession.stop()
     }
 
     private func advanceRoute() {
@@ -660,12 +662,12 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
             return
         case .goToPlace:
             if let destination = finishDestination {
-                currentPosition = CoordTransform.wgs84ToGcj02(destination.coordinate)
-                LocSimManager.startLocSim(location: RouteLocationSample.make(coordinate: destination.coordinate,
-                    course: 0, speed: 0, timestamp: Date()))
+                locationSession.receive(RouteLocationSample.make(coordinate: destination.coordinate,
+                    course: 0, speed: 0, timestamp: Date()), kind: .stationary)
             }
         case .hold: break
         }
+        locationSession.finishHolding()
         // The final sample has already published exact destination and zero speed.
         timer?.invalidate()
         timer = nil
@@ -698,10 +700,9 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard let journey = journey else { return }
         let motion = journey.motion(paused: isPaused || isSeeking)
         progress = journey.progress
-        currentPosition = CoordTransform.wgs84ToGcj02(motion.coordinate)
         let location = RouteLocationSample.make(coordinate: motion.coordinate,
             course: motion.course, speed: motion.speed, timestamp: Date())
-        LocSimManager.startLocSim(location: location)
+        locationSession.receive(location, kind: .route)
     }
 
     // MARK: - Background Task Management

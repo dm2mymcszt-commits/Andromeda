@@ -15,7 +15,7 @@ struct WorkspacePreview: View {
     @State private var showSettings = false
     @State private var showSearch = false
     @State private var showAltitude = false
-    @StateObject private var altitude = AltitudeController(deliver: { _ in })
+    @StateObject private var altitude = AltitudeController(currentLocation: { nil }, deliver: { _ in })
     @State private var routeActive = false
     @State private var tapped: EquatableCoordinate?
     // Deterministic address fixture for the confirmation screenshot, not a live lookup.

@@ -40,20 +40,20 @@ enum RouteLocationSample {
 }
 
 class LocSimManager {
-    static let simManager = CLSimulationManager()
-    static let altitudeController = AltitudeController(deliver: inject)
-    
+    static let session = LocationSession(driver: CoreLocationSimulationDriver())
+}
+
+/// Private API adapter. Operation order is deliberately unchanged in this
+/// ownership refactor; injection cadence is reviewed separately in F2.
+final class CoreLocationSimulationDriver: LocationSimulationDriver {
+    private let simManager = CLSimulationManager()
+
     /// Updates timezone
-    static func post_required_timezone_update(){
+    private func post_required_timezone_update(){
         CFNotificationCenterPostNotificationWithOptions(CFNotificationCenterGetDarwinNotifyCenter(), .init("AutomaticTimeZoneUpdateNeeded" as CFString), nil, nil, kCFNotificationDeliverImmediately);
     }
     
-    /// Starts a location simulation of specified argument "location"
-    static func startLocSim(location: CLLocation) {
-        altitudeController.receive(location)
-    }
-
-    private static func inject(_ location: CLLocation) {
+    func inject(_ location: CLLocation) {
         simManager.stopLocationSimulation()
         simManager.clearSimulatedLocations()
         simManager.appendSimulatedLocation(location)
@@ -63,8 +63,7 @@ class LocSimManager {
     }
     
     /// Stops location simulation
-    static func stopLocSim(){
-        altitudeController.stop()
+    func stop(){
         simManager.stopLocationSimulation()
         simManager.clearSimulatedLocations()
         simManager.flush()
