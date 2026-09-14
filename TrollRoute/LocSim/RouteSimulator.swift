@@ -333,7 +333,13 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var isPaused: Bool = false
     @Published var routePolyline: MKPolyline? = nil
     let locationSession: LocationSession
-    var currentPosition: CLLocationCoordinate2D? { locationSession.current.map { CoordTransform.wgs84ToGcj02($0.coordinate) } }
+    var currentPosition: CLLocationCoordinate2D? {
+        // Rendering follows geometry immediately, independently of injection slots.
+        if isSimulating, let journey = journey {
+            return CoordTransform.wgs84ToGcj02(journey.motion(paused: isPaused || isSeeking).coordinate)
+        }
+        return locationSession.current.map { CoordTransform.wgs84ToGcj02($0.coordinate) }
+    }
     @Published var progress: Double = 0.0
     @Published var isCalculatingRoute: Bool = false
     @Published var travelMode: TravelMode = .driving
@@ -558,7 +564,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
             timer = nil
             lastTick = nil
         }
-        updateLocation()
+        updateLocation(reason: .stateChange)
     }
 
     func updateLiveSpeed(_ kmh: Double) {
@@ -589,7 +595,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         previewPosition = nil
         seekFraction = nil
         lastTick = isPaused ? nil : ProcessInfo.processInfo.systemUptime
-        if isSimulating { updateLocation() }
+        if isSimulating { updateLocation(reason: .stateChange) }
     }
 
     func seek(to fraction: Double) {
@@ -601,7 +607,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         previewPosition = nil
         seekFraction = nil
         lastTick = isPaused ? nil : ProcessInfo.processInfo.systemUptime
-        updateLocation()
+        updateLocation(reason: .jump)
         if journey?.isFinished == true { finishRoute() }
     }
 
@@ -682,11 +688,14 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
 
     private func beginLeg(_ track: RouteTrack, speedKmh: Double) {
+        let previous = locationSession.inputSample?.coordinate
         journey = RouteJourney(track: track, speedKmh: speedKmh)
         let coords = track.coordinates.map(CoordTransform.wgs84ToGcj02)
         routePolyline = MKPolyline(coordinates: coords, count: coords.count)
         // Keep the same timer, background task and location updates across legs.
-        updateLocation()
+        let start = track.coordinates[0]
+        let jumped = previous.map { $0.latitude != start.latitude || $0.longitude != start.longitude } ?? true
+        updateLocation(reason: jumped ? .jump : .stateChange)
     }
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
@@ -696,13 +705,13 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         advanceRoute()
     }
 
-    private func updateLocation() {
+    private func updateLocation(reason: LocationInjectionReason = .continuous) {
         guard let journey = journey else { return }
         let motion = journey.motion(paused: isPaused || isSeeking)
         progress = journey.progress
         let location = RouteLocationSample.make(coordinate: motion.coordinate,
             course: motion.course, speed: motion.speed, timestamp: Date())
-        locationSession.receive(location, kind: .route)
+        locationSession.receive(location, kind: .route, reason: reason)
     }
 
     // MARK: - Background Task Management

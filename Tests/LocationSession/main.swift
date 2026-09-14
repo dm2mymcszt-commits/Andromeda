@@ -4,7 +4,7 @@ import CoreLocation
 final class RecordingDriver: LocationSimulationDriver {
     var delivered: [CLLocation] = []
     var stops = 0
-    func inject(_ location: CLLocation) { delivered.append(location) }
+    func inject(_ location: CLLocation, reason: LocationInjectionReason) { delivered.append(location) }
     func stop() { stops += 1 }
 }
 
@@ -16,7 +16,8 @@ final class RecordingDriver: LocationSimulationDriver {
         let settings = AltitudeSettings(defaults: defaults)
         settings.setCustom(250)
         let driver = RecordingDriver()
-        let session = LocationSession(driver: driver, defaults: defaults, settings: settings, lookup: { _ in nil })
+        let session = LocationSession(driver: driver, defaults: defaults, settings: settings,
+            injectionInterval: 0, lookup: { _ in nil })
         let store = LocationSessionStore(defaults: defaults)
         let date = Date(timeIntervalSince1970: 1_700_000_000)
         func sample(_ lat: Double, _ lon: Double, speed: Double = 0) -> CLLocation {

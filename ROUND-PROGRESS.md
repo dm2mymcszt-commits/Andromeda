@@ -4,7 +4,7 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: Phase 2 begins. Next: validate integrated LocationSession CI, then separate F2 injection cadence change and F1 route elevation profiles. Phase 1 accepted; do not redo it. Do not redo completed audits.
+- Current checkpoint: Phase 2. Shared owner `0cd7066` pushed; build/model/live/route previews passed in CI 34815322711 (workspace/picker still running). F2 separate cadence commit prepared; next validate its CI, then implement F1 batched route elevation profiles. Phase 1 accepted; do not redo completed work.
 - Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
 - Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
@@ -35,8 +35,8 @@
 | 1 R4 icon | Approved and committed | `e6d9569`: exact approved render installed; old icon sources removed. `2b53a12` compares identical pixels across OS; CI 34779276915 icon and app package passed |
 | 1 F6 data credits | Done | `db74fc5`: generic About line links exact notices; full CI 34777564932 SUCCESS |
 | 1 acceptance | Done | Full CI 34778446157 SUCCESS, downloaded package signing verified. Approved icon built in CI 34779276915; exact pixel check passed. No Release |
-| 2 R3 foundation | In progress | Cleanup `d40830b` DONE: full CI 34779729374 SUCCESS; 46s build/package, no Theos. Shared LocationSession integrated: WGS sample/altitude, kind, previous spoof; map/joystick/route/altitude consume it. New transitions/persistence tests; build 8 CI next |
-| 2 F2 injection | Not started | Separate commit; adapter cadence/coalescing/timezone tests and phone check |
+| 2 R3 foundation | In progress | Cleanup `d40830b` CI SUCCESS (46s build/package, no Theos). Owner `0cd7066` build 8 pushed; transitions/persistence tests passed, last UI checks pending |
+| 2 F2 injection | In progress; phone test required | Root cause: restart + timezone per sample; unbounded slider injections. Prepared build 9: 4 Hz latest-sample queue; immediate jump/pause/arrival; one driver start; geometry-driven UI. Deterministic adapter/cancellation tests added; CI next |
 | 2 F1 altitude | Not started | Batched route profile, interpolation, continuity; custom unchanged |
 | 2 acceptance | Not started | Session/profile/adapter tests and existing regression; build timing |
 | 3 R5, R6 | Not started | Main Stop confirmation; visible toolbar hit bounds |

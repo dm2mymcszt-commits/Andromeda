@@ -43,23 +43,33 @@ class LocSimManager {
     static let session = LocationSession(driver: CoreLocationSimulationDriver())
 }
 
-/// Private API adapter. Operation order is deliberately unchanged in this
-/// ownership refactor; injection cadence is reviewed separately in F2.
+/// Starts once, then replaces the queued sample while the session stays active.
+/// This private API path must also be checked on a physical TrollStore device.
 final class CoreLocationSimulationDriver: LocationSimulationDriver {
     private let simManager = CLSimulationManager()
+    private var running = false
+    private let timezoneUpdate: () -> Void
+
+    init(timezoneUpdate: @escaping () -> Void = CoreLocationSimulationDriver.postTimezoneUpdate) {
+        self.timezoneUpdate = timezoneUpdate
+    }
 
     /// Updates timezone
-    private func post_required_timezone_update(){
+    static func postTimezoneUpdate(){
         CFNotificationCenterPostNotificationWithOptions(CFNotificationCenterGetDarwinNotifyCenter(), .init("AutomaticTimeZoneUpdateNeeded" as CFString), nil, nil, kCFNotificationDeliverImmediately);
     }
     
-    func inject(_ location: CLLocation) {
-        simManager.stopLocationSimulation()
+    func inject(_ location: CLLocation, reason: LocationInjectionReason) {
+        let starting = !running
+        if starting { simManager.stopLocationSimulation() }
         simManager.clearSimulatedLocations()
         simManager.appendSimulatedLocation(location)
         simManager.flush()
-        simManager.startLocationSimulation()
-        post_required_timezone_update();
+        if starting {
+            simManager.startLocationSimulation()
+            running = true
+        }
+        if starting || reason == .jump { timezoneUpdate() }
     }
     
     /// Stops location simulation
@@ -67,7 +77,8 @@ final class CoreLocationSimulationDriver: LocationSimulationDriver {
         simManager.stopLocationSimulation()
         simManager.clearSimulatedLocations()
         simManager.flush()
-        post_required_timezone_update();
+        running = false
+        timezoneUpdate()
     }
 }
 

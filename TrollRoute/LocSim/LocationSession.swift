@@ -74,8 +74,76 @@ final class LocationSessionStore {
 }
 
 protocol LocationSimulationDriver: AnyObject {
-    func inject(_ location: CLLocation)
+    func inject(_ location: CLLocation, reason: LocationInjectionReason)
     func stop()
+}
+
+enum LocationInjectionReason { case continuous, jump, stateChange }
+
+/// Trailing-edge coalescing on a monotonic clock. UI state never waits for this
+/// queue. Explicit jumps and pause/arrival changes bypass it; Stop cancels it.
+final class LocationInjectionQueue {
+    typealias Schedule = (TimeInterval, @escaping () -> Void) -> (() -> Void)
+    private let interval: TimeInterval
+    private let now: () -> TimeInterval
+    private let schedule: Schedule
+    private let deliver: (CLLocation, LocationInjectionReason) -> Void
+    private var lastDelivery: TimeInterval?
+    private var pending: CLLocation?
+    private var cancelWork: (() -> Void)?
+    private var generation = 0
+
+    init(interval: TimeInterval = 0.25,
+         now: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime },
+         schedule: @escaping Schedule = LocationInjectionQueue.scheduleOnMain,
+         deliver: @escaping (CLLocation, LocationInjectionReason) -> Void) {
+        self.interval = max(0, interval)
+        self.now = now
+        self.schedule = schedule
+        self.deliver = deliver
+    }
+
+    static func scheduleOnMain(after delay: TimeInterval, work: @escaping () -> Void) -> () -> Void {
+        let item = DispatchWorkItem(block: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
+        return { item.cancel() }
+    }
+
+    func submit(_ location: CLLocation, reason: LocationInjectionReason) {
+        let delay = lastDelivery.map { max(0, interval - (now() - $0)) } ?? 0
+        if reason != .continuous || delay <= 0 {
+            cancelPending()
+            emit(location, reason: reason)
+            return
+        }
+        pending = location
+        guard cancelWork == nil else { return }
+        let token = generation
+        cancelWork = schedule(delay) { [weak self] in
+            guard let self = self, self.generation == token else { return }
+            self.flush()
+        }
+    }
+
+    func flush() {
+        let latest = pending
+        cancelPending()
+        if let latest = latest { emit(latest, reason: .continuous) }
+    }
+
+    func stop() { cancelPending(); lastDelivery = nil }
+
+    private func cancelPending() {
+        generation += 1
+        cancelWork?()
+        cancelWork = nil
+        pending = nil
+    }
+
+    private func emit(_ location: CLLocation, reason: LocationInjectionReason) {
+        lastDelivery = now()
+        deliver(location, reason)
+    }
 }
 
 /// The only owner of the active spoof. Route geometry and UI remain consumers.
@@ -88,17 +156,23 @@ final class LocationSession: ObservableObject {
     private let settings: AltitudeSettings
     private let defaults: UserDefaults
     private let lookup: (CLLocationCoordinate2D) async -> Double?
+    private let injectionInterval: TimeInterval
+    private var deliveryReason = LocationInjectionReason.continuous
+    private var firstRouteSample = false
+    private lazy var injectionQueue = LocationInjectionQueue(interval: injectionInterval,
+        deliver: { [weak self] in self?.inject($0, reason: $1) })
     lazy var altitudeController = AltitudeController(settings: settings, defaults: defaults,
         lookup: lookup, currentLocation: { [weak self] in self?.inputSample },
         deliver: { [weak self] in self?.deliver($0) })
 
     init(driver: LocationSimulationDriver, defaults: UserDefaults = SharedPreferences.defaults,
-         settings: AltitudeSettings = .shared,
+         settings: AltitudeSettings = .shared, injectionInterval: TimeInterval = 0.25,
          lookup: @escaping (CLLocationCoordinate2D) async -> Double? = ElevationLookup.fetch) {
         self.driver = driver
         self.defaults = defaults
         self.settings = settings
         self.lookup = lookup
+        self.injectionInterval = injectionInterval
         store = LocationSessionStore(defaults: defaults)
         snapshot = store.load()
         inputSample = snapshot.current?.location
@@ -109,21 +183,30 @@ final class LocationSession: ObservableObject {
     var isActive: Bool { snapshot.isActive }
 
     func beginRoute() {
+        injectionQueue.flush()
         snapshot.beforeRoute = snapshot.current
         snapshot.kind = .route
+        firstRouteSample = true
         store.save(snapshot)
     }
 
-    func receive(_ location: CLLocation, kind: LocationSessionSnapshot.Kind) {
+    func receive(_ location: CLLocation, kind: LocationSessionSnapshot.Kind,
+                 reason: LocationInjectionReason = .continuous) {
         guard SessionLocation(location).isValid else { return }
+        let stopped = location.speed == 0 && inputSample?.speed != 0
+        deliveryReason = (kind == .stationary || firstRouteSample || reason == .jump) ? .jump :
+            (stopped || reason == .stateChange ? .stateChange : .continuous)
+        firstRouteSample = false
         inputSample = location
         snapshot.kind = kind
         if kind != .route { snapshot.beforeRoute = nil }
         altitudeController.receive()
+        deliveryReason = .continuous
     }
 
     /// Natural arrival already emitted its zero-speed sample; only ownership changes.
     func finishHolding() {
+        injectionQueue.flush()
         snapshot.kind = snapshot.current == nil ? nil : .stationary
         snapshot.beforeRoute = nil
         store.save(snapshot)
@@ -131,6 +214,8 @@ final class LocationSession: ObservableObject {
 
     func stop() {
         inputSample = nil
+        firstRouteSample = false
+        injectionQueue.stop()
         altitudeController.stop()
         driver.stop()
         snapshot = LocationSessionSnapshot()
@@ -139,7 +224,12 @@ final class LocationSession: ObservableObject {
 
     private func deliver(_ location: CLLocation) {
         guard inputSample != nil, snapshot.kind != nil else { return }
-        driver.inject(location)
+        injectionQueue.submit(location, reason: deliveryReason)
+    }
+
+    private func inject(_ location: CLLocation, reason: LocationInjectionReason) {
+        guard inputSample != nil, snapshot.kind != nil else { return }
+        driver.inject(location, reason: reason)
         snapshot.current = SessionLocation(location)
         lastKnown = snapshot.current
         store.save(snapshot)
