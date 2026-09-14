@@ -13,6 +13,7 @@ struct RouteLocationPicker: View {
     @StateObject private var search = RoutePlaceSearch()
     @State private var showMap = false
     @State private var favorites: [RoutePlace] = []
+    @State private var favoriteToSave: RoutePlace?
 
     private var matchingFavorites: [RoutePlace] {
         RouteFavoritePlaces.matching(favorites, query: search.query)
@@ -75,16 +76,30 @@ struct RouteLocationPicker: View {
                     }
                 } else {
                     ForEach(search.suggestions, id: \.self) { suggestion in
+                      HStack {
                         Button {
                             search.resolve(suggestion, selection: choose)
                         } label: {
                             placeRow(suggestion.title, subtitle: suggestion.subtitle, icon: "mappin.circle")
                         }
+                        .buttonStyle(.borderless)
+                        Button {
+                            search.resolve(suggestion) { favoriteToSave = $0 }
+                        } label: { Image(systemName: "star") }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Save \(suggestion.title) as favorite")
+                      }
                     }
                     ForEach(search.results) { place in
+                      HStack {
                         Button { choose(place) } label: {
                             placeRow(place.name, subtitle: [place.address, place.isApproximate ? "Approximate" : nil].compactMap { $0 }.joined(separator: "\n"), icon: "mappin.circle")
                         }
+                        .buttonStyle(.borderless)
+                        Button { favoriteToSave = place } label: { Image(systemName: "star") }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Save \(place.name) as favorite")
+                      }
                     }
                 }
             }
@@ -94,17 +109,24 @@ struct RouteLocationPicker: View {
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
-            .sheet(isPresented: $showMap) {
+            .sheet(isPresented: $showMap, onDismiss: reloadFavorites) {
                 RouteMapPicker(title: title, region: region, selectedCoordinate: selectedCoordinate,
                                select: choose)
             }
+            .sheet(item: $favoriteToSave) { place in
+                FavoritePlaceEditor(place: place, didSave: reloadFavorites)
+            }
         }
         .onAppear {
-            favorites = RouteFavoritePlaces.places(from: BookMarkRetrieve())
+            reloadFavorites()
             search.region = region
             if search.query.isEmpty && !initialQuery.isEmpty { search.query = initialQuery }
         }
         .onDisappear { search.cancel() }
+    }
+
+    private func reloadFavorites() {
+        favorites = RouteFavoritePlaces.places(from: BookMarkRetrieve())
     }
 
     private func choose(_ place: RoutePlace) {
@@ -134,6 +156,12 @@ struct RouteMapPicker: View {
     let select: (RoutePlace) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var point: EquatableCoordinate?
+    @State private var favoriteToSave: RoutePlace?
+
+    private var selectedPlace: RoutePlace? {
+        point.map { RoutePlace(name: "Map pin", address: String(format: "%.5f, %.5f",
+            $0.coordinate.latitude, $0.coordinate.longitude), coordinate: $0.coordinate) }
+    }
 
     var body: some View {
         NavigationView {
@@ -147,21 +175,24 @@ struct RouteMapPicker: View {
                             .font(.caption).foregroundColor(.secondary)
                     }
                     Button {
-                        guard let point = point else { return }
-                        select(RoutePlace(name: "Map pin", address: String(format: "%.5f, %.5f",
-                            point.coordinate.latitude, point.coordinate.longitude), coordinate: point.coordinate))
+                        guard let place = selectedPlace else { return }
+                        select(place)
                         dismiss()
                     } label: {
                         Text("Use as \(title)").frame(maxWidth: .infinity).padding(.vertical, 8)
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(point == nil)
+                    Button { favoriteToSave = selectedPlace } label: {
+                        Label("Save as favorite", systemImage: "star")
+                    }.disabled(point == nil)
                 }
                 .padding()
             }
             .navigationTitle("Choose on Map")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } } }
+            .sheet(item: $favoriteToSave) { place in FavoritePlaceEditor(place: place) }
         }
     }
 }

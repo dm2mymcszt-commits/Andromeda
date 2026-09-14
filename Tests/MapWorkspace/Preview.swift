@@ -55,6 +55,10 @@ struct WorkspacePreview: View {
                 Text("presses=\(pressCount),taps=\(tapCount)")
                     .accessibilityIdentifier("gesture-counts").allowsHitTesting(false)
             }
+            if screen == "favorites" {
+                Text(BookMarkRetrieve().last?["name"] as? String ?? "No favorite")
+                    .accessibilityIdentifier("saved-favorite").allowsHitTesting(false)
+            }
         }
         .modifier(MainStopConfirmation(controller: mainStop))
         .modifier(MapMoveConfirmation(controller: mapMove))
@@ -69,7 +73,7 @@ struct WorkspacePreview: View {
         .sheet(isPresented: $showAltitude) { AltitudeSheet(settings: .shared, controller: altitude) }
         .sheet(isPresented: $showSearch) {
             RouteLocationPicker(title: "Find a place", region: nil, selectedCoordinate: nil,
-                recents: places, initialQuery: "125 Cr Gambetta, 33400 Talence", select: { _ in })
+                recents: places, initialQuery: screen == "favorites" ? "44.817059, -0.585746" : "125 Cr Gambetta, 33400 Talence", select: { _ in })
         }
         .task {
             AltitudeSettings.shared.reset()
@@ -79,6 +83,7 @@ struct WorkspacePreview: View {
             tapEnabled = screen == "settings-enabled" || screen == "gestures-long"
             if screen == "settings" || screen == "settings-enabled" { showSettings = true }
             if screen == "search" { showSearch = true }
+            if screen == "favorites" { showSearch = true }
             if screen == "confirmation" {
                 let point = CLLocationCoordinate2D(latitude: 44.8378, longitude: -0.5792)
                 mapMove.request(point, displayCoordinate: point, enabled: true, ask: true,

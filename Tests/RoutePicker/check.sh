@@ -4,7 +4,7 @@ cd "$(dirname "$0")/../.."
 QA_DIR="$PWD/build/route-picker-qa"
 mkdir -p "$QA_DIR"
 python3 Tests/RoutePicker/bookmark-support.py "$QA_DIR/Bookmarks.swift"
-xcrun swiftc TrollRoute/Storage/SharedPreferences.swift TrollRoute/LocSim/PlaceModels.swift TrollRoute/LocSim/PlaceInput.swift TrollRoute/LocSim/AddressQuery.swift TrollRoute/LocSim/PlaceSearch.swift "$QA_DIR/Bookmarks.swift" TrollRoute/LocSim/CoordTransform.swift \
+xcrun swiftc TrollRoute/Storage/SharedPreferences.swift TrollRoute/LocSim/FavoritePlaceEditor.swift TrollRoute/LocSim/PlaceModels.swift TrollRoute/LocSim/PlaceInput.swift TrollRoute/LocSim/AddressQuery.swift TrollRoute/LocSim/PlaceSearch.swift "$QA_DIR/Bookmarks.swift" TrollRoute/LocSim/CoordTransform.swift \
   Tests/RoutePicker/main.swift -o "$QA_DIR/model-tests"
 "$QA_DIR/model-tests"
 
@@ -13,7 +13,7 @@ PREVIEW_APP="$QA_DIR/RoutePickerPreview.app"
 mkdir -p "$PREVIEW_APP"
 xcrun --sdk iphonesimulator swiftc TrollRoute/Storage/SharedPreferences.swift -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
-  TrollRoute/LocSim/RouteLocationPicker.swift TrollRoute/LocSim/PlaceModels.swift TrollRoute/LocSim/PlaceInput.swift TrollRoute/LocSim/AddressQuery.swift TrollRoute/LocSim/PlaceSearch.swift TrollRoute/LocSim/CoordTransform.swift \
+  TrollRoute/LocSim/RouteLocationPicker.swift TrollRoute/LocSim/FavoritePlaceEditor.swift TrollRoute/LocSim/PlaceModels.swift TrollRoute/LocSim/PlaceInput.swift TrollRoute/LocSim/AddressQuery.swift TrollRoute/LocSim/PlaceSearch.swift TrollRoute/LocSim/CoordTransform.swift \
   TrollRoute/LocSim/SharedPlace.swift TrollRoute/LocSim/SharePlaceView.swift \
   "$QA_DIR/Bookmarks.swift" Tests/RoutePicker/Preview.swift \
   -o "$PREVIEW_APP/RoutePickerPreview"

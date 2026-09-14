@@ -80,4 +80,38 @@ final class MapGestureTests: XCTestCase {
         expectation(for: tapped, evaluatedWith: app.staticTexts["gesture-counts"])
         waitForExpectations(timeout: 5)
     }
+
+    private func renameAndSave(_ app: XCUIApplication, to name: String) {
+        let field = app.textFields["favorite-name"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        let oldName = field.value as? String ?? ""
+        field.tap()
+        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: oldName.count) + name)
+        app.navigationBars["Save as favorite"].buttons["Save"].tap()
+    }
+
+    func testSaveSearchAndMapPinWithoutSelectingLocation() {
+        let app = XCUIApplication(bundleIdentifier: "local.trollroute.workspacepreview")
+        app.launchArguments = ["--screen", "favorites"]
+        app.launch()
+        let star = app.buttons["Save Pasted location as favorite"]
+        XCTAssertTrue(star.waitForExistence(timeout: 15))
+        star.tap()
+        renameAndSave(app, to: "Saved search result")
+        XCTAssertTrue(app.navigationBars["Find a place"].waitForExistence(timeout: 5),
+                      "Saving must leave the picker open, not select or move")
+        app.navigationBars["Find a place"].buttons["Cancel"].tap()
+        XCTAssertEqual(app.staticTexts["saved-favorite"].label, "Saved search result")
+        app.buttons["Search"].tap()
+        app.buttons["Choose on Map"].tap()
+        XCTAssertTrue(app.navigationBars["Choose on Map"].waitForExistence(timeout: 5))
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.5)).tap()
+        app.buttons["Save as favorite"].tap()
+        renameAndSave(app, to: "Saved map point")
+        XCTAssertTrue(app.navigationBars["Choose on Map"].waitForExistence(timeout: 5),
+                      "Saving a map pin must not select it")
+        app.navigationBars["Choose on Map"].buttons["Cancel"].tap()
+        app.navigationBars["Find a place"].buttons["Cancel"].tap()
+        XCTAssertEqual(app.staticTexts["saved-favorite"].label, "Saved map point")
+    }
 }

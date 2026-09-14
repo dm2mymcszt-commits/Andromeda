@@ -4,7 +4,7 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: Phase 2 accepted at `13ee72e` build 13; full CI 34849262175 SUCCESS, package/signing verified. Phase 3: R5 `f962922` build 14 pushed (CI 34882926556); R6 `91dae7d` build15 pushed (CI 34883627252). R18-R21 build16 implemented; next verify CI and implement F5 favorites.
+- Current checkpoint: Phase 2 accepted at `13ee72e` build 13; full CI 34849262175 SUCCESS, package/signing verified. Phase 3: R5 `f962922` build 14 pushed (CI 34882926556); R6 `91dae7d` build15 pushed (CI 34883627252). R18-R21 `b7df278` build16 pushed; F5 build17 implemented. Next: inspect/fix Phase 3 CI, including real touch tests, then acceptance.
 - Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
 - Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
@@ -40,8 +40,8 @@
 | 2 F1 altitude | Done; phone check | `13ee72e` build 13: batched terrain, weighted quota, held/provisional refinement, separate prepared/active profiles. Full CI 34849262175 SUCCESS, including actual-owner terrain lifecycle tests |
 | 2 acceptance | Done | `13ee72e`: all model/live/UI checks SUCCESS; signed build 13 verified. Build/package 46 s; phone limitations in audit |
 | 3 R5, R6 | In progress | R5 `f962922` CI pending; R6 build 15 bounds + real map-drag XCTest added, awaiting CI. Next long-press routing |
-| 3 R18, R19, R20, R21 | In progress | Build16 long press + one-shot Navigation calculation/auto-start implemented; controller/draft/touch tests added, CI pending |
-| 3 F5 + acceptance | Not started | Save favorite from result/map pin; tests and settings defaults |
+| 3 R18, R19, R20, R21 | In progress | `b7df278` build16 long press + one-shot Navigation calculation/auto-start pushed; controller/draft/touch tests added, CI pending |
+| 3 F5 + acceptance | In progress | Build17 search/map favorite editor + persistence/touch tests implemented. Phase acceptance waits for current full CI and visual review |
 | 4 R11, R12, R13 | Not started | Default/per-trip/live finish action, including return legs |
 | 4 R15, R16, R17 | Not started | All Route Stop entry points; both choice sets/outcomes/default preselection |
 | 4 R14, F3 + acceptance | Not started | Credits inside active panel; moving scrub preview; engine tests + screenshots |

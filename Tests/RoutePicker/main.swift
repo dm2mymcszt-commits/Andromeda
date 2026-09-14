@@ -57,3 +57,23 @@ assert(BookMarkSave(lat: 48.85, long: 2.35, name: "Added later"))
 assert(RouteFavoritePlaces.places(from: BookMarkRetrieve()).last?.name == "Added later")
 assert((BookMarkRetrieve()[1]["long"] as? Double) == 116.3975, "Reading must never rewrite saved coordinates")
 print("PASS: shared favorites storage; fresh reload; name/accent filtering; invalid entries; WGS-84 and China selection round trip")
+
+let searchResult = RoutePlace(name: "Pasted location", address: "44.817059, -0.585746",
+    coordinate: CLLocationCoordinate2D(latitude: 44.817059, longitude: -0.585746))
+assert(FavoritePlaceSave.save(searchResult, name: "  Saved search  "))
+let mapPin = RoutePlace(name: "Map pin", coordinate: china)
+assert(FavoritePlaceSave.save(mapPin, name: "Saved map pin"))
+let saved = BookMarkRetrieve()
+assert(saved[saved.count - 2]["name"] as? String == "Saved search")
+assert(saved[saved.count - 2]["lat"] as? Double == searchResult.latitude)
+assert(saved.last?["name"] as? String == "Saved map pin")
+assert(abs((saved.last?["long"] as? Double ?? 0) - 116.3975) < 0.00003,
+       "Map pin must be saved in WGS-84, without moving the selected coordinate")
+var writes = 0
+assert(!FavoritePlaceSave.save(mapPin, name: " \n ") { _, _, _ in writes += 1; return true })
+assert(!FavoritePlaceSave.save(RoutePlace(name: "Invalid", coordinate: CLLocationCoordinate2D(latitude: 100, longitude: 0)),
+    name: "Invalid") { _, _, _ in writes += 1; return true })
+assert(writes == 0, "Invalid favorite input must not write")
+assert(!FavoritePlaceSave.save(mapPin, name: "Failure") { _, _, _ in false }, "Storage failure must not report success")
+assert(BookMarkRetrieve().count == saved.count, "Invalid saves must leave existing favorites untouched")
+print("PASS: editable favorites from search result and map pin, shared persistence, China conversion, invalid input and failed storage")
