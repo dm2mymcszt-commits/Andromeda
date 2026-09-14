@@ -118,7 +118,7 @@ func press(enabled: Bool = true, confirm: Bool = false, auto: Bool = false,
         lookup: { lookups.append($0); return {} }, create: { created.append($0) })
 }
 press(enabled: false, auto: true, spoof: point)
-press(running: true, auto: true, spoof: point)
+press(auto: true, spoof: point, running: true)
 require(created.isEmpty && lookups.isEmpty && routePress.presentedRequest == nil,
         "Disabled/running-route long press must not calculate, locate or start")
 require(routePress.error?.contains("Stop the current route") == true, "Running route needs guidance")
