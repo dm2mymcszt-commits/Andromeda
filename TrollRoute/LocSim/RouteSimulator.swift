@@ -461,6 +461,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func selectMode(_ mode: TravelMode) {
         guard !isSimulating else { return }
+        locationSession.altitudeController.cancelPreparedRoute()
         travelMode = mode
         availableRoutes = modeCache.routes[mode] ?? []
         allRoutePolylines = availableRoutes.map { $0.route.polyline }

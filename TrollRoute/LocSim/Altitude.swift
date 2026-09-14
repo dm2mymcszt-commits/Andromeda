@@ -129,7 +129,7 @@ final class AltitudeController: ObservableObject {
         refresh(reissue: false)
     }
 
-    func finishRoute() {
+    func finishRoute(resumeLookup: Bool = false) {
         if let coordinate = currentLocation()?.coordinate, let meters = lastRouteMeters {
             cache.append((coordinate, meters))
             if cache.count > 2048 { cache.removeFirst() }
@@ -137,6 +137,9 @@ final class AltitudeController: ObservableObject {
         routeDistance = nil
         lastRouteMeters = nil
         routeLoader.cancel()
+        // A short trip may finish before its first batch returns. Holding the
+        // destination must still let Automatic resolve that stationary point.
+        if resumeLookup && profile.mode == .automatic && currentMeters == nil { refresh() }
     }
 
     func stop() {

@@ -892,3 +892,9 @@ Tests/Altitude/RouteProfile.swift covers persistent weighted quota boundaries, m
 ### Resume after usage-limit interruption
 
 The first F1 commit/push was rejected before execution by automatic approval review because account usage was exhausted. The owner requested continuation; re-read both plan/progress and status/log, confirmed F1 remained uncommitted, rechecked source identity/whitespace, then successfully committed and pushed b34cb4f. Working tree clean after push. F2 c5cbc37 full CI 34816390584 now SUCCESS (every model/live test, signed build 9 package, icon and all UI previews). F1 b34cb4f CI 34847031351 running. Next gate: F1 compile/tests and all Phase 2 acceptance before Phase 3. No release or extra repository operation.
+
+### Phase 2.4 follow-up review
+
+b34cb4f CI 34847031351 passed app/share build, migration, motion, ownership, injection, routes, both altitude suites (including profile/budget/500 km/h/cancellation), live elevation, map safety, seven-address search and share tests; UI previews running. Review found that finishHolding cancels an unfinished profile even when the final altitude is still unknown. Retain normal stationary Automatic lookup in that case, without restarting movement or affecting Custom/known held samples. A regression test finishes an unknown-height short trip, resolves its stationary point afterward, and verifies speed remains zero. Also cancel selected-route prefetch when switching to a mode with no route; successful cached profiles remain reusable. Build 11; same injection adapter unchanged. CI required for follow-up before acceptance.
+
+F2 package downloaded to build/phase2-f2-package/TrollRoute.tipa. ZIP/ARM64 executable permissions and embedded app/share entitlements verified. SHA256 5e5491007da8bc9374b2c327111da3c39c4b3d0937d539836229b769f32bffd3. This preserves the separately testable F2 build, not a final round delivery.

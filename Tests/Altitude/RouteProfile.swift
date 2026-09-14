@@ -116,6 +116,24 @@ import CoreLocation
         input = nil; controller.stop(); batch.answer()
         try? await Task.sleep(nanoseconds: 20_000_000)
         precondition(delivered.count == count && controller.currentMeters == nil)
+
+        // A trip that finishes before terrain arrives remains spoofed and can
+        // resolve the held point, rather than cancelling every route lookup.
+        var heldReply: CheckedContinuation<Double?, Never>?
+        var held: CLLocation?
+        let shortTrip = AltitudeController(settings: settings, defaults: defaults, interval: 0,
+            lookup: { _ in await withCheckedContinuation { heldReply = $0 } },
+            batchLookup: { $0.map { _ in nil } }, currentLocation: { input }, deliver: { held = $0 })
+        shortTrip.prepareRoute(other)
+        input = RouteLocationSample.make(coordinate: point(1000), course: 92, speed: 0, timestamp: date)
+        shortTrip.receive(routeDistance: 1000)
+        precondition(held!.verticalAccuracy < 0)
+        shortTrip.finishRoute(resumeLookup: true)
+        await waitFor { heldReply != nil }
+        heldReply!.resume(returning: 33)
+        await waitFor { held?.altitude == 33 }
+        precondition(held!.speed == 0 && held!.courseAccuracy < 0 && held!.coordinate.longitude == point(1000).longitude)
+        input = nil; shortTrip.stop()
         print("PASS: weighted persistent budget, batches <=100, bounded plan, interpolation, 500 km/h continuity, custom/reset, seek/reverse distance, pause, held destination, cache and Stop cancellation")
     }
 }

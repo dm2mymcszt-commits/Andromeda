@@ -208,7 +208,7 @@ final class LocationSession: ObservableObject {
     /// Natural arrival already emitted its zero-speed sample; only ownership changes.
     func finishHolding() {
         injectionQueue.flush()
-        altitudeController.finishRoute()
+        altitudeController.finishRoute(resumeLookup: true)
         snapshot.kind = snapshot.current == nil ? nil : .stationary
         snapshot.beforeRoute = nil
         store.save(snapshot)
