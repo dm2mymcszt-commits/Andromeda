@@ -4,7 +4,7 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: Phase 2 accepted at `13ee72e` build 13; full CI 34849262175 SUCCESS, package/signing verified. Phase 3: R5 `f962922` build14 full CI 34882926556 SUCCESS; R6 `91dae7d` build15 pushed (CI 34883627252). R18-R21 `b7df278` build16 pushed; F5 `269fc4a` build17 pushed; long-press test argument-order fix pending push. Next: inspect/fix Phase 3 CI, including real touch tests, then acceptance.
+- Current checkpoint: Phase 2 accepted at `13ee72e` build 13; full CI 34849262175 SUCCESS, package/signing verified. Phase 3: R5 `f962922` build14 full CI 34882926556 SUCCESS; R6 `91dae7d` build15 pushed (CI 34883627252). R18-R21 `b7df278` build16 pushed; F5 `269fc4a` build17 pushed; test fix `b5eb299` pushed. R6 drag test passed; short-layout Stop exposed shared-alert presentation conflict, corrected in build18 pending CI. Next: inspect/fix Phase 3 CI, including real touch tests, then acceptance.
 - Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
 - Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
 - Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
@@ -39,7 +39,7 @@
 | 2 F2 injection | Done; phone test required | `c5cbc37` build 9 pushed. Root cause: restart/timezone per sample, unbounded slider inputs. 4 Hz coalescing + immediate jump/pause/arrival + geometry UI. Full CI 34816390584 SUCCESS, including adapter/cancellation tests and all previews |
 | 2 F1 altitude | Done; phone check | `13ee72e` build 13: batched terrain, weighted quota, held/provisional refinement, separate prepared/active profiles. Full CI 34849262175 SUCCESS, including actual-owner terrain lifecycle tests |
 | 2 acceptance | Done | `13ee72e`: all model/live/UI checks SUCCESS; signed build 13 verified. Build/package 46 s; phone limitations in audit |
-| 3 R5, R6 | In progress | R5 `f962922` full CI SUCCESS; R6 build 15 bounds + real map-drag XCTest added, awaiting CI. Next long-press routing |
+| 3 R5, R6 | In progress | R5 `f962922` full CI SUCCESS; R6 `91dae7d`: drag XCTest passed; short-layout Stop alert failed. Separate alert hosts fix build18 pending CI. Next long-press routing |
 | 3 R18, R19, R20, R21 | In progress | `b7df278` build16 long press + one-shot Navigation calculation/auto-start pushed; controller/draft/touch tests added, CI pending |
 | 3 F5 + acceptance | In progress | Build17 search/map favorite editor + persistence/touch tests implemented. Phase acceptance waits for current full CI and visual review |
 | 4 R11, R12, R13 | Not started | Default/per-trip/live finish action, including return legs |

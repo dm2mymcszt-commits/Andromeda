@@ -85,12 +85,12 @@ final class LongPressRouteController: ObservableObject {
 struct LongPressRouteConfirmation: ViewModifier {
     @ObservedObject var controller: LongPressRouteController
     func body(content: Content) -> some View {
-        content.alert(item: $controller.presentedRequest) { request in
+        content.background(Color.clear.alert(item: $controller.presentedRequest) { request in
             let wgs = CoordTransform.gcj02ToWgs84(request.destination)
             return Alert(title: Text("Create route to here?"),
                 message: Text(String(format: "%.5f, %.5f", wgs.latitude, wgs.longitude)),
                 primaryButton: .cancel(Text("Cancel")) { controller.cancel() },
                 secondaryButton: .default(Text("Create route")) { controller.confirmRequest(request) })
-        }
+        })
     }
 }

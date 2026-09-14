@@ -41,10 +41,10 @@ final class MainStopController: ObservableObject {
 struct MainStopConfirmation: ViewModifier {
     @ObservedObject var controller: MainStopController
     func body(content: Content) -> some View {
-        content.alert(item: $controller.presentedRequest) { request in
+        content.background(Color.clear.alert(item: $controller.presentedRequest) { request in
             Alert(title: Text("Stop location spoofing?"), message: Text(request.message),
                   primaryButton: .cancel(Text("Cancel")) { controller.cancel() },
                   secondaryButton: .destructive(Text("Stop")) { controller.confirm(request) })
-        }
+        })
     }
 }
