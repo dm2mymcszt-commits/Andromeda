@@ -20,7 +20,7 @@ xcrun swiftc TrollRoute/Storage/SharedPreferences.swift -parse-as-library TrollR
 "$QA_DIR/altitude-tests"
 xcrun swiftc -parse-as-library TrollRoute/Storage/SharedPreferences.swift \
   TrollRoute/LocSim/RouteElevation.swift TrollRoute/LocSim/Altitude.swift \
-  "$QA_DIR/RouteLocationSample.swift" Tests/Altitude/RouteProfile.swift -o "$QA_DIR/route-elevation-tests"
+  TrollRoute/LocSim/LocationSession.swift "$QA_DIR/RouteLocationSample.swift" Tests/Altitude/RouteProfile.swift -o "$QA_DIR/route-elevation-tests"
 "$QA_DIR/route-elevation-tests"
 xcrun swiftc TrollRoute/Storage/SharedPreferences.swift TrollRoute/LocSim/RouteElevation.swift TrollRoute/LocSim/Altitude.swift Tests/Altitude/LiveElevation.swift -o "$QA_DIR/elevation-live"
 "$QA_DIR/elevation-live"

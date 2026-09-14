@@ -156,22 +156,25 @@ final class LocationSession: ObservableObject {
     private let settings: AltitudeSettings
     private let defaults: UserDefaults
     private let lookup: (CLLocationCoordinate2D) async -> Double?
+    private let batchLookup: ([CLLocationCoordinate2D]) async -> [Double?]?
     private let injectionInterval: TimeInterval
     private var deliveryReason = LocationInjectionReason.continuous
     private var firstRouteSample = false
     private lazy var injectionQueue = LocationInjectionQueue(interval: injectionInterval,
         deliver: { [weak self] in self?.inject($0, reason: $1) })
     lazy var altitudeController = AltitudeController(settings: settings, defaults: defaults,
-        lookup: lookup, currentLocation: { [weak self] in self?.inputSample },
+        lookup: lookup, batchLookup: batchLookup, currentLocation: { [weak self] in self?.inputSample },
         deliver: { [weak self] in self?.deliver($0) })
 
     init(driver: LocationSimulationDriver, defaults: UserDefaults = SharedPreferences.defaults,
          settings: AltitudeSettings = .shared, injectionInterval: TimeInterval = 0.25,
-         lookup: @escaping (CLLocationCoordinate2D) async -> Double? = ElevationLookup.fetch) {
+         lookup: @escaping (CLLocationCoordinate2D) async -> Double? = ElevationLookup.fetch,
+         batchLookup: @escaping ([CLLocationCoordinate2D]) async -> [Double?]? = ElevationLookup.fetchBatch) {
         self.driver = driver
         self.defaults = defaults
         self.settings = settings
         self.lookup = lookup
+        self.batchLookup = batchLookup
         self.injectionInterval = injectionInterval
         store = LocationSessionStore(defaults: defaults)
         snapshot = store.load()
@@ -208,7 +211,8 @@ final class LocationSession: ObservableObject {
     /// Natural arrival already emitted its zero-speed sample; only ownership changes.
     func finishHolding() {
         injectionQueue.flush()
-        altitudeController.finishRoute(resumeLookup: true)
+        // Keep terrain loading at the fixed final route distance. This can
+        // refine a held provisional height without ever restarting movement.
         snapshot.kind = snapshot.current == nil ? nil : .stationary
         snapshot.beforeRoute = nil
         store.save(snapshot)

@@ -14,6 +14,11 @@ import CoreLocation
     }
 }
 
+final class TerrainDriver: LocationSimulationDriver {
+    func inject(_ location: CLLocation, reason: LocationInjectionReason) {}
+    func stop() {}
+}
+
 @main struct RouteProfileTests {
     @MainActor static func waitFor(_ condition: () -> Bool) async {
         for _ in 0..<200 {
@@ -117,23 +122,44 @@ import CoreLocation
         try? await Task.sleep(nanoseconds: 20_000_000)
         precondition(delivered.count == count && controller.currentMeters == nil)
 
-        // A trip that finishes before terrain arrives remains spoofed and can
-        // resolve the held point, rather than cancelling every route lookup.
-        var heldReply: CheckedContinuation<Double?, Never>?
-        var held: CLLocation?
-        let shortTrip = AltitudeController(settings: settings, defaults: defaults, interval: 0,
-            lookup: { _ in await withCheckedContinuation { heldReply = $0 } },
-            batchLookup: { $0.map { _ in nil } }, currentLocation: { input }, deliver: { held = $0 })
-        shortTrip.prepareRoute(other)
-        input = RouteLocationSample.make(coordinate: point(1000), course: 92, speed: 0, timestamp: date)
-        shortTrip.receive(routeDistance: 1000)
-        precondition(held!.verticalAccuracy < 0)
-        shortTrip.finishRoute(resumeLookup: true)
-        await waitFor { heldReply != nil }
-        heldReply!.resume(returning: 33)
-        await waitFor { held?.altitude == 33 }
-        precondition(held!.speed == 0 && held!.courseAccuracy < 0 && held!.coordinate.longitude == point(1000).longitude)
-        input = nil; shortTrip.stop()
+        // Exercise the actual owner transition: a held location continues to
+        // receive terrain only, including refinement of a provisional height.
+        let heldBatch = PendingBatch()
+        let session = LocationSession(driver: TerrainDriver(), defaults: defaults, settings: settings,
+            injectionInterval: 0, lookup: { _ in nil }, batchLookup: { await heldBatch.lookup($0) })
+        session.altitudeController.prepareRoute(other)
+        session.beginRoute()
+        session.receive(RouteLocationSample.make(coordinate: point(1000), course: 92, speed: 0, timestamp: date),
+            kind: .route, routeDistance: 1000)
+        session.finishHolding()
+        precondition(session.current!.meters == nil && session.snapshot.kind == .stationary)
+        await waitFor { heldBatch.requests.count == 1 }
+        heldBatch.answer()
+        await waitFor { session.current?.meters == 1000 }
+        precondition(session.current!.speed == 0 && session.current!.courseAccuracy < 0)
+        session.stop()
+
+        session.altitudeController.prepareRoute(plan)
+        session.beginRoute()
+        session.receive(RouteLocationSample.make(coordinate: point(17000), course: 92, speed: 0, timestamp: date),
+            kind: .route, routeDistance: 17000)
+        await waitFor { heldBatch.requests.count == 1 }
+        heldBatch.answer()
+        await waitFor { heldBatch.requests.count == 1 && session.current?.meters != nil }
+        precondition(abs(session.current!.meters! - 8910) < 0.001)
+        session.finishHolding()
+        precondition(session.current!.meters != nil && session.snapshot.kind == .stationary)
+        heldBatch.answer()
+        await waitFor { abs((session.current?.meters ?? 0) - 17000) < 0.001 && heldBatch.requests.count == 1 }
+        precondition(session.current!.speed == 0 && session.snapshot.kind == .stationary)
+        // A subsequent static jump must not inherit that route's provisional
+        // height, and an in-flight route response must not overwrite the jump.
+        session.receive(RouteLocationSample.make(coordinate: point(50000), course: -1, speed: 0, timestamp: date), kind: .stationary)
+        precondition(session.current!.meters == nil)
+        heldBatch.answer()
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        precondition(session.current!.coordinate.longitude == point(50000).longitude && session.current!.meters == nil)
+        session.stop()
         print("PASS: weighted persistent budget, batches <=100, bounded plan, interpolation, 500 km/h continuity, custom/reset, seek/reverse distance, pause, held destination, cache and Stop cancellation")
     }
 }
