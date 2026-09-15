@@ -94,8 +94,8 @@ struct SessionHost: View {
                 speed: 0, timestamp: Date()), kind: .stationary)
         }
         fixture.prepare()
-        let navigation = arguments.contains("--navigation")
-        if !navigation {
+        let navigation = arguments.contains("--navigation") || arguments.contains("--active-navigation")
+        if !navigation || arguments.contains("--active-navigation") {
             fixture.engine.startSimulation()
             fixture.engine.seek(to: 0.2)
             fixture.engine.updateLiveSpeed(5)

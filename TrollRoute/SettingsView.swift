@@ -81,7 +81,7 @@ struct SettingsView: View {
                     Picker("Action", selection: $routeStopDefault) {
                         ForEach(RouteStopAction.defaults) { action in Text(action.title).tag(action.rawValue) }
                     }
-                    Text("Preselects a choice only. Stopping a route always asks what should happen to your location. If there was no previous spoof, Stay at current location is selected instead.")
+                    Text("Preselects a choice only. Stopping a route always asks what should happen to your location. If Return to previous spoofed location is unavailable, Stay at current location is selected instead.")
                         .font(.caption).foregroundColor(.secondary)
                 }
                 Section("About") {

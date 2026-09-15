@@ -148,6 +148,9 @@ struct LocSimView: View {
         .onChange(of: askBeforeMoving) { _ in mapMove.cancel() }
         .onAppear(perform: offerSharedPlace)
         .onChange(of: scenePhase) { phase in if phase == .active { offerSharedPlace() } }
+        .onChange(of: routeSimulator.isSimulating) { running in
+            if !running { showRouteFinish = false }
+        }
         .sheet(isPresented: $showAltitude, onDismiss: offerSharedPlace) {
             AltitudeSheet(settings: .shared, controller: locationSession.altitudeController)
         }

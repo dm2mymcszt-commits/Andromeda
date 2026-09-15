@@ -86,4 +86,20 @@ final class RouteSessionTests: XCTestCase {
         waitState(app, "action=returnOnce")
         waitState(app, "default=stay")
     }
+    func testBothNavigationStopControlsAsk() {
+        let app = launch(["--active-navigation", "--previous"])
+        XCTAssertTrue(app.buttons["navigation-toolbar-stop"].waitForExistence(timeout: 10))
+        app.buttons["navigation-toolbar-stop"].tap()
+        XCTAssertTrue(app.buttons["confirm-route-stop"].waitForExistence(timeout: 5))
+        app.buttons["Cancel"].tap()
+        XCTAssertTrue(app.buttons["navigation-status-stop"].waitForExistence(timeout: 5))
+        app.buttons["navigation-status-stop"].tap()
+        XCTAssertTrue(app.buttons["confirm-route-stop"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.buttons["route-stop-previous"].value as? String, "Selected")
+        app.buttons["confirm-route-stop"].tap()
+        app.buttons["Close"].tap()
+        waitState(app, "running=false")
+        waitState(app, "active=true")
+        waitState(app, "stops=0")
+    }
 }

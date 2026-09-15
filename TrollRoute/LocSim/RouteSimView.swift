@@ -196,6 +196,8 @@ struct RouteSimSheet: View {
                     }
                     .opacity(routeSimulator.isSimulating ? 1 : 0)
                     .disabled(!routeSimulator.isSimulating)
+                    .accessibilityLabel("Stop route")
+                    .accessibilityIdentifier("navigation-toolbar-stop")
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showGPXPicker = true }) {
@@ -414,6 +416,7 @@ struct RouteSimSheet: View {
                     .foregroundColor(.white)
                     .font(.headline)
                 }
+                .accessibilityIdentifier("navigation-status-stop")
             }
             
             // Current position info
