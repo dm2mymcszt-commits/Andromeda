@@ -4,10 +4,8 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: **Phase 3 validation**, build20 `8b2d8b2`, pushed; CI34942207636 running. Phase 2 accepted (`13ee72e`); Phase 3 implementation through `8b2d8b2` is committed and pushed.
-- CI 34886008482: app/model/live checks pass; toolbar drag passes; long press, short-toolbar confirmation and favorite observation fail. Build20 fixes recognizer competition, uses iOS15 alert presentation and refreshes the test's saved-favorite observation on dismissal.
-- Build20 CI34941875688 compiled but packaging caught project/Info.plist version mismatch; corrected, with a local guard. Added UI Cancel/Confirm/immediate Stop and long-press confirmation coverage.
-- **Next:** inspect corrected build20 full CI; fix remaining failures, inspect simulator visuals and accept Phase 3 before Phase 4. Details/history in audit.
+- Current checkpoint: **Phase 3 accepted**, build20 `8b2d8b2`, full CI34942207636 SUCCESS; six real-touch tests pass, screenshots reviewed, package/signing verified.
+- **Next: Phase 4 R11-R13.** Separate Settings default from prepared/active route finish configuration; apply live changes at current-leg arrival, then implement Route Stop outcomes and moving scrub preview. Actual-engine coverage is required before acceptance.
 - Persist each finished step and its next action. Keep this file short; append detailed findings to audit. Delete **all three ROUND files** in the final commit.
 
 ## Decisions already approved
@@ -39,10 +37,10 @@
 | 2 F2 injection | Done; phone test required | `c5cbc37` build 9 pushed. Root cause: restart/timezone per sample, unbounded slider inputs. 4 Hz coalescing + immediate jump/pause/arrival + geometry UI. Full CI 34816390584 SUCCESS, including adapter/cancellation tests and all previews |
 | 2 F1 altitude | Done; phone check | `13ee72e` build 13: batched terrain, weighted quota, held/provisional refinement, separate prepared/active profiles. Full CI 34849262175 SUCCESS, including actual-owner terrain lifecycle tests |
 | 2 acceptance | Done | `13ee72e`: all model/live/UI checks SUCCESS; signed build 13 verified. Build/package 46 s; phone limitations in audit |
-| 3 R5, R6 | Validation | R5 `f962922`, R6 `91dae7d`; real drag test passes. Short-toolbar alert awaits build20 |
-| 3 R18, R19, R20, R21 | Validation | `b7df278`, workflow/cancellation `6ee3ce7`; model matrix passes; real gesture check awaits build20 |
-| 3 F5 + acceptance | Validation | `269fc4a`; persistence models pass, UI observation corrected in build20. Full CI + visual review required |
-| 4 R11, R12, R13 | Not started | Default/per-trip/live finish action, including return legs |
+| 3 R5, R6 | Done | `f962922`, `91dae7d`, `4273216`, `8b2d8b2`; six real-touch tests and full CI34942207636 SUCCESS |
+| 3 R18, R19, R20, R21 | Done; real-location phone check | `b7df278`, `6ee3ce7`, `4273216`; model matrix, preparation workflow and gesture/confirmation tests pass |
+| 3 F5 + acceptance | Done | `269fc4a`, `8b2d8b2`; save/edit/persistence tests, visual review and signed build20 pass |
+| 4 R11, R12, R13 | In progress | Root cause: Settings copied once at start; immutable finish action. Next separate per-route configuration and current-leg transition rules |
 | 4 R15, R16, R17 | Not started | All Route Stop entry points; both choice sets/outcomes/default preselection |
 | 4 R14, F3 + acceptance | Not started | Credits inside active panel; moving scrub preview; engine tests + screenshots |
 | 5 R7, R8, R9, R10, F4 | Not started | Direct share Go/Favorite; auto-open endpoints; immediate exactly-once channel/source labels |

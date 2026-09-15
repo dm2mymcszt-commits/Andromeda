@@ -983,3 +983,15 @@ The initial matrix proved the chosen auto-start flag reached Navigation, but not
 Workspace tests additionally exercise main Stop while a route is active (Cancel preserves, Confirm stops, setting OFF stops immediately), and the production long-press confirmation controller/alert (Cancel never prepares, Create prepares once). The host stacks the same three confirmation modifiers in production order. Tests retain screenshots of both dialogs and both favorite editors; attachments export on success as well as failure. These augment rather than replace model coverage and the existing real gesture tests.
 
 Checkpoint `8b2d8b2` pushed; CI34942207636 is the active gate. Local identity and whitespace checks pass. Downloaded build19 workspace xcresult into `build/phase3-ui-failure`; visually inspected the retained toolbar drag screenshot: labels fit and there is no visible toolbar surface below Stop. Reviewed Phase3 endpoint/cancellation wiring: real fixes validate coordinate, accuracy and freshness; active spoof uses the owner coordinate; engine calculation IDs invalidate obsolete results. Remaining acceptance depends on current full CI/attachments, not these source observations alone.
+
+## Phase3 acceptance ? build20, 8b2d8b2
+
+CI34942207636 completed SUCCESS. All model/live checks, route previews, workspace previews and picker checks passed. Workspace XCTest executed six tests, zero failures in98.3s: below-Stop panning both label modes; short-scroll Stop; long/single/double separation; long-press Cancel/Create; main Stop Cancel/Confirm/OFF; editable search/map favorites without selecting a location. The iOS15 alert API and corrected recognizer ordering pass where the previous composition failed.
+
+Downloaded `build/phase3-build20-workspace`: visually inspected main Stop running warning, long-press coordinates/Cancel/Create, both favorite editors, Settings light defaults and icon toolbar. Dialogs and controls are legible; toolbar ends at Stop. Test observation text at the top belongs only to the QA host, not the shipped app. Native location authorization and actual injected behavior still require phone verification; controller fixtures do not claim those checks.
+
+Downloaded `build/phase3-build20-package/TrollRoute.tipa`; identity and package-signing scripts pass: version3.0.0/build20, minimum15.0, correct app/share IDs, ARM64 executable flags and expected embedded entitlements. SHA256 `b386d85c98cbe0ebacd0003c2a2e924a6571fce6ecd2d897206052f0aafb96e4`. No Release created.
+
+## Phase4 confirmed causes / implementation boundary
+
+`RouteSimulator.startSimulation` reads `RouteFinishSettings.shared` into immutable `RouteFinishState.action` plus separate finishDestination once. There is no prepared per-trip or live edit API. `RouteFinishState.returning` currently also drives canonical terrain distance, so editing an action must preserve the current leg's orientation. Stay/return notification text must describe the endpoint actually reached. Existing route tests compile only pre-RouteSimulator model declarations; Phase4 will add execution of the actual engine, not another copied-state stand-in.
