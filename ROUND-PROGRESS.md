@@ -5,7 +5,7 @@
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
 - Current checkpoint: **Phase 3 accepted**, build20 `8b2d8b2`, full CI34942207636 SUCCESS; six real-touch tests pass, screenshots reviewed, package/signing verified.
-- Phase4 R11 `1976d8a`; R12/R13 `08eb495` build22: app/package and actual-engine tests pass in CI34972501561; full UI run still pending. R15-R17 `369ef15` build23 pushed; CI34973886091 running. R14 `c0962af` build24 pushed. F3 `6d4fa2e` build25 pushed; CI34974393620. `26416c0` build26 adds actual Navigation/Stop/finish UI tests; CI34975112552 running. Build27 adds both Navigation Stop entrypoint checks.
+- Phase4 R11 `1976d8a`; R12/R13 `08eb495` build22: full CI34972501561 SUCCESS. R15-R17 `369ef15` build23 pushed; CI34973886091 running. R14 `c0962af` build24 pushed. F3 `6d4fa2e` build25 pushed; CI34974393620. `26416c0` build26 adds actual Navigation/Stop/finish UI tests; CI34975112552 running. `b0fdc0b` build27 adds both Navigation Stop checks; CI34975588062 queued/running.
 - **Next:** check build26/27 app/engine/UI jobs, fix failures, download and review route-session-ui + panel screenshots. Confirm full Phase4 acceptance before Phase5.
 - Persist each finished step and its next action. Keep this file short; append detailed findings to audit. Delete **all three ROUND files** in the final commit.
 
@@ -41,9 +41,9 @@
 | 3 R5, R6 | Done | `f962922`, `91dae7d`, `4273216`, `8b2d8b2`; six real-touch tests and full CI34942207636 SUCCESS |
 | 3 R18, R19, R20, R21 | Done; real-location phone check | `b7df278`, `6ee3ce7`, `4273216`; model matrix, preparation workflow and gesture/confirmation tests pass |
 | 3 F5 + acceptance | Done | `269fc4a`, `8b2d8b2`; save/edit/persistence tests, visual review and signed build20 pass |
-| 4 R11, R12, R13 | In progress | R11 `1976d8a`; R12/R13 `08eb495`: build/package + actual-engine tests pass; full CI and visual acceptance remain |
-| 4 R15, R16, R17 | In progress | `369ef15`: all three in-app controls, both dialogs/defaults, exact held samples and stale-trip guards; engine matrix ready for CI. Injection change: phone Bitmoji check |
-| 4 R14, F3 + acceptance | In progress | R14 `c0962af`; F3 `6d4fa2e`: preview-only dragging, normal moving/paused metadata and current-leg seeking. Full CI/UI acceptance pending; phone Bitmoji check |
+| 4 R11, R12, R13 | In progress | R11 `1976d8a`; R12/R13 `08eb495`: full CI34972501561 SUCCESS; dedicated Phase4 UI acceptance pending |
+| 4 R15, R16, R17 | In progress | `369ef15`: all three in-app controls, both dialogs/defaults, exact held samples and stale-trip guards; engine matrix passed in CI34973886091; full UI acceptance pending. Injection change: phone Bitmoji check |
+| 4 R14, F3 + acceptance | In progress | R14 `c0962af`; F3 `6d4fa2e`: preview-only dragging, normal moving/paused metadata and current-leg seeking. engine scrub matrix passed in CI34974393620; full CI/UI acceptance pending; phone Bitmoji check |
 | 5 R7, R8, R9, R10, F4 | Not started | Direct share Go/Favorite; auto-open endpoints; immediate exactly-once channel/source labels |
 | 5 acceptance | Not started | Lifecycle harness, source/outcome tests; phone flows |
 | 6 R29, R30, R31, R32 | Not started | Registration/access/accuracy status, evidence-based onboarding |
