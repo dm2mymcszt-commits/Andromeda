@@ -5,8 +5,8 @@
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
 - Current checkpoint: **Phase 3 accepted**, build20 `8b2d8b2`, full CI34942207636 SUCCESS; six real-touch tests pass, screenshots reviewed, package/signing verified.
-- Phase4 R11 `1976d8a` pushed. R12/R13 build22 ready: prepared/active configuration, both controls, all-six return-leg rules and actual-engine CI harness.
-- **Next:** run build22 CI and fix any compilation/engine failures; then implement Route Stop choices (R15-R17), panel credits and isolated moving-scrub fix. Phase4 visual/engine acceptance still required.
+- Phase4 R11 `1976d8a`; R12/R13 `08eb495` build22: app/package and actual-engine tests pass in CI34972501561; full UI run still pending. R15-R17 build23 ready for CI.
+- **Next:** push/check build23 Route Stop compilation and actual-engine outcomes; finish R14 credits, then isolated F3 moving scrub. Add Phase4 actual UI screenshots/tests before acceptance.
 - Persist each finished step and its next action. Keep this file short; append detailed findings to audit. Delete **all three ROUND files** in the final commit.
 
 ## Decisions already approved
@@ -41,8 +41,8 @@
 | 3 R5, R6 | Done | `f962922`, `91dae7d`, `4273216`, `8b2d8b2`; six real-touch tests and full CI34942207636 SUCCESS |
 | 3 R18, R19, R20, R21 | Done; real-location phone check | `b7df278`, `6ee3ce7`, `4273216`; model matrix, preparation workflow and gesture/confirmation tests pass |
 | 3 F5 + acceptance | Done | `269fc4a`, `8b2d8b2`; save/edit/persistence tests, visual review and signed build20 pass |
-| 4 R11, R12, R13 | In progress | R11 `1976d8a`; R12/R13 build22 implemented, validation pending. Actual-engine harness added; visual acceptance remains |
-| 4 R15, R16, R17 | Not started | All Route Stop entry points; both choice sets/outcomes/default preselection |
+| 4 R11, R12, R13 | In progress | R11 `1976d8a`; R12/R13 `08eb495`: build/package + actual-engine tests pass; full CI and visual acceptance remain |
+| 4 R15, R16, R17 | In progress | Build23: all three in-app controls, both dialogs/defaults, exact held samples and stale-trip guards; engine matrix ready for CI. Injection change: phone Bitmoji check |
 | 4 R14, F3 + acceptance | Not started | Credits inside active panel; moving scrub preview; engine tests + screenshots |
 | 5 R7, R8, R9, R10, F4 | Not started | Direct share Go/Favorite; auto-open endpoints; immediate exactly-once channel/source labels |
 | 5 acceptance | Not started | Lifecycle harness, source/outcome tests; phone flows |
@@ -58,7 +58,7 @@
 ## Carry-forward constraints
 
 - Three distinct systems: main Stop ends spoofing; Route Stop always asks location outcome; finish action applies at natural arrival.
-- Toolbar UI tests now use the production modifier and real gestures. Existing route tests still omit RouteSimulator itself; add actual-engine coverage in Phase 4.
+- Toolbar UI tests now use the production modifier and real gestures. Phase4 actual-engine harness now passes finish-action coverage; expand it for Stop and scrub.
 - Old favorites/finish destination are WGS-84; recents are map coordinates. Preserve formats and old data. Removing no-container later must not hide newly imported preferences.
 - Root helper/dead utilities removed at d40830b. Welcome/checkSandbox/Favorites remain live. New approved icon is opaque PNG; identity localizations updated.
 - Source confirms missing share delivery events, not a fixed one-minute timer or a proven scenePhase race. Do not replace with polling.

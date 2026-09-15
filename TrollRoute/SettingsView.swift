@@ -16,6 +16,7 @@ struct SettingsView: View {
     @StateObject private var recentPlaces = RouteRecentPlaces()
     @State private var showFinishPlacePicker = false
     @State private var selectGoAfterPicking = false
+    @AppStorage("routeStopDefault", store: SharedPreferences.defaults) private var routeStopDefault = RouteStopAction.previous.rawValue
 
     var body: some View {
         NavigationView {
@@ -74,6 +75,13 @@ struct SettingsView: View {
                         }
                     }
                     Text("The starting choice for each new route. Route-specific choices do not change this default. Notifications are requested when you first start a route.")
+                        .font(.caption).foregroundColor(.secondary)
+                }
+                Section("Default action when stopping a route") {
+                    Picker("Action", selection: $routeStopDefault) {
+                        ForEach(RouteStopAction.defaults) { action in Text(action.title).tag(action.rawValue) }
+                    }
+                    Text("Preselects a choice only. Stopping a route always asks what should happen to your location. If there was no previous spoof, Stay at current location is selected instead.")
                         .font(.caption).foregroundColor(.secondary)
                 }
                 Section("About") {

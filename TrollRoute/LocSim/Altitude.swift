@@ -172,6 +172,25 @@ final class AltitudeController: ObservableObject {
         currentMeters = nil
     }
 
+    /// Resolve a press-time route sample without emitting it or starting work.
+    /// This also handles a pending coalesced sample whose altitude is not yet
+    /// represented by LocationSession.current.
+    func routeSample(_ location: CLLocation, at distance: Double) -> CLLocation {
+        let meters = profile.mode == .custom ? profile.customMeters :
+            (routeProfile?.meters(at: distance) ?? lastRouteMeters ?? cached(location.coordinate))
+        return Self.applying(meters, to: location, accuracy: profile.mode == .custom ? 1 : 90)
+    }
+
+    /// An explicit Route Stop restores the captured height exactly. Cancel old
+    /// lookups so they cannot overwrite it. A subsequent altitude-settings edit
+    /// still uses the normal refresh path and applies immediately.
+    func holdCaptured(_ location: CLLocation) {
+        stop()
+        preparedLoader = nil
+        currentMeters = location.verticalAccuracy >= 0 ? location.altitude : nil
+        deliver(location)
+    }
+
     private func cancelLookup() {
         generation = UUID()
         task?.cancel()

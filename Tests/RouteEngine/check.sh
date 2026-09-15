@@ -20,7 +20,7 @@ PY
 xcrun --sdk iphonesimulator swiftc -target arm64-apple-ios17.0-simulator \
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
   TrollRoute/Storage/SharedPreferences.swift TrollRoute/LocSim/RouteSimulator.swift \
-  TrollRoute/LocSim/RouteFinish.swift TrollRoute/LocSim/CoordTransform.swift \
+  TrollRoute/LocSim/RouteFinish.swift TrollRoute/LocSim/RouteStop.swift TrollRoute/LocSim/CoordTransform.swift \
   TrollRoute/LocSim/RouteElevation.swift TrollRoute/LocSim/Altitude.swift \
   TrollRoute/LocSim/LocationSession.swift "$QA_DIR/RouteLocationSample.swift" \
   Tests/RouteEngine/EngineTests.swift -o "$PREVIEW_APP/RouteEngineTests"

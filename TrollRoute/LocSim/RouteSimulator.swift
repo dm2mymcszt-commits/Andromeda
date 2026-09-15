@@ -346,6 +346,9 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published private var finishState = RouteFinishState(action: .stay)
     @Published private(set) var startError: String?
     @Published private(set) var finishConfiguration: RouteFinishConfiguration
+    @Published private(set) var stopRequest: RouteStopRequest?
+    private var tripID: UUID?
+    private let stopDefaults: UserDefaults
     private let finishDefaults: RouteFinishSettings
     private let now: () -> TimeInterval
     private let notifyCompletion: (String) -> Void
@@ -404,10 +407,12 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     init(locationSession: LocationSession = LocSimManager.session,
          finishDefaults: RouteFinishSettings = .shared,
+         stopDefaults: UserDefaults = SharedPreferences.defaults,
          now: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime },
          notifyCompletion: @escaping (String) -> Void = { RouteNotifications.shared.complete($0) }) {
         self.locationSession = locationSession
         self.finishDefaults = finishDefaults
+        self.stopDefaults = stopDefaults
         finishConfiguration = RouteFinishConfiguration(defaults: finishDefaults)
         self.now = now
         self.notifyCompletion = notifyCompletion
@@ -545,6 +550,8 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         prepareElevation()
         locationSession.beginRoute()
+        tripID = UUID()
+        stopRequest = nil
         finishState = RouteFinishState(action: finishConfiguration.action)
         timer?.invalidate()
         journey = RouteJourney(track: track, speedKmh: speeds[travelMode])
@@ -630,16 +637,66 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         if journey?.isFinished == true { finishRoute() }
     }
 
+    func requestRouteStop() {
+        guard isSimulating, stopRequest == nil else { return }
+        advanceRoute()
+        guard isSimulating, let tripID = tripID, let journey = journey, let track = track else { return }
+        let motion = journey.motion(paused: true)
+        let distance = finishState.returning ? track.length - journey.distance : journey.distance
+        let current = locationSession.altitudeController.routeSample(RouteLocationSample.make(
+            coordinate: motion.coordinate, course: motion.course, speed: 0, timestamp: Date()), at: distance)
+        let start = track.position(at: 0)
+        let startSample = locationSession.altitudeController.routeSample(RouteLocationSample.make(
+            coordinate: start.coordinate, course: start.course, speed: 0, timestamp: Date()), at: 0)
+        stopRequest = RouteStopRequest(tripID: tripID, previous: locationSession.snapshot.beforeRoute,
+            current: SessionLocation(current), start: SessionLocation(startSample),
+            preferred: RouteStopAction.savedDefault(in: stopDefaults))
+    }
+
+    func cancelRouteStop(_ id: UUID) {
+        guard stopRequest?.id == id else { return }
+        stopRequest = nil
+    }
+
+    func confirmRouteStop(_ id: UUID, action: RouteStopAction, place: RouteFinishDestination? = nil) {
+        guard isSimulating, let request = stopRequest, request.id == id,
+              request.tripID == tripID, request.choices.contains(action) else { return }
+        if action == .specific {
+            guard let place = place, CLLocationCoordinate2DIsValid(place.coordinate) else { return }
+        }
+        if action == .real { stopSimulation(); return }
+        endPlayback()
+        switch action {
+        case .previous:
+            if let previous = request.previous { locationSession.holdCaptured(previous) }
+        case .current: locationSession.holdCaptured(request.current)
+        case .start: locationSession.holdCaptured(request.start)
+        case .specific:
+            if let place = place {
+                locationSession.receive(RouteLocationSample.make(coordinate: place.coordinate,
+                    course: 0, speed: 0, timestamp: Date()), kind: .stationary, reason: .jump)
+            }
+        case .real: break // Handled before ending playback.
+        }
+    }
+
+    /// Only Main Stop and an explicitly chosen real-location outcome use this.
     func stopSimulation() {
+        endPlayback()
+        locationSession.stop()
+    }
+
+    private func endPlayback() {
         timer?.invalidate()
         timer = nil
         lastTick = nil
         isSimulating = false
         isPaused = false
+        tripID = nil
+        stopRequest = nil
         clearCalculatedRoutes()
         locationManager.stopUpdatingLocation()
         endBackgroundTask()
-        locationSession.stop()
     }
 
     func advanceRoute() {
@@ -693,6 +750,8 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         case .hold: break
         }
         locationSession.finishHolding()
+        tripID = nil
+        stopRequest = nil
         // The final sample has already published exact destination and zero speed.
         timer?.invalidate()
         timer = nil

@@ -41,6 +41,12 @@ struct SessionLocation: Codable, Equatable {
             course: course, courseAccuracy: courseAccuracy, speed: speed,
             speedAccuracy: speedAccuracy, timestamp: timestamp)
     }
+    var stationaryLocation: CLLocation {
+        CLLocation(coordinate: coordinate, altitude: altitude,
+            horizontalAccuracy: horizontalAccuracy, verticalAccuracy: verticalAccuracy,
+            course: course, courseAccuracy: courseAccuracy, speed: 0,
+            speedAccuracy: 0, timestamp: Date())
+    }
 }
 
 struct LocationSessionSnapshot: Codable, Equatable {
@@ -217,6 +223,19 @@ final class LocationSession: ObservableObject {
         snapshot.kind = snapshot.current == nil ? nil : .stationary
         snapshot.beforeRoute = nil
         store.save(snapshot)
+    }
+
+    /// Stop route movement without ever stopping the underlying location spoof.
+    func holdCaptured(_ captured: SessionLocation) {
+        guard captured.isValid else { return }
+        injectionQueue.stop()
+        firstRouteSample = false
+        inputSample = captured.stationaryLocation
+        snapshot.kind = .stationary
+        snapshot.beforeRoute = nil
+        deliveryReason = .jump
+        altitudeController.holdCaptured(inputSample!)
+        deliveryReason = .continuous
     }
 
     func stop() {

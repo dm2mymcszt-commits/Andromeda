@@ -188,8 +188,7 @@ struct RouteSimSheet: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        routeSimulator.stopSimulation()
-                        invalidateRoute()
+                        routeSimulator.requestRouteStop()
                     }) {
                         Image(systemName: "stop.circle.fill")
                             .foregroundColor(.red)
@@ -249,6 +248,7 @@ struct RouteSimSheet: View {
                 }
             }
         }
+        .modifier(RouteStopPresentation(simulator: routeSimulator))
         .onAppear {
             if !didInitializeStart {
                 didInitializeStart = true
@@ -399,14 +399,7 @@ struct RouteSimSheet: View {
                 }
                 
                 Button(action: {
-                    routeSimulator.stopSimulation()
-                    routeReady = false
-                    AlertKitAPI.present(
-                        title: "Route Stopped",
-                        icon: .done,
-                        style: .iOS17AppleMusic,
-                        haptic: .success
-                    )
+                    routeSimulator.requestRouteStop()
                 }) {
                     HStack {
                         Image(systemName: "stop.fill")
@@ -660,7 +653,7 @@ struct RoutePlaybackPanel: View {
                 if collapsed { Text("\(Int(progress * 100))%").font(.caption).monospacedDigit() }
                 Button(action: pause) { Image(systemName: isPaused ? "play.fill" : "pause.fill") }
                     .accessibilityLabel(isPaused ? "Resume route" : "Pause route")
-                Button(action: stop) { Image(systemName: "stop.fill") }.accessibilityLabel("Stop simulation")
+                Button(action: stop) { Image(systemName: "stop.fill") }.accessibilityLabel("Stop route")
             }
             .buttonStyle(.borderless)
             if !collapsed {

@@ -111,7 +111,7 @@ struct LocSimView: View {
                     speedKmh: Binding(get: { routeSimulator.currentSpeedKmh }, set: { routeSimulator.updateLiveSpeed($0) }),
                     collapsed: $routeControlsCollapsed,
                     preview: routeSimulator.previewSeek, seek: routeSimulator.seek,
-                    cancelSeek: routeSimulator.cancelSeek, pause: routeSimulator.togglePause, stop: stopSimulation,
+                    cancelSeek: routeSimulator.cancelSeek, pause: routeSimulator.togglePause, stop: routeSimulator.requestRouteStop,
                     finishActionTitle: routeSimulator.finishConfiguration.action.title,
                     editFinish: { showRouteFinish = true }
                 ).padding(.horizontal, 12).padding(.bottom, 6)
@@ -125,6 +125,7 @@ struct LocSimView: View {
         .modifier(MapMoveConfirmation(controller: mapMove))
         .modifier(MainStopConfirmation(controller: mainStop))
         .modifier(LongPressRouteConfirmation(controller: longPressRoute))
+        .modifier(RouteStopPresentation(simulator: routeSimulator, enabled: !showRouteSheet))
         .alert("Create route", isPresented: Binding(get: { longPressRoute.error != nil }, set: { if !$0 { longPressRoute.error = nil } })) {
             Button("OK", role: .cancel) { longPressRoute.error = nil }
             Button("Open Settings") {

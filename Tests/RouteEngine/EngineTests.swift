@@ -8,8 +8,9 @@ enum LocSimManager {
 }
 final class EngineDriver: LocationSimulationDriver {
     var samples: [CLLocation] = []
+    var stops = 0
     func inject(_ location: CLLocation, reason: LocationInjectionReason) { samples.append(location) }
-    func stop() {}
+    func stop() { stops += 1 }
 }
 
 final class EngineFixture {
@@ -18,6 +19,7 @@ final class EngineFixture {
     let settings: RouteFinishSettings
     let driver: EngineDriver
     let owner: LocationSession
+    let altitude: AltitudeSettings
     var engine: RouteSimulator!
     var clock = 1000.0
     var notifications: [String] = []
@@ -33,11 +35,12 @@ final class EngineFixture {
         defaults = storage
         driver = recording
         settings = RouteFinishSettings(defaults: storage)
-        let altitude = AltitudeSettings(defaults: storage)
-        altitude.setCustom(250)
-        owner = LocationSession(driver: recording, defaults: storage, settings: altitude,
+        let altitudeSettings = AltitudeSettings(defaults: storage)
+        altitude = altitudeSettings
+        altitudeSettings.setCustom(250)
+        owner = LocationSession(driver: recording, defaults: storage, settings: altitudeSettings,
             injectionInterval: 0, lookup: { _ in nil }, batchLookup: { _ in nil })
-        engine = RouteSimulator(locationSession: owner, finishDefaults: settings,
+        engine = RouteSimulator(locationSession: owner, finishDefaults: settings, stopDefaults: storage,
             now: { [unowned self] in self.clock },
             notifyCompletion: { [unowned self] in self.notifications.append($0) })
     }
@@ -126,6 +129,85 @@ func testRouteFinishEngine() {
     }
 }
 
+func testRouteStopEngine() {
+    for previous in [false, true] {
+        for preferred in RouteStopAction.defaults {
+            let f = EngineFixture()
+            f.defaults.set(preferred.rawValue, forKey: "routeStopDefault")
+            if previous {
+                f.owner.receive(RouteLocationSample.make(coordinate: f.c, course: 90, speed: 12,
+                    timestamp: Date()), kind: .joystick)
+            }
+            f.prepare(); f.engine.startSimulation()
+            f.clock += 2
+            f.engine.requestRouteStop()
+            let request = f.engine.stopRequest!
+            precondition(request.choices == (previous ? RouteStopAction.defaults : [.current, .start, .specific, .real]))
+            precondition(request.preselection == (!previous && preferred == .previous ? .current : preferred))
+            precondition(f.engine.isSimulating && !f.engine.isPaused && f.owner.current!.speed > 0)
+            f.clock += 3; f.engine.advanceRoute()
+            precondition(f.owner.current!.location.distance(from: request.current.location) > 20,
+                         "Dialog must not pause the route")
+            f.engine.cancelRouteStop(request.id)
+            precondition(f.engine.isSimulating && f.engine.stopRequest == nil && f.driver.stops == 0)
+            f.engine.confirmRouteStop(request.id, action: .real)
+            precondition(f.engine.isSimulating && f.driver.stops == 0, "Cancelled response is stale")
+            f.close()
+        }
+        let choices: [RouteStopAction] = previous ? RouteStopAction.defaults : [.current, .start, .specific, .real]
+        for action in choices {
+            let f = EngineFixture()
+            if previous {
+                f.altitude.setCustom(-12.5)
+                f.owner.receive(RouteLocationSample.make(coordinate: f.c, course: 90, speed: 12,
+                    timestamp: Date()), kind: .joystick)
+            }
+            f.prepare(); f.engine.startSimulation()
+            f.altitude.setCustom(250)
+            f.clock += 2; f.engine.requestRouteStop()
+            let request = f.engine.stopRequest!
+            f.clock += 5; f.engine.advanceRoute()
+            let destination = RouteFinishDestination(name: "Specific", address: "", coordinate: f.c)
+            f.engine.confirmRouteStop(request.id, action: action, place: destination)
+            precondition(!f.engine.isSimulating && f.engine.stopRequest == nil)
+            switch action {
+            case .previous:
+                precondition(f.at(f.c) && f.owner.current!.meters == -12.5,
+                             "Previous altitude must not be replaced by today's profile")
+            case .current:
+                precondition(f.owner.current!.location.distance(from: request.current.location) < 0.001)
+                precondition(f.owner.current!.meters == request.current.meters)
+            case .start: precondition(f.at(f.a) && f.owner.current!.meters == 250)
+            case .specific: precondition(f.at(f.c) && f.owner.current!.meters == 250)
+            case .real: precondition(!f.owner.isActive && f.driver.stops == 1)
+            }
+            if action != .real {
+                precondition(f.driver.stops == 0 && f.owner.snapshot.kind == .stationary)
+                precondition(f.owner.current!.speed == 0 && f.owner.snapshot.beforeRoute == nil)
+                f.altitude.setCustom(300)
+                precondition(f.owner.current!.meters == 300, "An explicit altitude edit must still apply")
+            }
+            let delivered = f.driver.samples.count
+            f.clock += 10; f.engine.advanceRoute()
+            precondition(f.driver.samples.count == delivered, "Stopped engine cannot overwrite choice")
+            f.prepare(); f.engine.startSimulation()
+            f.engine.confirmRouteStop(request.id, action: .real)
+            precondition(f.engine.isSimulating, "Old trip dialog cannot stop a new trip")
+            f.close()
+        }
+    }
+    let f = EngineFixture()
+    defer { f.close() }
+    f.prepare(); f.engine.startSimulation(); f.engine.togglePause()
+    f.engine.requestRouteStop()
+    let paused = f.engine.stopRequest!
+    f.engine.cancelRouteStop(paused.id)
+    precondition(f.engine.isPaused && f.owner.current!.speed == 0)
+    f.engine.requestRouteStop()
+    f.engine.seek(to: 1)
+    precondition(f.engine.stopRequest == nil, "Natural final arrival invalidates the dialog")
+}
+
 @main final class EngineApp: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -135,7 +217,8 @@ func testRouteFinishEngine() {
         self.window = window
         DispatchQueue.main.async {
             testRouteFinishEngine()
-            let text = "PASS: actual RouteSimulator prepared defaults, per-trip isolation, all six live actions on outbound/return legs, notifications, speed and altitude\n"
+            testRouteStopEngine()
+            let text = "PASS: actual RouteSimulator prepared defaults, all six live finish actions, both Stop choice sets/defaults, Cancel, stale replies, exact previous/current/start/specific/real outcomes, motion and altitude\n"
             let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("results.txt")
             try! text.write(to: path, atomically: true, encoding: .utf8)
         }
