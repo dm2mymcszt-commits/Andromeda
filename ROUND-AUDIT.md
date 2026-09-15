@@ -1051,3 +1051,22 @@ CI34976588469 completed SUCCESS across build, route-session-ui and icon jobs. Fi
 Package build/phase4-build28-package/TrollRoute.tipa is arm64, executable, minimum iOS15, both signed entitlements match approved files. SHA256 5046f69ff2f5a809b4116c7cc44cb6caef731c363fb24ab51a551fe938919fdd. Physical motion/Bitmoji, privacy/locked background behavior remain phone checks. Phase4 accepted; no release created.
 
 For transparency: build27 CI34975588062 route-session-ui passed, but its separate map-workspace gesture test timed out finding map-observation and the zoom predicate. The same unchanged workspace harness passed in latest build28; do not weaken those assertions. Revisit if it recurs.
+
+### Phase5 architecture and proposed extension privileges (approval required)
+
+Confirmed current state after Phase4: ActionViewController resolves attachments into RoutePlace without retaining input-source provenance. SharePlaceView writes the inbox and reports Ready; LocSimView polls that inbox only on appearance/activation/sheet dismissal, then presents IncomingPlaceView. No Darwin signal, URL consumer, shared injection lease, or acknowledgement exists. Thus the missing event channel is the proven cause; no fixed one-minute timer has been found. R10 can be implemented separately with optional backward-compatible source provenance through request/draft/recents.
+
+Implementation plan: durable UUID commands in the app group, file-locked transactions and completion records; Darwin events for active processes and launch URLs for durable cold start. Endpoint handoff stores the draft before marking handled, then presents actual Navigation without a second review. Favorite save remains in the extension. Go uses the same owner/altitude path with an exclusive cross-process injection generation: revoke old route ticks before injection; notify the app to end playback without restoring real GPS. Every delayed tick/altitude callback must validate its generation under the same injection lock. A suspended app cannot overwrite the extension move when resumed. Elevation reservations must move from an in-process actor/NSUserDefaults cache to a file-locked shared ledger before extension network use. Do not report queued commands as successful moves; determine a verifiable private-driver completion path before finishing R7.
+
+**Exact proposed additions: only TrollRouteShare/entitlements.plist, all Boolean true. No app privilege changes.**
+
+| Key | Purpose / scope | Evidence and limits |
+|---|---|---|
+| `com.apple.locationd.simulation` | Invoke the same location simulation service for Go without launching the app | Existing working main-app adapter; extension still needs physical confirmation |
+| `platform-application` | Platform privilege for the private simulation/LaunchServices path | Existing main app and TrollStore use it; not evidence of extension hardware success |
+| `com.apple.private.security.no-sandbox` | Allow the private daemon/LaunchServices connections from this action extension | Broad sandbox exemption; same mechanism used in the main app and TrollStore, limited in our code to these operations |
+| `com.apple.private.coreservices.canmaplsdatabase` | Access LaunchServices to open the containing TrollRoute app by its fixed bundle ID | TrollStore uses this key and LSApplicationWorkspace.openApplicationWithBundleID; runtime selector/return checks required |
+
+Keep the existing `com.apple.security.application-groups` array exactly `[group.com.dm2mymcszt.trollroute]`. Do not copy app migration/container/file-access, install/uninstall, persona, graphics or other privileges. If another key is needed, ask separately. New extension privileges are **not yet approved or applied**.
+
+Primary source inspected 2026-09-15: [TrollStore launch implementation](https://github.com/opa334/TrollStore/blob/main/TrollStore/TSApplicationsManager.m), [TrollStore entitlements](https://github.com/opa334/TrollStore/blob/main/TrollStore/entitlements.plist). This supports the proposed mechanism, not a guarantee on every supported OS. Prefer its fixed-bundle launch method over responder-chain tricks; the queued UUID remains durable and the URL channel will also be accepted. No manual-open fallback is authorized.

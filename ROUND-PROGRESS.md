@@ -43,7 +43,7 @@
 | 4 R11, R12, R13 | Done; phone checks remain | `1976d8a`, `08eb495`; full engine/action matrix and actual Navigation/panel UI pass |
 | 4 R15, R16, R17 | Done; phone checks remain | `369ef15`, `b0fdc0b`; both sets, all outcomes, three Stop entry points pass; phone Bitmoji check |
 | 4 R14, F3 + acceptance | Done; phone checks remain | `c0962af`, `6d4fa2e`, `e1f3cac`; credits reviewed, moving/paused scrub metadata pass; signed build28; phone Bitmoji check |
-| 5 R7, R8, R9, R10, F4 | Not started | Direct share Go/Favorite; auto-open endpoints; immediate exactly-once channel/source labels |
+| 5 R7, R8, R9, R10, F4 | In progress | Architecture / exact four-key extension proposal in audit; approval pending. Next implement R10 provenance and durable command tests; no privileges applied |
 | 5 acceptance | Not started | Lifecycle harness, source/outcome tests; phone flows |
 | 6 R29, R30, R31, R32 | Not started | Registration/access/accuracy status, evidence-based onboarding |
 | 6 acceptance | Not started | Status model tests, good/bad screenshots, documented permission decision |
