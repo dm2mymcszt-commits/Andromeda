@@ -1037,3 +1037,9 @@ The host supplies synthetic prepared geometry and the actual engine with a real 
 ### Phase4 UI coverage refinement ? build27
 
 Added explicit accessible identifiers and a spoken Stop route label to Navigation's toolbar control. A fifth UI test exercises both Navigation Stop entry points, cancellation and confirming the previous-spoof outcome. Clarified the Settings fallback caption: Current substitutes only when Previous is unavailable, not for other valid defaults. The live finish sheet dismisses when playback ends, avoiding a stale active-route editor after natural arrival. Build26 committed26416c0, CI34975112552 running. F3 actual engine assertions passed in build25 CI34974393620; complete UI runs remain pending.
+
+### Phase4 first visual review / MapKit viewport correction ? build28
+
+Build26 CI34975112552 route-session-ui job SUCCESS: four real-touch tests, zero failures in57.972s. Downloaded build/phase4-build26-ui and reviewed six screenshots: actual prepared Navigation finish card, active finish editor, both Stop sets/default checkmarks, expanded and collapsed cycling panels. Text, controls and explicit Stop confirmation fit; no separate OSM credit surface remains. Synthetic straight geometry belongs only to the test fixture.
+
+Review also found MapKit's native Apple attribution partly covered at the panel's lower edge. The map's unconditional ignoresSafeArea reset the space reserved by the bottom playback inset. During active playback only, the production map now ignores the top safe area but respects the bottom reservation, keeping the map viewport/native attribution above the panel. The actual-engine UI host and older panel-preview fixture use the same sizing. Inactive full-screen map behavior remains unchanged. This is a R14 visual acceptance correction, not a movement change. Recheck build28 screenshots before accepting Phase4; build27 also adds the fifth test for both Navigation Stop entry points.

@@ -82,7 +82,8 @@ struct LocSimView: View {
                             startSimulation(at: coordinate)
                         }
                     }
-                    .ignoresSafeArea()
+                    // Keep MapKit's own attribution and viewport above playback.
+                    .ignoresSafeArea(.container, edges: routeSimulator.isSimulating ? .top : .all)
                 
             // MARK: - Joystick Overlay
             if joystickActive {

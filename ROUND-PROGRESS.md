@@ -5,8 +5,8 @@
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
 - Current checkpoint: **Phase 3 accepted**, build20 `8b2d8b2`, full CI34942207636 SUCCESS; six real-touch tests pass, screenshots reviewed, package/signing verified.
-- Phase4 R11 `1976d8a`; R12/R13 `08eb495` build22: full CI34972501561 SUCCESS. R15-R17 `369ef15` build23 pushed; CI34973886091 running. R14 `c0962af` build24 pushed. F3 `6d4fa2e` build25 pushed; CI34974393620. `26416c0` build26 adds actual Navigation/Stop/finish UI tests; CI34975112552 running. `b0fdc0b` build27 adds both Navigation Stop checks; CI34975588062 queued/running.
-- **Next:** check build26/27 app/engine/UI jobs, fix failures, download and review route-session-ui + panel screenshots. Confirm full Phase4 acceptance before Phase5.
+- Phase4 R11 `1976d8a`; R12/R13 `08eb495` build22: full CI34972501561 SUCCESS. R15-R17 `369ef15` build23 pushed; CI34973886091 running. R14 `c0962af` build24 pushed. F3 `6d4fa2e` build25 pushed; CI34974393620. `26416c0` build26 adds actual Navigation/Stop/finish UI tests; CI34975112552 running. `b0fdc0b` build27 adds both Navigation Stop checks; CI34975588062 running. Build26 UI job passed4 tests; screenshots reviewed. Build28 corrects a MapKit attribution overlap found in review.
+- **Next:** push/check build28 and review new panel screenshots (native MapKit attribution above panel), plus build27/28 five UI tests and full CI. Confirm full Phase4 acceptance before Phase5.
 - Persist each finished step and its next action. Keep this file short; append detailed findings to audit. Delete **all three ROUND files** in the final commit.
 
 ## Decisions already approved

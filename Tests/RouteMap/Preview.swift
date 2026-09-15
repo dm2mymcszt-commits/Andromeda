@@ -395,7 +395,7 @@ private struct PlaybackFixture: View {
                 }, allowsLocationSelection: false,
                 fitsRoutes: true, showsUserLocation: false, proposedPosition: previewPosition,
                 proposalIsRoutePreview: previewPosition != nil)
-                .ignoresSafeArea()
+                .ignoresSafeArea(.container, edges: .top)
             ScrollView(showsIndicators: false) {
                 FloatingQuickMenu(onAction: { _ in }, joystickActive: false, routeActive: true)
                     .padding(.trailing, 12).padding(.top, 12)

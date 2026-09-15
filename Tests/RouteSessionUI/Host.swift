@@ -41,7 +41,7 @@ struct SessionHost: View {
             routeETAs: engine.simulatedRouteETAs, allowsLocationSelection: false,
             fitsRoutes: true, showsUserLocation: false, proposedPosition: engine.previewPosition,
             proposalIsRoutePreview: engine.previewPosition != nil)
-            .ignoresSafeArea()
+            .ignoresSafeArea(.container, edges: engine.isSimulating ? .top : .all)
             .modifier(MapToolbarOverlay(onAction: { action in
                 if action == .route { navigation = true }
             }, joystickActive: false, routeActive: engine.isSimulating))
