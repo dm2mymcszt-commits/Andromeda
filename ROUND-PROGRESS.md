@@ -4,7 +4,7 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: **Phase 3 validation**, build20 correction pending push. Phase 2 accepted (`13ee72e`); Phase 3 implementation through `4273216` is committed and pushed.
+- Current checkpoint: **Phase 3 validation**, build20 `8b2d8b2`, pushed; CI34942207636 running. Phase 2 accepted (`13ee72e`); Phase 3 implementation through `8b2d8b2` is committed and pushed.
 - CI 34886008482: app/model/live checks pass; toolbar drag passes; long press, short-toolbar confirmation and favorite observation fail. Build20 fixes recognizer competition, uses iOS15 alert presentation and refreshes the test's saved-favorite observation on dismissal.
 - Build20 CI34941875688 compiled but packaging caught project/Info.plist version mismatch; corrected, with a local guard. Added UI Cancel/Confirm/immediate Stop and long-press confirmation coverage.
 - **Next:** inspect corrected build20 full CI; fix remaining failures, inspect simulator visuals and accept Phase 3 before Phase 4. Details/history in audit.
