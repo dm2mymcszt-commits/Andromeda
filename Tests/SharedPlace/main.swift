@@ -4,6 +4,15 @@ import CoreLocation
 func require(_ condition: @autoclosure () -> Bool, _ message: String) {
     if !condition() { fatalError(message) }
 }
+// Child processes exercise the real file lock and Darwin channel, not a mock mutex.
+if CommandLine.arguments.count > 2, CommandLine.arguments[1] == "--enqueue" {
+    let childInbox = SharedPlaceInbox(container: URL(fileURLWithPath: CommandLine.arguments[2]))
+    let childPlace = RoutePlace(name: CommandLine.arguments[3], coordinate: CLLocationCoordinate2D(latitude: 44.8, longitude: -0.6))
+    try childInbox.enqueue(SharedPlaceRequest(place: childPlace, action: .start))
+    exit(0)
+}
+if CommandLine.arguments.contains("--signal") { SharedPlaceSignal.post(); exit(0) }
+
 let container = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
 let inbox = SharedPlaceInbox(container: container)
 defer { try? FileManager.default.removeItem(at: container) }
@@ -99,3 +108,59 @@ let recent = RouteRecentPlaces(defaults: defaults)
 recent.remember(googlePlace)
 require(RouteRecentPlaces(defaults: defaults).places.first?.sharedSource == .googleMaps, "Recents retain source")
 print("PASS: source links/consent/host boundaries, durable provenance, endpoint swaps and legacy decoding")
+
+let commandID = UUID()
+require(SharedCommandURL.requestID(SharedCommandURL.make(commandID)) == commandID, "Command URL UUID round trip")
+for invalid in ["https://shared/" + commandID.uuidString, "trollroute://other/" + commandID.uuidString,
+                "trollroute://shared/not-a-uuid", "trollroute://shared/" + commandID.uuidString + "/extra",
+                "trollroute://user@shared/" + commandID.uuidString, "trollroute://shared/" + commandID.uuidString + "?action=go"] {
+    require(SharedCommandURL.requestID(URL(string: invalid)!) == nil, "Reject malformed command URL")
+}
+try inbox.enqueue(sourceRoundTrip)
+let applied = try inbox.consumeEndpoint(sourceRoundTrip.id)
+require(applied?.start?.sharedSource == .googleMaps && applied?.presentation == sourceRoundTrip.id, "Endpoint and pending presentation commit together")
+let duplicate = try inbox.consumeEndpoint(sourceRoundTrip.id)
+require(duplicate == nil, "Repeated signal must not handle endpoint twice")
+try inbox.enqueue(sourceRoundTrip)
+require(!inbox.pending().contains(where: { $0.id == sourceRoundTrip.id }), "Re-enqueue cannot replay handled UUID")
+let savedDraft = try SharedPlaceInbox(container: container).routeDraft()
+require(savedDraft.start?.name == googlePlace.name && savedDraft.presentation == sourceRoundTrip.id, "Unpresented endpoint survives process restart")
+try inbox.acknowledgePresentation(UUID())
+require(tryValue { try inbox.routeDraft().presentation } == sourceRoundTrip.id, "Stale UI acknowledgement must not clear new presentation")
+try inbox.acknowledgePresentation(sourceRoundTrip.id)
+require(tryValue { try inbox.routeDraft().presentation } == nil, "Presented endpoint does not reopen on next launch")
+// A pre-upgrade file resurrected after cleanup cannot replay a completed command.
+try JSONEncoder().encode(sourceRoundTrip).write(to: inbox.directory!.appendingPathComponent(sourceRoundTrip.id.uuidString + ".json"))
+require(!inbox.pending().contains(where: { $0.id == sourceRoundTrip.id }), "Legacy import respects receipts")
+let concurrentContainer = container.appendingPathComponent("concurrent")
+var writers: [Process] = []
+for index in 0..<12 {
+    let process = Process()
+    process.executableURL = URL(fileURLWithPath: CommandLine.arguments[0])
+    process.arguments = ["--enqueue", concurrentContainer.path, "writer-\(index)"]
+    try process.run(); writers.append(process)
+}
+for process in writers { process.waitUntilExit(); require(process.terminationStatus == 0, "Concurrent writer failed") }
+let concurrent = try SharedPlaceInbox(container: concurrentContainer).pendingRequests()
+require(concurrent.count == 12 && Set(concurrent.map(\.name)).count == 12, "Cross-process writes must not lose any command")
+var signaled = false
+let observer = SharedPlaceSignal { signaled = true }
+let started = Date()
+let sender = Process()
+sender.executableURL = URL(fileURLWithPath: CommandLine.arguments[0]); sender.arguments = ["--signal"]
+try sender.run()
+while !signaled && Date().timeIntervalSince(started) < 1 {
+    RunLoop.main.run(until: Date().addingTimeInterval(0.01))
+}
+withExtendedLifetime(observer) { require(signaled, "Cross-process Darwin signal must arrive within 1 second") }
+sender.waitUntilExit()
+let corruptContainer = container.appendingPathComponent("corrupt")
+let corruptInbox = SharedPlaceInbox(container: corruptContainer)
+try corruptInbox.enqueue(sourceRoundTrip)
+try Data("broken".utf8).write(to: corruptInbox.directory!.appendingPathComponent("ledger.v1.json"))
+var rejectedCorruption = false
+do { try corruptInbox.enqueue(requests[0]) } catch { rejectedCorruption = true }
+require(rejectedCorruption, "A corrupt completion ledger cannot be replaced by an empty queue")
+print("PASS: strict URLs, atomic endpoint/receipt, replay/crash recovery, 12 concurrent writers and Darwin event under 1 second")
+
+func tryValue<T>(_ body: () throws -> T) -> T { try! body() }

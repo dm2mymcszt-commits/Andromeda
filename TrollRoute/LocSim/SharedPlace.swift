@@ -23,8 +23,8 @@ enum SharedPlaceAction: String, Codable, CaseIterable, Identifiable {
 }
 
 // Transfers are WGS-84, just like Favorites. Map-space coordinates never cross
-// the extension boundary. One atomic file per request avoids lost queue writes.
-struct SharedPlaceRequest: Codable, Identifiable {
+// the extension boundary. A locked ledger commits requests and receipts atomically.
+struct SharedPlaceRequest: Codable, Identifiable, Equatable {
     let id: UUID
     let created: Date
     let action: SharedPlaceAction
@@ -61,28 +61,92 @@ struct SharedPlaceInbox {
         directory = container?.appendingPathComponent("SharedPlaces", isDirectory: true)
     }
 
-    func enqueue(_ request: SharedPlaceRequest) throws {
-        guard let directory = directory, request.place != nil else {
+    private struct Ledger: Codable {
+        var queued: [SharedPlaceRequest] = []
+        var handled: Set<UUID> = []
+        var draft = SharedRouteDraft()
+    }
+    private var file: SharedStateFile<Ledger>? {
+        directory.map { SharedStateFile(url: $0.appendingPathComponent("ledger.v1.json"), initial: { Ledger() }) }
+    }
+    private func storage() throws -> SharedStateFile<Ledger> {
+        guard let file = file else {
             throw SearchError.message("Couldn't access TrollRoute's shared storage. Open TrollRoute once, then try sharing again.")
         }
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try JSONEncoder().encode(request).write(to: directory.appendingPathComponent(request.id.uuidString + ".json"), options: .atomic)
+        return file
     }
 
-    func pending() -> [SharedPlaceRequest] {
-        guard let directory = directory,
-              let files = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) else { return [] }
-        return files.filter { $0.pathExtension == "json" }.compactMap { file in
-            guard let data = try? Data(contentsOf: file),
-                  let request = try? JSONDecoder().decode(SharedPlaceRequest.self, from: data),
-                  request.place != nil, file.deletingPathExtension().lastPathComponent == request.id.uuidString else { return nil }
-            return request
-        }.sorted { $0.created < $1.created }
+    func enqueue(_ request: SharedPlaceRequest) throws {
+        guard request.place != nil else { throw SearchError.message("Invalid shared location.") }
+        try importLegacyRequests()
+        try storage().update { ledger in
+            guard !ledger.handled.contains(request.id) else { return }
+            if let existing = ledger.queued.first(where: { $0.id == request.id }) {
+                guard existing == request else { throw SearchError.message("Conflicting shared request.") }
+                return
+            }
+            ledger.queued.append(request)
+            ledger.queued.sort { $0.created < $1.created }
+        }
+        SharedPlaceSignal.post()
     }
+
+    /// Throwing read for command consumers; storage failure must not look like success.
+    func pendingRequests() throws -> [SharedPlaceRequest] {
+        try importLegacyRequests()
+        return try storage().read().queued
+    }
+    func pending() -> [SharedPlaceRequest] { (try? pendingRequests()) ?? [] }
 
     func remove(_ request: SharedPlaceRequest) throws {
-        guard let directory = directory else { return }
-        try FileManager.default.removeItem(at: directory.appendingPathComponent(request.id.uuidString + ".json"))
+        try importLegacyRequests()
+        try storage().update { ledger in
+            ledger.queued.removeAll { $0.id == request.id }
+            ledger.handled.insert(request.id)
+        }
+    }
+
+    /// The endpoint change and completion receipt commit in one file replacement.
+    /// A crash cannot mark it handled without durably saving the endpoint.
+    func consumeEndpoint(_ id: UUID) throws -> SharedRouteDraft? {
+        try importLegacyRequests()
+        return try storage().update { ledger in
+            guard let request = ledger.queued.first(where: { $0.id == id }),
+                  let place = request.place,
+                  request.action == .start || request.action == .destination else { return nil }
+            if request.action == .start { ledger.draft.start = place }
+            else { ledger.draft.destination = place }
+            ledger.draft.presentation = id
+            ledger.queued.removeAll { $0.id == id }
+            ledger.handled.insert(id)
+            return ledger.draft
+        }
+    }
+    func routeDraft() throws -> SharedRouteDraft { try storage().read().draft }
+    func acknowledgePresentation(_ id: UUID) throws {
+        try storage().update { ledger in
+            if ledger.draft.presentation == id { ledger.draft.presentation = nil }
+        }
+    }
+
+    private func importLegacyRequests() throws {
+        guard let directory = directory else { _ = try storage(); return }
+        guard FileManager.default.fileExists(atPath: directory.path) else { return }
+        let legacy = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)
+            .filter { $0.pathExtension == "json" && UUID(uuidString: $0.deletingPathExtension().lastPathComponent) != nil }
+        guard !legacy.isEmpty else { return }
+        try storage().update { ledger in
+            for url in legacy {
+                guard let data = try? Data(contentsOf: url),
+                      let request = try? JSONDecoder().decode(SharedPlaceRequest.self, from: data),
+                      request.place != nil, url.deletingPathExtension().lastPathComponent == request.id.uuidString,
+                      !ledger.handled.contains(request.id), !ledger.queued.contains(where: { $0.id == request.id }) else { continue }
+                ledger.queued.append(request)
+            }
+            ledger.queued.sort { $0.created < $1.created }
+        }
+        // Completion records also guard against re-import if cleanup is interrupted.
+        for url in legacy { try? FileManager.default.removeItem(at: url) }
     }
 
     static func saveFavorite(_ place: RoutePlace, defaults: UserDefaults? = UserDefaults(suiteName: suite)) throws {
@@ -92,6 +156,48 @@ struct SharedPlaceInbox {
         var bookmarks = defaults.array(forKey: "bookmarks") as? [[String: Any]] ?? []
         bookmarks.append(["name": place.name, "lat": coordinate.latitude, "long": coordinate.longitude])
         defaults.set(bookmarks, forKey: "bookmarks")
+    }
+}
+
+struct SharedRouteDraft: Codable {
+    var start: RoutePlace?
+    var destination: RoutePlace?
+    var presentation: UUID?
+}
+
+enum SharedCommandURL {
+    static func make(_ id: UUID) -> URL { URL(string: "trollroute://shared/" + id.uuidString)! }
+    static func requestID(_ url: URL) -> UUID? {
+        guard url.scheme?.lowercased() == "trollroute", url.host?.lowercased() == "shared",
+              url.user == nil, url.password == nil, url.port == nil,
+              url.query == nil, url.fragment == nil else { return nil }
+        let parts = url.path.split(separator: "/", omittingEmptySubsequences: false)
+        guard parts.count == 2, parts[0].isEmpty else { return nil }
+        return UUID(uuidString: String(parts[1]))
+    }
+}
+
+/// Darwin carries only a wake-up signal; all payloads and receipts remain in the group.
+final class SharedPlaceSignal {
+    private static let name = "com.dm2mymcszt.trollroute.commands.changed" as CFString
+    private let changed: () -> Void
+    init(changed: @escaping () -> Void) {
+        self.changed = changed
+        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+            Unmanaged.passUnretained(self).toOpaque(), { _, observer, _, _, _ in
+                guard let observer = observer else { return }
+                let signal = Unmanaged<SharedPlaceSignal>.fromOpaque(observer).takeUnretainedValue()
+                // Retain through dispatch, even if the owner cancels its observation.
+                DispatchQueue.main.async { signal.changed() }
+            }, Self.name, nil, .deliverImmediately)
+    }
+    deinit {
+        CFNotificationCenterRemoveObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+            Unmanaged.passUnretained(self).toOpaque(), CFNotificationName(Self.name), nil)
+    }
+    static func post() {
+        CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName(name), nil, nil, true)
     }
 }
 

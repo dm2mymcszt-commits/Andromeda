@@ -20,3 +20,44 @@ enum SharedPreferences {
         return group
     }()
 }
+
+#if canImport(Darwin)
+import Darwin
+#endif
+
+/// A stable lock file protects read/modify/atomic-replace across app processes.
+/// Never lock the replaced JSON inode: other processes may still hold that inode.
+struct SharedStateFile<Value: Codable> {
+    let url: URL
+    let initial: () -> Value
+
+    func read() throws -> Value { try locked { try load() } }
+
+    @discardableResult
+    func update<Result>(_ operation: (inout Value) throws -> Result) throws -> Result {
+        try locked {
+            var value = try load()
+            let result = try operation(&value)
+            try JSONEncoder().encode(value).write(to: url, options: .atomic)
+            return result
+        }
+    }
+
+    private func load() throws -> Value {
+        guard FileManager.default.fileExists(atPath: url.path) else { return initial() }
+        // Corruption is an error, never an empty ledger that could replay commands.
+        return try JSONDecoder().decode(Value.self, from: Data(contentsOf: url))
+    }
+
+    private func locked<Result>(_ operation: () throws -> Result) throws -> Result {
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let descriptor = open(url.appendingPathExtension("lock").path, O_CREAT | O_RDWR | O_CLOEXEC, S_IRUSR | S_IWUSR)
+        guard descriptor >= 0 else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        defer { close(descriptor) }
+        while flock(descriptor, LOCK_EX) != 0 {
+            guard errno == EINTR else { throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno)) }
+        }
+        defer { flock(descriptor, LOCK_UN) }
+        return try operation()
+    }
+}
