@@ -14,6 +14,8 @@ struct RouteSimSheet: View {
     
     @State private var startText: String = ""
     @State private var endText: String = ""
+    @State private var startSource: SharedPlaceSource?
+    @State private var endSource: SharedPlaceSource?
     @State private var startCoord: CLLocationCoordinate2D? = nil
     @State private var endCoord: CLLocationCoordinate2D? = nil
     @State private var selectedMode: TravelMode = .driving
@@ -255,6 +257,8 @@ struct RouteSimSheet: View {
             if !didInitializeStart {
                 didInitializeStart = true
                 if draft.start != nil || draft.destination != nil {
+                    startSource = draft.start?.sharedSource
+                    endSource = draft.destination?.sharedSource
                     startCoord = draft.start?.coordinate
                     startText = draft.start?.name ?? ""
                     endCoord = draft.destination?.coordinate
@@ -292,13 +296,14 @@ struct RouteSimSheet: View {
             startRequestID = UUID()
             isStarting = false
             currentLocation.cancel()
-            draft.start = startCoord.map { RoutePlace(name: startText, coordinate: $0) }
-            draft.destination = endCoord.map { RoutePlace(name: endText, coordinate: $0) }
+            draft.start = startCoord.map { endpointPlace(name: startText, coordinate: $0, source: startSource) }
+            draft.destination = endCoord.map { endpointPlace(name: endText, coordinate: $0, source: endSource) }
         }
         .onReceive(currentLocation.$location) { location in
             guard waitingForCurrentStart, let location = location else { return }
             startCoord = CoordTransform.wgs84ToGcj02(location.coordinate)
             startText = "Current Location"
+            startSource = nil
             waitingForCurrentStart = false
             invalidateRoute()
         }
@@ -449,6 +454,9 @@ struct RouteSimSheet: View {
                     Text(title).font(.caption).foregroundColor(.secondary)
                     Text(text.isEmpty ? "Choose a place" : text)
                         .font(.headline).foregroundColor(.primary)
+                    if let source = field == .start ? startSource : endSource {
+                        Text(source.title).font(.caption).foregroundColor(.secondary)
+                    }
                     if field == .end && selectedCoord == nil {
                         Text("Search, recent places, or choose on map")
                             .font(.caption).foregroundColor(.secondary)
@@ -494,6 +502,7 @@ struct RouteSimSheet: View {
         invalidateRoute()
         startCoord = nil
         startText = "Current Location"
+        startSource = nil
         waitingForCurrentStart = true
         currentLocation.request()
     }
@@ -504,20 +513,31 @@ struct RouteSimSheet: View {
             currentLocation.cancel()
             startCoord = place.coordinate
             startText = place.name
+            startSource = place.sharedSource
         } else {
             endCoord = place.coordinate
             endText = place.name
+            endSource = place.sharedSource
         }
         recentPlaces.remember(place)
         invalidateRoute()
     }
 
+    private func endpointPlace(name: String, coordinate: CLLocationCoordinate2D,
+                               source: SharedPlaceSource?) -> RoutePlace {
+        var place = RoutePlace(name: name, coordinate: coordinate)
+        place.sharedSource = source
+        return place
+    }
+
     private func swapEndpoints() {
         guard !waitingForCurrentStart, let start = startCoord, let end = endCoord else { return }
         currentLocation.cancel()
-        draft.start = RoutePlace(name: startText, coordinate: start)
-        draft.destination = RoutePlace(name: endText, coordinate: end)
+        draft.start = endpointPlace(name: startText, coordinate: start, source: startSource)
+        draft.destination = endpointPlace(name: endText, coordinate: end, source: endSource)
         guard draft.swapEndpoints() else { return }
+        startSource = draft.start?.sharedSource
+        endSource = draft.destination?.sharedSource
         startCoord = draft.start?.coordinate
         endCoord = draft.destination?.coordinate
         startText = draft.start?.name ?? ""

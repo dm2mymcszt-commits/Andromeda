@@ -21,13 +21,13 @@ final class ActionViewController: UIViewController {
                         else if let data = value as? Data { text = String(data: data, encoding: .utf8) }
                         else { text = nil }
                         if let text = text, !text.isEmpty {
-                            return try await WorldwidePlaceSearch.resolve(PlaceInput.parse(text))
+                            return try await resolveSharedText(text)
                         }
                     }
                 }
             }
             if let text = items.compactMap(\.attributedContentText?.string).first, !text.isEmpty {
-                return try await WorldwidePlaceSearch.resolve(PlaceInput.parse(text))
+                return try await resolveSharedText(text)
             }
             throw SearchError.message("Share a Maps link, address, coordinates or plus code.")
         }, done: { [weak self] in self?.extensionContext?.completeRequest(returningItems: nil) })
@@ -42,5 +42,15 @@ final class ActionViewController: UIViewController {
             host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         host.didMove(toParent: self)
+    }
+}
+
+/// Keep attachment provenance even when a different provider resolves its address.
+private func resolveSharedText(_ text: String) async throws -> [RoutePlace] {
+    let source = SharedPlaceSource.detect(text)
+    return try await WorldwidePlaceSearch.resolve(PlaceInput.parse(text)).map { result in
+        var place = result
+        place.sharedSource = source
+        return place
     }
 }

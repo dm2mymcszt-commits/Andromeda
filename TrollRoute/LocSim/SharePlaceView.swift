@@ -18,7 +18,7 @@ struct SharePlaceView: View {
                 if let completion = completion {
                     Section { Label(completion, systemImage: "checkmark.circle") }
                 } else if let place = selected {
-                    Section("Shared place") {
+                    Section((place.sharedSource ?? .text).title) {
                         TextField("Place name", text: $name)
                         if !place.address.isEmpty { Text(place.address).foregroundColor(.secondary) }
                         if place.isApproximate { Text("Approximate").foregroundColor(.secondary) }
@@ -66,6 +66,7 @@ struct SharePlaceView: View {
         let entered = name.trimmingCharacters(in: .whitespacesAndNewlines)
         var place = RoutePlace(name: entered.isEmpty ? selected.name : entered, address: selected.address, coordinate: selected.coordinate)
         place.approximate = selected.approximate
+        place.sharedSource = selected.sharedSource
         do {
             if action == .favorite {
                 try SharedPlaceInbox.saveFavorite(place)

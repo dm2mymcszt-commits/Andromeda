@@ -62,3 +62,40 @@ for autoStart in [false, true] {
 draft.prepareFromMap(start: resolvedCurrent, destination: place, autoStart: true)
 draft.accept(requests[2])
 require(draft.takeAutomaticPreparation() == nil, "A later shared endpoint must invalidate earlier auto-start intent")
+
+for (input, expected) in [
+    ("https://maps.app.goo.gl/abc", SharedPlaceSource.googleMaps),
+    ("Place name https://goo.gl/maps/abc", .googleMaps),
+    ("https://www.google.fr/maps/place/Test", .googleMaps),
+    ("https://maps.google.co.uk/?q=44,-0.6", .googleMaps),
+    ("https://consent.google.com/m?continue=https%3A%2F%2Fwww.google.com%2Fmaps%2Fplace%2FTest", .googleMaps),
+    ("https://maps.apple.com/?ll=44,-0.6", .appleMaps),
+    ("44.8, -0.6", .text),
+    ("Google Maps, a shop name", .text),
+    ("https://maps.google.com.example.org/maps", .text),
+    ("https://google.com/search?q=maps", .text),
+    ("https://consent.google.com/m?continue=https%3A%2F%2Fexample.org", .text)
+] { require(SharedPlaceSource.detect(input) == expected, "Incorrect shared source: " + input) }
+var googlePlace = place
+googlePlace.sharedSource = .googleMaps
+let sourced = SharedPlaceRequest(place: googlePlace, action: .start)
+let sourceRoundTrip = try JSONDecoder().decode(SharedPlaceRequest.self, from: JSONEncoder().encode(sourced))
+require(sourceRoundTrip.sourceTitle == "From Google Maps" && sourceRoundTrip.place?.sharedSource == .googleMaps,
+        "Source must survive the shared queue independently of search provider")
+draft.accept(sourceRoundTrip)
+require(draft.start?.sharedSource == .googleMaps, "Endpoint must retain attachment source")
+draft.destination = place
+require(draft.swapEndpoints() && draft.destination?.sharedSource == .googleMaps, "Source follows swapped endpoint")
+var legacy = try JSONSerialization.jsonObject(with: JSONEncoder().encode(sourced)) as! [String: Any]
+legacy.removeValue(forKey: "source")
+let legacyRequest = try JSONDecoder().decode(SharedPlaceRequest.self, from: JSONSerialization.data(withJSONObject: legacy))
+require(legacyRequest.place != nil && legacyRequest.sourceTitle == "Shared place", "Legacy inbox remains readable without fabricated provenance")
+var oldPlace = try JSONSerialization.jsonObject(with: JSONEncoder().encode(googlePlace)) as! [String: Any]
+oldPlace.removeValue(forKey: "sharedSource")
+let decodedOldPlace = try JSONDecoder().decode(RoutePlace.self, from: JSONSerialization.data(withJSONObject: oldPlace))
+require(decodedOldPlace.sharedSource == nil,
+        "Old recents remain readable")
+let recent = RouteRecentPlaces(defaults: defaults)
+recent.remember(googlePlace)
+require(RouteRecentPlaces(defaults: defaults).places.first?.sharedSource == .googleMaps, "Recents retain source")
+print("PASS: source links/consent/host boundaries, durable provenance, endpoint swaps and legacy decoding")

@@ -1,6 +1,40 @@
 import SwiftUI
 import MapKit
 
+/// Provenance of a shared attachment, independent of the geocoder used to resolve it.
+enum SharedPlaceSource: String, Codable {
+    case googleMaps, appleMaps, text
+    var title: String {
+        switch self {
+        case .googleMaps: return "From Google Maps"
+        case .appleMaps: return "From Apple Maps"
+        case .text: return "Shared place"
+        }
+    }
+    static func detect(_ input: String) -> SharedPlaceSource {
+        guard let range = input.range(of: #"https?://[^\s<>]+"#, options: .regularExpression),
+              var url = URL(string: String(input[range])) else { return .text }
+        for _ in 0..<8 {
+            let host = url.host?.lowercased() ?? ""
+            if host == "maps.apple.com" { return .appleMaps }
+            if host == "maps.app.goo.gl" || (host == "goo.gl" && url.path.hasPrefix("/maps")) {
+                return .googleMaps
+            }
+            let google = host.range(of: #"^(?:(?:www|maps|consent)\.)?google\.(?:com|[a-z]{2}|(?:com|co)\.[a-z]{2})$"#,
+                                    options: .regularExpression) != nil
+            guard google else { return .text }
+            if host.hasPrefix("consent.") {
+                guard let next = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?
+                    .first(where: { $0.name == "continue" })?.value.flatMap(URL.init(string:)) else { return .text }
+                url = next
+            } else {
+                return host.hasPrefix("maps.") || url.path.hasPrefix("/maps") ? .googleMaps : .text
+            }
+        }
+        return .text
+    }
+}
+
 struct RoutePlace: Codable, Identifiable {
     var id = UUID()
     let name: String
@@ -8,6 +42,7 @@ struct RoutePlace: Codable, Identifiable {
     let latitude: Double
     let longitude: Double
     var approximate: Bool? = nil
+    var sharedSource: SharedPlaceSource? = nil
 
     var isApproximate: Bool { approximate == true }
 

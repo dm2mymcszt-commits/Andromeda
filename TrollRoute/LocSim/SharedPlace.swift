@@ -33,10 +33,13 @@ struct SharedPlaceRequest: Codable, Identifiable {
     let latitude: Double
     let longitude: Double
     let approximate: Bool
+    let source: SharedPlaceSource?
+    var sourceTitle: String { (source ?? .text).title }
 
     init(place: RoutePlace, action: SharedPlaceAction) {
         id = UUID(); created = Date(); self.action = action
         name = place.name; address = place.address; approximate = place.isApproximate
+        source = place.sharedSource
         let coordinate = CoordTransform.gcj02ToWgs84(place.coordinate)
         latitude = coordinate.latitude; longitude = coordinate.longitude
     }
@@ -45,6 +48,7 @@ struct SharedPlaceRequest: Codable, Identifiable {
         guard let wgs = PlaceInput.valid(latitude, longitude) else { return nil }
         var place = RoutePlace(name: name, address: address, coordinate: CoordTransform.wgs84ToGcj02(wgs))
         place.approximate = approximate
+        place.sharedSource = source ?? .text
         return place
     }
 }
@@ -158,7 +162,7 @@ struct IncomingPlaceView: View {
                     }
                 }
             }
-            .navigationTitle("From Maps")
+            .navigationTitle(request.sourceTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Cancel", action: cancel) } }
         }
