@@ -5,7 +5,8 @@
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
 - Current checkpoint: **Phase 3 accepted**, build20 `8b2d8b2`, full CI34942207636 SUCCESS; six real-touch tests pass, screenshots reviewed, package/signing verified.
-- **Next: Phase 4 R12-R13.** R11 Settings default wording updated in build21; separate Settings default from prepared/active route finish configuration; apply live changes at current-leg arrival, then implement Route Stop outcomes and moving scrub preview. Actual-engine coverage is required before acceptance.
+- Phase4 R11 `1976d8a` pushed. R12/R13 build22 ready: prepared/active configuration, both controls, all-six return-leg rules and actual-engine CI harness.
+- **Next:** run build22 CI and fix any compilation/engine failures; then implement Route Stop choices (R15-R17), panel credits and isolated moving-scrub fix. Phase4 visual/engine acceptance still required.
 - Persist each finished step and its next action. Keep this file short; append detailed findings to audit. Delete **all three ROUND files** in the final commit.
 
 ## Decisions already approved
@@ -40,7 +41,7 @@
 | 3 R5, R6 | Done | `f962922`, `91dae7d`, `4273216`, `8b2d8b2`; six real-touch tests and full CI34942207636 SUCCESS |
 | 3 R18, R19, R20, R21 | Done; real-location phone check | `b7df278`, `6ee3ce7`, `4273216`; model matrix, preparation workflow and gesture/confirmation tests pass |
 | 3 F5 + acceptance | Done | `269fc4a`, `8b2d8b2`; save/edit/persistence tests, visual review and signed build20 pass |
-| 4 R11, R12, R13 | In progress | R11 wording updated, build21 pending CI. R12/R13 next: separate per-route configuration and current-leg transition rules |
+| 4 R11, R12, R13 | In progress | R11 `1976d8a`; R12/R13 build22 implemented, validation pending. Actual-engine harness added; visual acceptance remains |
 | 4 R15, R16, R17 | Not started | All Route Stop entry points; both choice sets/outcomes/default preselection |
 | 4 R14, F3 + acceptance | Not started | Credits inside active panel; moving scrub preview; engine tests + screenshots |
 | 5 R7, R8, R9, R10, F4 | Not started | Direct share Go/Favorite; auto-open endpoints; immediate exactly-once channel/source labels |

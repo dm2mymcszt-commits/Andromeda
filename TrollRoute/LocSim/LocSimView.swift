@@ -36,6 +36,7 @@ struct LocSimView: View {
     @State private var showAltitude = false
     @State private var tappedCoordinate: EquatableCoordinate? = nil
     @State private var showRouteSheet: Bool = false
+    @State private var showRouteFinish = false
     @State private var showSearchBar: Bool = false
     @State private var showSettings = false
     @StateObject private var recentPlaces = RouteRecentPlaces()
@@ -110,7 +111,9 @@ struct LocSimView: View {
                     speedKmh: Binding(get: { routeSimulator.currentSpeedKmh }, set: { routeSimulator.updateLiveSpeed($0) }),
                     collapsed: $routeControlsCollapsed,
                     preview: routeSimulator.previewSeek, seek: routeSimulator.seek,
-                    cancelSeek: routeSimulator.cancelSeek, pause: routeSimulator.togglePause, stop: stopSimulation
+                    cancelSeek: routeSimulator.cancelSeek, pause: routeSimulator.togglePause, stop: stopSimulation,
+                    finishActionTitle: routeSimulator.finishConfiguration.action.title,
+                    editFinish: { showRouteFinish = true }
                 ).padding(.horizontal, 12).padding(.bottom, 6)
             }
             if routeSimulator.travelMode == .cycling && !routeSimulator.availableRoutes.isEmpty {
@@ -155,6 +158,18 @@ struct LocSimView: View {
                 mapRegion = MKCoordinateRegion(center: coordinate,
                     span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
                 startSimulation(at: coordinate)
+            }
+        }
+        .sheet(isPresented: $showRouteFinish) {
+            NavigationView {
+                ScrollView {
+                    RouteFinishControls(configuration: Binding(
+                        get: { routeSimulator.finishConfiguration }, set: routeSimulator.configureFinish), active: true)
+                        .padding()
+                }
+                .navigationTitle("Route finish")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { showRouteFinish = false } } }
             }
         }
         .sheet(isPresented: $showRouteSheet, onDismiss: offerSharedPlace) {

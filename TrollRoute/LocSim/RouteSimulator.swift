@@ -345,7 +345,16 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var travelMode: TravelMode = .driving
     @Published private var finishState = RouteFinishState(action: .stay)
     @Published private(set) var startError: String?
-    private var finishDestination: RouteFinishDestination?
+    @Published private(set) var finishConfiguration: RouteFinishConfiguration
+    private let finishDefaults: RouteFinishSettings
+    private let now: () -> TimeInterval
+    private let notifyCompletion: (String) -> Void
+
+    func configureFinish(_ configuration: RouteFinishConfiguration) {
+        guard configuration.isValid else { return }
+        finishConfiguration = configuration
+        if isSimulating { finishState.changeAction(configuration.action) }
+    }
     var legName: String { finishState.legName }
     var displayedPolylines: [MKPolyline] { isSimulating ? routePolyline.map { [$0] } ?? [] : allRoutePolylines }
     
@@ -393,8 +402,15 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
     private let locationManager = CLLocationManager()
     
-    init(locationSession: LocationSession = LocSimManager.session) {
+    init(locationSession: LocationSession = LocSimManager.session,
+         finishDefaults: RouteFinishSettings = .shared,
+         now: @escaping () -> TimeInterval = { ProcessInfo.processInfo.systemUptime },
+         notifyCompletion: @escaping (String) -> Void = { RouteNotifications.shared.complete($0) }) {
         self.locationSession = locationSession
+        self.finishDefaults = finishDefaults
+        finishConfiguration = RouteFinishConfiguration(defaults: finishDefaults)
+        self.now = now
+        self.notifyCompletion = notifyCompletion
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -497,6 +513,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     func clearCalculatedRoutes() {
         guard !isSimulating else { return }
+        finishConfiguration = RouteFinishConfiguration(defaults: finishDefaults)
         locationSession.altitudeController.cancelPreparedRoute()
         calculationID = UUID()
         pendingDirections.values.forEach { $0.cancel() }
@@ -521,16 +538,14 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     func startSimulation() {
         guard !isSimulating, let track = track else { return }
-        let settings = RouteFinishSettings.shared
         startError = nil
-        guard settings.action != .goToPlace || settings.destination != nil else {
-            startError = "Choose an after-route place in Settings before starting."
+        guard finishConfiguration.isValid else {
+            startError = "Choose where this route should finish before starting."
             return
         }
         prepareElevation()
         locationSession.beginRoute()
-        finishState = RouteFinishState(action: settings.action)
-        finishDestination = settings.destination
+        finishState = RouteFinishState(action: finishConfiguration.action)
         timer?.invalidate()
         journey = RouteJourney(track: track, speedKmh: speeds[travelMode])
         isSimulating = true
@@ -547,7 +562,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     private func startTimer() {
         timer?.invalidate()
-        lastTick = ProcessInfo.processInfo.systemUptime
+        lastTick = now()
         timer = Timer.scheduledTimer(withTimeInterval: updateInterval, repeats: true) { [weak self] _ in
             self?.advanceRoute()
         }
@@ -598,7 +613,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         guard isSeeking else { return }
         previewPosition = nil
         seekFraction = nil
-        lastTick = isPaused ? nil : ProcessInfo.processInfo.systemUptime
+        lastTick = isPaused ? nil : now()
         if isSimulating { updateLocation(reason: .stateChange) }
     }
 
@@ -610,7 +625,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         journey?.seek(fraction)
         previewPosition = nil
         seekFraction = nil
-        lastTick = isPaused ? nil : ProcessInfo.processInfo.systemUptime
+        lastTick = isPaused ? nil : now()
         updateLocation(reason: .jump)
         if journey?.isFinished == true { finishRoute() }
     }
@@ -627,11 +642,11 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         locationSession.stop()
     }
 
-    private func advanceRoute() {
+    func advanceRoute() {
         guard isSimulating, !isPaused, !isSeeking else { return }
-        let now = ProcessInfo.processInfo.systemUptime
-        var seconds = lastTick.map { max(0, now - $0) } ?? 0
-        lastTick = now
+        let tickTime = now()
+        var seconds = lastTick.map { max(0, tickTime - $0) } ?? 0
+        lastTick = tickTime
         while isSimulating {
             let remaining = journey?.remainingSeconds ?? 0
             journey?.advance(seconds: seconds)
@@ -657,7 +672,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     private func finishRoute() {
         let transition = finishState.arrive()
-        if let message = transition.notification { RouteNotifications.shared.complete(message) }
+        if let message = transition.notification { notifyCompletion(message) }
         switch transition.effect {
         case .restart:
             if let track = track { beginLeg(track, speedKmh: currentSpeedKmh) }
@@ -671,7 +686,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
             stopSimulation()
             return
         case .goToPlace:
-            if let destination = finishDestination {
+            if let destination = finishConfiguration.destination {
                 locationSession.receive(RouteLocationSample.make(coordinate: destination.coordinate,
                     course: 0, speed: 0, timestamp: Date()), kind: .stationary)
             }
@@ -705,7 +720,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         // Location delivery also advances time if iOS delayed a timer while locked.
         // Ignore the immediate echo of our own injected sample.
-        guard let lastTick = lastTick, ProcessInfo.processInfo.systemUptime - lastTick >= updateInterval else { return }
+        guard let lastTick = lastTick, now() - lastTick >= updateInterval else { return }
         advanceRoute()
     }
 

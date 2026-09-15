@@ -84,6 +84,9 @@ jobs:
       - name: Check route calculation and movement
         run: bash Tests/RouteSimulation/check.sh
 
+      - name: Check actual route engine and live finish actions
+        run: bash Tests/RouteEngine/check.sh
+
       - name: Check saved altitude, motion preservation, and worldwide elevation
         run: bash Tests/Altitude/check.sh
 

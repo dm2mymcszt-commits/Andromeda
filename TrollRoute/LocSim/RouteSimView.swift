@@ -40,6 +40,8 @@ struct RouteSimSheet: View {
                     // MARK: - Route Status (when simulating)
                     if routeSimulator.isSimulating {
                         simulationStatusCard
+                        RouteFinishControls(configuration: finishBinding, active: true)
+                            .padding(.horizontal)
                     } else {
                         // MARK: - Start Point
                         locationCard(
@@ -150,6 +152,9 @@ struct RouteSimSheet: View {
                                     routeOptionCard(option: option, index: idx)
                                 }
                                 
+                                RouteFinishControls(configuration: finishBinding, active: false)
+                                    .padding(.horizontal)
+
                                 // Start button
                                 Button(action: startRoute) {
                                     HStack {
@@ -466,6 +471,10 @@ struct RouteSimSheet: View {
         .padding(.horizontal)
     }
 
+    private var finishBinding: Binding<RouteFinishConfiguration> {
+        Binding(get: { routeSimulator.finishConfiguration }, set: routeSimulator.configureFinish)
+    }
+
     // MARK: - Computed
     private var formattedSpeed: String {
         "\(Int(routeSimulator.speedKmh(for: selectedMode))) km/h"
@@ -634,6 +643,8 @@ struct RoutePlaybackPanel: View {
     let cancelSeek: () -> Void
     let pause: () -> Void
     let stop: () -> Void
+    var finishActionTitle: String? = nil
+    var editFinish: (() -> Void)? = nil
     @State private var draggedProgress: Double?
     @GestureState private var dragging = false
 
@@ -703,6 +714,16 @@ struct RoutePlaybackPanel: View {
                     Slider(value: $speedKmh, in: 1...500, step: 1).accessibilityLabel("Trip speed in kilometres per hour")
                     Button { speedKmh = min(500, speedKmh + 1) } label: { Image(systemName: "plus.circle.fill").font(.title2) }
                         .accessibilityLabel("Increase trip speed")
+                }
+                if let title = finishActionTitle, let edit = editFinish {
+                    Button(action: edit) {
+                        HStack {
+                            Text("When this route finishes")
+                            Spacer()
+                            Text(title).foregroundColor(.secondary)
+                            Image(systemName: "chevron.right")
+                        }.font(.caption)
+                    }.accessibilityIdentifier("edit-route-finish")
                 }
             } else {
                 ProgressView(value: progress).tint(.accentColor)

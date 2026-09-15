@@ -17,7 +17,7 @@ enum RouteFinishAction: String, CaseIterable, Identifiable {
     }
 }
 
-struct RouteFinishDestination: Codable {
+struct RouteFinishDestination: Codable, Equatable {
     let name: String
     let address: String
     let latitude: Double
@@ -46,12 +46,29 @@ final class RouteFinishSettings: ObservableObject {
     }
 }
 
+// A value copy for one prepared/active trip. Editing it never writes defaults.
+struct RouteFinishConfiguration: Equatable {
+    var action: RouteFinishAction
+    var destination: RouteFinishDestination?
+    init(action: RouteFinishAction = .stay, destination: RouteFinishDestination? = nil) {
+        self.action = action
+        self.destination = destination
+    }
+    init(defaults: RouteFinishSettings) {
+        action = defaults.action
+        destination = defaults.destination
+    }
+    var isValid: Bool {
+        action != .goToPlace || destination.map { CLLocationCoordinate2DIsValid($0.coordinate) } == true
+    }
+}
+
 enum RouteFinishEffect: Equatable { case hold, goToPlace, stop, restart, reverse }
 
 // Used by both normal arrival and a seek to the end. Only a new route resets
 // notification counts; a new leg preserves the current trip's settings.
 struct RouteFinishState {
-    let action: RouteFinishAction
+    private(set) var action: RouteFinishAction
     private(set) var completedLegs = 0
     private(set) var returning = false
     var legName: String {
@@ -59,8 +76,12 @@ struct RouteFinishState {
         case .loop: return "Lap \(completedLegs + 1)"
         case .returnOnce: return returning ? "Returning to start" : "Route in progress"
         case .backAndForth: return "Leg \(completedLegs + 1) · \(returning ? "Returning to start" : "Going to destination")"
-        default: return "Route in progress"
+        default: return returning ? "Returning to start" : "Route in progress"
         }
+    }
+    mutating func changeAction(_ action: RouteFinishAction) {
+        // Keep current-leg orientation and trip notification history.
+        self.action = action
     }
     mutating func skipRepeatedLegs(_ count: Int) {
         guard count > 0, action == .loop || action == .backAndForth else { return }
@@ -70,10 +91,12 @@ struct RouteFinishState {
     mutating func arrive() -> (effect: RouteFinishEffect, notification: String?) {
         completedLegs += 1
         switch action {
-        case .stay: return (.hold, "Staying at destination")
+        case .stay: return (.hold, returning ? "Staying at the start" : "Staying at destination")
         case .goToPlace: return (.goToPlace, "Moving to your saved place")
         case .stop: return (.stop, "Restoring your real location")
-        case .loop: return (.restart, completedLegs == 1 ? "Restarting the route" : nil)
+        case .loop:
+            returning = false
+            return (.restart, completedLegs == 1 ? "Restarting the route" : nil)
         case .returnOnce:
             if !returning { returning = true; return (.reverse, "Returning to start") }
             return (.hold, "Staying at the start")

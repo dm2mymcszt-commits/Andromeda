@@ -169,3 +169,27 @@ finishSettings.action = .goToPlace
 let restoredFinish = RouteFinishSettings(defaults: defaults)
 require(restoredFinish.action == .goToPlace && restoredFinish.destination?.longitude == 116.3975, "Finish action and WGS-84 place survive relaunch")
 print("PASS: six finish actions, repeat notification counts, reverse path/speed/seek, saved finish destination")
+
+// Per-trip values and live action edits never mutate the Settings default.
+finishSettings.action = .stay
+var configured = RouteFinishConfiguration(defaults: finishSettings)
+configured.action = .returnOnce
+require(finishSettings.action == .stay, "Trip override must not change the saved default")
+require(RouteFinishConfiguration(defaults: finishSettings).action == .stay, "New trip must use the default")
+require(!RouteFinishConfiguration(action: .goToPlace).isValid, "Missing go-to place must not start")
+for action in RouteFinishAction.allCases {
+    var returning = RouteFinishState(action: .returnOnce)
+    _ = returning.arrive()
+    returning.changeAction(action)
+    require(returning.returning && returning.completedLegs == 1, "Editing must keep current-leg orientation/history")
+    let arrival = returning.arrive()
+    switch action {
+    case .stay, .returnOnce:
+        require(arrival.effect == .hold && arrival.notification == "Staying at the start", "Hold uses the current return endpoint")
+    case .goToPlace: require(arrival.effect == .goToPlace, "Return-leg jump must apply")
+    case .stop: require(arrival.effect == .stop, "Return-leg stop must apply")
+    case .loop: require(arrival.effect == .restart && !returning.returning && arrival.notification == nil, "Loop restarts forward without a repeated notification")
+    case .backAndForth: require(arrival.effect == .reverse && !returning.returning && arrival.notification == nil, "Repeat switches the return leg forward")
+    }
+}
+print("PASS: per-trip finish value, unchanged defaults, valid destination and six current-return-leg transitions")
