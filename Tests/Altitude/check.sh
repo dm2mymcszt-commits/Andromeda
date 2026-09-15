@@ -24,3 +24,7 @@ xcrun swiftc -parse-as-library TrollRoute/Storage/SharedPreferences.swift \
 "$QA_DIR/route-elevation-tests"
 xcrun swiftc TrollRoute/Storage/SharedPreferences.swift TrollRoute/LocSim/RouteElevation.swift TrollRoute/LocSim/Altitude.swift Tests/Altitude/LiveElevation.swift -o "$QA_DIR/elevation-live"
 "$QA_DIR/elevation-live"
+
+xcrun swiftc -parse-as-library TrollRoute/Storage/SharedPreferences.swift TrollRoute/LocSim/RouteElevation.swift \
+  TrollRoute/LocSim/Altitude.swift Tests/Altitude/Quota.swift -o "$QA_DIR/elevation-quota-tests"
+"$QA_DIR/elevation-quota-tests"

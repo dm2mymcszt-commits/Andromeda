@@ -70,28 +70,55 @@ struct ElevationRequestBudget: Codable {
     }
 }
 
-actor ElevationRequestLimiter {
-    static let shared = ElevationRequestLimiter()
-    private let defaults = SharedPreferences.defaults
-    private var budget: ElevationRequestBudget
-    init() {
-        budget = SharedPreferences.defaults.data(forKey: "elevationRequestBudget.v1")
-            .flatMap { try? JSONDecoder().decode(ElevationRequestBudget.self, from: $0) } ?? ElevationRequestBudget()
+/// A reservation is committed while holding the cross-process lock. Never keep
+/// a process-local budget that could overlook the share extension's reservations.
+struct ElevationBudgetStore {
+    let file: SharedStateFile<ElevationRequestBudget>
+    init(url: URL, legacyDefaults: UserDefaults? = nil) {
+        file = SharedStateFile(url: url, initial: {
+            legacyDefaults?.data(forKey: "elevationRequestBudget.v1")
+                .flatMap { try? JSONDecoder().decode(ElevationRequestBudget.self, from: $0) }
+                ?? ElevationRequestBudget()
+        })
     }
-    func reserve(_ count: Int) async -> Bool {
-        guard (1...100).contains(count) else { return false }
-        while !Task.isCancelled {
-            let now = Date()
+    func reserve(_ count: Int, at now: Date) throws -> TimeInterval {
+        guard (1...100).contains(count) else { throw NSError(domain: "TrollRoute.ElevationBudget", code: 1) }
+        return try file.update { budget in
             budget.prune(at: now)
             let delay = budget.delay(for: count, at: now)
-            if delay <= 0 {
-                budget.reservations.append(.init(time: now, count: count))
-                defaults.set(try? JSONEncoder().encode(budget), forKey: "elevationRequestBudget.v1")
-                return true
-            }
+            if delay <= 0 { budget.reservations.append(.init(time: now, count: count)) }
+            return delay
+        }
+    }
+}
+
+actor ElevationRequestLimiter {
+    static let shared = ElevationRequestLimiter()
+    private let store: ElevationBudgetStore?
+    init() {
+        let container: URL?
+        #if os(iOS)
+        container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: SharedPreferences.suite)
+        #else
+        // Native macOS CI executables have no iOS app group. They share one
+        // host-wide ledger across processes so live checks also respect quota.
+        container = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("TrollRoute-Elevation", isDirectory: true)
+        #endif
+        store = container.map { ElevationBudgetStore(url: $0.appendingPathComponent("elevation-budget.v2.json"),
+                                                     legacyDefaults: SharedPreferences.defaults) }
+    }
+    func reserve(_ count: Int) async -> Bool {
+        guard (1...100).contains(count), let store = store else { return false }
+        while !Task.isCancelled {
+            let delay: TimeInterval
+            do { delay = try store.reserve(count, at: Date()) }
+            catch { return false } // Storage failure must not bypass the quota.
+            if delay <= 0 { return true }
             do { try await Task.sleep(nanoseconds: UInt64(min(60, delay) * 1_000_000_000)) }
             catch { return false }
-            // Recheck after suspension: another caller may have reserved first.
+            // Re-read the shared ledger after suspension; another process may
+            // have reserved first. No lock is held during network work or waits.
         }
         return false
     }
