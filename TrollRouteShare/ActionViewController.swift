@@ -1,6 +1,7 @@
 import UIKit
 import SwiftUI
 import UniformTypeIdentifiers
+import ObjectiveC
 
 final class ActionViewController: UIViewController {
     override func viewDidLoad() {
@@ -30,7 +31,8 @@ final class ActionViewController: UIViewController {
                 return try await resolveSharedText(text)
             }
             throw SearchError.message("Share a Maps link, address, coordinates or plus code.")
-        }, done: { [weak self] in self?.extensionContext?.completeRequest(returningItems: nil) })
+        }, done: { [weak self] in self?.extensionContext?.completeRequest(returningItems: nil) },
+           openContainingApp: openTrollRoute)
         let host = UIHostingController(rootView: content.tint(.indigo))
         addChild(host)
         view.addSubview(host.view)
@@ -53,4 +55,19 @@ private func resolveSharedText(_ text: String) async throws -> [RoutePlace] {
         place.sharedSource = source
         return place
     }
+}
+
+/// TrollStore's fixed-bundle LaunchServices mechanism. Do not use the host app's
+/// UIApplication or an unsupported action-extension extensionContext.open call.
+private func openTrollRoute(_ url: URL) -> Bool {
+    guard SharedCommandURL.requestID(url) != nil,
+          let type = NSClassFromString("LSApplicationWorkspace") as? NSObject.Type,
+          let workspace = type.perform(NSSelectorFromString("defaultWorkspace"))?.takeUnretainedValue() as? NSObject else { return false }
+    let selector = NSSelectorFromString("openApplicationWithBundleID:")
+    guard workspace.responds(to: selector) else { return false }
+    typealias Open = @convention(c) (AnyObject, Selector, NSString) -> Bool
+    let open = unsafeBitCast(workspace.method(for: selector), to: Open.self)
+    // The URL UUID already identifies a durable queued request. Launching by the
+    // fixed bundle ID activates its consumer even when it was not running.
+    return open(workspace, selector, "com.dm2mymcszt.trollroute")
 }

@@ -164,3 +164,21 @@ require(rejectedCorruption, "A corrupt completion ledger cannot be replaced by a
 print("PASS: strict URLs, atomic endpoint/receipt, replay/crash recovery, 12 concurrent writers and Darwin event under 1 second")
 
 func tryValue<T>(_ body: () throws -> T) -> T { try! body() }
+
+let endpointOnly = SharedPlaceRequest(place: googlePlace, action: .destination)
+try inbox.enqueue(endpointOnly)
+let editedBase = SharedRouteDraft(start: resolvedCurrent, destination: nil)
+let handoff = try inbox.consumeEndpoint(endpointOnly.id, current: editedBase)!
+require(handoff.start?.id == resolvedCurrent.id && handoff.destination?.sharedSource == .googleMaps,
+        "A shared endpoint must preserve the other point currently edited in Navigation")
+draft.prepareFromMap(start: resolvedCurrent, destination: place, autoStart: true)
+draft.applySharedDraft(handoff)
+require(draft.destination?.sharedSource == .googleMaps && draft.takeAutomaticPreparation() == nil,
+        "An endpoint share must not inherit an old long-press auto-start")
+let channel = SharedPlaceChannel()
+channel.setActive(false)
+channel.wake()
+require(!channel.isActive, "A signal does not invent foreground state")
+channel.setActive(true)
+require(channel.isActive && channel.revision == 2, "Activation consumes the new lifecycle value immediately")
+print("PASS: endpoint handoff preserves edited start, cancels stale auto-start and tracks actual lifecycle")

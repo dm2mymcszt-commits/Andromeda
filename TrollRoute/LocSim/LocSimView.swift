@@ -13,7 +13,9 @@ struct LocSimView: View {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var routeDraft = RouteDraft()
     @State private var incomingPlace: SharedPlaceRequest?
-    @State private var openSharedRoute = false
+    @StateObject private var sharedChannel = SharedPlaceChannel()
+    @State private var sharedEndpoint: SharedRouteDraft?
+    @State private var presentingSharedID: UUID?
     @State private var sharedPlaceError: String?
     @AppStorage("mapStyle", store: SharedPreferences.defaults) private var mapStyle = "standard"
     @State private var routeControlsCollapsed = false
@@ -147,8 +149,12 @@ struct LocSimView: View {
         .onChange(of: autoStartLongPressRoute) { _ in longPressRoute.cancel() }
         .onChange(of: tapMapToSetLocation) { _ in mapMove.cancel() }
         .onChange(of: askBeforeMoving) { _ in mapMove.cancel() }
-        .onAppear(perform: offerSharedPlace)
-        .onChange(of: scenePhase) { phase in if phase == .active { offerSharedPlace() } }
+        .onAppear { sharedChannel.setActive(scenePhase == .active) }
+        .onChange(of: scenePhase) { phase in sharedChannel.setActive(phase == .active) }
+        .onReceive(sharedChannel.$revision) { _ in offerSharedPlace() }
+        .onOpenURL { url in
+            if SharedCommandURL.requestID(url) != nil { sharedChannel.wake() }
+        }
         .onChange(of: routeSimulator.isSimulating) { running in
             if !running { showRouteFinish = false }
         }
@@ -166,7 +172,7 @@ struct LocSimView: View {
                 startSimulation(at: coordinate)
             }
         }
-        .sheet(isPresented: $showRouteFinish) {
+        .sheet(isPresented: $showRouteFinish, onDismiss: offerSharedPlace) {
             NavigationView {
                 ScrollView {
                     RouteFinishControls(configuration: Binding(
@@ -180,6 +186,13 @@ struct LocSimView: View {
         }
         .sheet(isPresented: $showRouteSheet, onDismiss: offerSharedPlace) {
             RouteSimSheet(routeSimulator: routeSimulator, draft: routeDraft, mapRegion: $mapRegion, isPresented: $showRouteSheet)
+                .onAppear {
+                    if let id = presentingSharedID {
+                        do { try SharedPlaceInbox().acknowledgePresentation(id) }
+                        catch { sharedPlaceError = error.localizedDescription }
+                        presentingSharedID = nil
+                    }
+                }
         }
         .sheet(isPresented: $showFavorites, onDismiss: offerSharedPlace) {
             FavoritesView(isPresented: $showFavorites, currentLat: referenceCoordinate.latitude, currentLong: referenceCoordinate.longitude) { favLat, favLong, name in
@@ -190,9 +203,7 @@ struct LocSimView: View {
                 AlertKitAPI.present(title: "📍 \(name)", icon: .done, style: .iOS17AppleMusic, haptic: .success)
             }
         }
-        .sheet(item: $incomingPlace, onDismiss: {
-            if openSharedRoute { openSharedRoute = false; showRouteSheet = true }
-        }) { request in
+        .sheet(item: $incomingPlace, onDismiss: offerSharedPlace) { request in
             IncomingPlaceView(request: request, routeRunning: routeSimulator.isSimulating,
                 accept: { handleSharedPlace(request, accept: true) },
                 cancel: { handleSharedPlace(request, accept: false) })
@@ -204,15 +215,52 @@ struct LocSimView: View {
     }
 
     private func offerSharedPlace() {
-        guard scenePhase == .active, incomingPlace == nil,
-              let request = SharedPlaceInbox().pending().first else { return }
-        mapMove.cancel()
-        if showAltitude || showSettings || showSearchBar || showRouteSheet || showFavorites {
-            showAltitude = false; showSettings = false; showSearchBar = false
-            showRouteSheet = false; showFavorites = false
-            return // onDismiss offers it after the current sheet has closed.
-        }
-        incomingPlace = request
+        guard sharedChannel.isActive, presentingSharedID == nil else { return }
+        do {
+            let inbox = SharedPlaceInbox()
+            let pending = try inbox.pendingRequests()
+            var base: SharedRouteDraft? = routeDraft.start != nil || routeDraft.destination != nil
+                ? SharedRouteDraft(start: routeDraft.start, destination: routeDraft.destination) : nil
+            for request in pending where request.action == .start || request.action == .destination {
+                if let saved = try inbox.consumeEndpoint(request.id, current: base) {
+                    sharedEndpoint = saved
+                    base = nil // Later queued endpoints build on the just-committed draft.
+                    if let place = request.place { recentPlaces.remember(place) }
+                }
+            }
+            if sharedEndpoint == nil {
+                let saved = try inbox.routeDraft()
+                if saved.presentation != nil { sharedEndpoint = saved }
+            }
+            if let endpoint = sharedEndpoint, let id = endpoint.presentation {
+                mapMove.cancel(); longPressRoute.cancel()
+                if let request = routeSimulator.stopRequest { routeSimulator.cancelRouteStop(request.id) }
+                if showAltitude || showSettings || showSearchBar || showRouteSheet || showFavorites || showRouteFinish || incomingPlace != nil {
+                    showAltitude = false; showSettings = false; showSearchBar = false
+                    showRouteSheet = false; showFavorites = false; showRouteFinish = false; incomingPlace = nil
+                    return // Actual dismissal completes before replacing the Navigation draft.
+                }
+                routeDraft.applySharedDraft(endpoint)
+                if let place = endpoint.destination ?? endpoint.start {
+                    mapRegion = MKCoordinateRegion(center: place.coordinate,
+                        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+                }
+                presentingSharedID = id
+                sharedEndpoint = nil
+                showRouteSheet = true
+                return
+            }
+            // Legacy Go requests keep their existing review until the direct-Go
+            // command path is installed. Endpoint requests never enter this sheet.
+            guard incomingPlace == nil, let request = pending.first(where: { $0.action == .go || $0.action == .favorite }) else { return }
+            mapMove.cancel()
+            if showAltitude || showSettings || showSearchBar || showRouteSheet || showFavorites || showRouteFinish {
+                showAltitude = false; showSettings = false; showSearchBar = false
+                showRouteSheet = false; showFavorites = false; showRouteFinish = false
+                return
+            }
+            incomingPlace = request
+        } catch { sharedPlaceError = error.localizedDescription }
     }
 
     private func handleSharedPlace(_ request: SharedPlaceRequest, accept: Bool) {
@@ -228,8 +276,7 @@ struct LocSimView: View {
                     span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
                 startSimulation(at: place.coordinate)
             case .start, .destination:
-                routeDraft.accept(request)
-                openSharedRoute = true
+                break // Consumed transactionally by the endpoint channel.
             case .favorite:
                 try SharedPlaceInbox.saveFavorite(place)
             }

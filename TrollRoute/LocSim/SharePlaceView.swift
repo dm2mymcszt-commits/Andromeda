@@ -4,6 +4,8 @@ struct SharePlaceView: View {
     var initialPlace: RoutePlace? = nil
     let load: () async throws -> [RoutePlace]
     let done: () -> Void
+    var openContainingApp: (URL) -> Bool = { _ in false }
+    @State private var queuedEndpoint: SharedPlaceRequest?
     @State private var places: [RoutePlace] = []
     @State private var selected: RoutePlace?
     @State private var name = ""
@@ -37,7 +39,7 @@ struct SharePlaceView: View {
                             Button { save(action) } label: { Label(action.title, systemImage: action.icon) }
                         }
                     } footer: {
-                        Text("Favorites are saved here. For the other actions, open TrollRoute to review and continue.")
+                        Text("Favorites are saved here. Route start and destination open TrollRoute Navigation automatically.")
                     }
                 }
                 if let error = error {
@@ -71,6 +73,20 @@ struct SharePlaceView: View {
             if action == .favorite {
                 try SharedPlaceInbox.saveFavorite(place)
                 completion = "Saved to Favorites"
+            } else if action == .start || action == .destination {
+                let candidate = SharedPlaceRequest(place: place, action: action)
+                let request: SharedPlaceRequest
+                if let queued = queuedEndpoint, queued.action == action,
+                   queued.name == candidate.name, queued.address == candidate.address,
+                   queued.latitude == candidate.latitude, queued.longitude == candidate.longitude { request = queued }
+                else { request = candidate }
+                try SharedPlaceInbox().enqueue(request)
+                queuedEndpoint = request
+                guard openContainingApp(SharedCommandURL.make(request.id)) else {
+                    throw SearchError.message("Couldn't open TrollRoute automatically. Try the action again.")
+                }
+                completion = "Opening TrollRoute Navigation"
+                done()
             } else {
                 try SharedPlaceInbox().enqueue(SharedPlaceRequest(place: place, action: action))
                 completion = "Ready. Open TrollRoute to continue."

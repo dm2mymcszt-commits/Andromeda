@@ -108,12 +108,15 @@ struct SharedPlaceInbox {
 
     /// The endpoint change and completion receipt commit in one file replacement.
     /// A crash cannot mark it handled without durably saving the endpoint.
-    func consumeEndpoint(_ id: UUID) throws -> SharedRouteDraft? {
+    func consumeEndpoint(_ id: UUID, current: SharedRouteDraft? = nil) throws -> SharedRouteDraft? {
         try importLegacyRequests()
         return try storage().update { ledger in
             guard let request = ledger.queued.first(where: { $0.id == id }),
                   let place = request.place,
                   request.action == .start || request.action == .destination else { return nil }
+            if let current = current {
+                ledger.draft.start = current.start; ledger.draft.destination = current.destination
+            }
             if request.action == .start { ledger.draft.start = place }
             else { ledger.draft.destination = place }
             ledger.draft.presentation = id
@@ -201,6 +204,22 @@ final class SharedPlaceSignal {
     }
 }
 
+/// Holds the latest lifecycle state rather than capturing a SwiftUI scene value
+/// when the Darwin observer was installed.
+final class SharedPlaceChannel: ObservableObject {
+    @Published private(set) var revision = 0
+    private(set) var isActive = false
+    private var signal: SharedPlaceSignal?
+    init() {
+        signal = SharedPlaceSignal { [weak self] in self?.wake() }
+    }
+    func setActive(_ active: Bool) {
+        isActive = active
+        if active { wake() }
+    }
+    func wake() { revision += 1 }
+}
+
 final class RouteDraft: ObservableObject {
     @Published var start: RoutePlace?
     @Published var destination: RoutePlace?
@@ -230,6 +249,13 @@ final class RouteDraft: ObservableObject {
         needsRecalculation = true
         automaticPreparation = nil
         return true
+    }
+
+    func applySharedDraft(_ saved: SharedRouteDraft) {
+        start = saved.start
+        destination = saved.destination
+        needsRecalculation = true
+        automaticPreparation = nil
     }
 
     func accept(_ request: SharedPlaceRequest) {

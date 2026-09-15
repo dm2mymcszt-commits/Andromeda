@@ -48,3 +48,13 @@ if len(sys.argv) > 1:
         assert share['CFBundleExecutable'] == 'TrollRouteShare'
         assert share['CFBundleVersion'] == app['CFBundleVersion']
 print('PASS: TrollRoute identity, shared groups and package components')
+
+# Exact Phase5 four-key extension proposal approved by the owner at997ebc9.
+share_privileges = plistlib.loads((root / 'TrollRouteShare/entitlements.plist').read_bytes())
+assert share_privileges == {
+    'com.apple.security.application-groups': ['group.com.dm2mymcszt.trollroute'],
+    'com.apple.locationd.simulation': True,
+    'platform-application': True,
+    'com.apple.private.security.no-sandbox': True,
+    'com.apple.private.coreservices.canmaplsdatabase': True,
+}

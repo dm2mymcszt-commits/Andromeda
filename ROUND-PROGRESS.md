@@ -5,8 +5,8 @@
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
 - Current checkpoint: **Phase 4 accepted**, build28 `e1f3cac`, full CI34976588469 SUCCESS; five route UI tests, engine tests, screenshots and package/signing verified.
-- Phase5 R10 `539c587` build29 in CI35008261441 (app/package passed, rest running). Four extension additions approved at997ebc9; not yet applied. Build30 adds locked command ledger and Darwin/URL foundations.
-- **Next:** validate build29/30 CI; implement endpoint auto-open/Navigation consumer, direct Go with cross-process injection lease and quota, then lifecycle/UI acceptance. Approval is already recorded; do not ask again for those four keys.
+- Phase5 R10 `539c587` build29 in CI35008261441 (app/package passed, rest running). Four extension additions approved at997ebc9; applied in build31 signing file only. Ledger/Darwin `92534f2` build30 CI35008857508 running; build31 adds automatic endpoint handoff.
+- **Next:** validate build29?31 CI; add lifecycle/UI handoff harness, direct Go with cross-process injection lease and quota, then lifecycle/UI acceptance. Approval is already recorded; do not ask again for those four keys.
 - Persist each finished step and its next action. Keep this file short; append detailed findings to audit. Delete **all three ROUND files** in the final commit.
 
 ## Decisions already approved
