@@ -995,3 +995,7 @@ Downloaded `build/phase3-build20-package/TrollRoute.tipa`; identity and package-
 ## Phase4 confirmed causes / implementation boundary
 
 `RouteSimulator.startSimulation` reads `RouteFinishSettings.shared` into immutable `RouteFinishState.action` plus separate finishDestination once. There is no prepared per-trip or live edit API. `RouteFinishState.returning` currently also drives canonical terrain distance, so editing an action must preserve the current leg's orientation. Stay/return notification text must describe the endpoint actually reached. Existing route tests compile only pre-RouteSimulator model declarations; Phase4 will add execution of the actual engine, not another copied-state stand-in.
+
+### R11 ? Settings default wording, build21
+
+Renamed the existing section to "Default action when a route finishes" and explained that it supplies each new route's initial choice. All six options, destination persistence and the Stay default remain unchanged. R12/R13 will supply the separate route controls next. Local identity/whitespace checks pass; SwiftUI layout uses the existing Section and caption styles.

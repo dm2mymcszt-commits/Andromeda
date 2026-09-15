@@ -50,7 +50,7 @@ struct SettingsView: View {
                 } header: { Text("Location") } footer: {
                     Text("Allow location access to use Current Location. Route simulation can continue while this settings panel is open.")
                 }
-                Section("When a route finishes") {
+                Section("Default action when a route finishes") {
                     Picker("Action", selection: Binding(get: { finishSettings.action }, set: { action in
                         if action == .goToPlace && finishSettings.destination == nil {
                             selectGoAfterPicking = true
@@ -73,7 +73,7 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    Text("Applies to the next route. Notifications are requested when you first start a route.")
+                    Text("The starting choice for each new route. Route-specific choices do not change this default. Notifications are requested when you first start a route.")
                         .font(.caption).foregroundColor(.secondary)
                 }
                 Section("About") {
