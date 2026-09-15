@@ -336,7 +336,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     var currentPosition: CLLocationCoordinate2D? {
         // Rendering follows geometry immediately, independently of injection slots.
         if isSimulating, let journey = journey {
-            return CoordTransform.wgs84ToGcj02(journey.motion(paused: isPaused || isSeeking).coordinate)
+            return CoordTransform.wgs84ToGcj02(journey.motion(paused: isPaused).coordinate)
         }
         return locationSession.current.map { CoordTransform.wgs84ToGcj02($0.coordinate) }
     }
@@ -610,23 +610,20 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         }
         guard let journey = journey else { return }
         seekFraction = min(1, max(0, fraction))
-        lastTick = nil
         let point = journey.track.position(at: min(1, max(0, fraction)) * journey.track.length)
         previewPosition = CoordTransform.wgs84ToGcj02(point.coordinate)
-        if beginning { updateLocation() }
     }
 
     func cancelSeek() {
         guard isSeeking else { return }
         previewPosition = nil
         seekFraction = nil
-        lastTick = isPaused ? nil : now()
-        if isSimulating { updateLocation(reason: .stateChange) }
     }
 
     func seek(to fraction: Double) {
         guard isSimulating, fraction.isFinite else { return }
-        // Seeking is instantaneous; dragging freezes movement until release.
+        // The preview never paused playback. Account for elapsed motion before
+        // committing the single instantaneous jump when the finger is released.
         advanceRoute()
         guard isSimulating else { previewPosition = nil; return }
         journey?.seek(fraction)
@@ -700,7 +697,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
 
     func advanceRoute() {
-        guard isSimulating, !isPaused, !isSeeking else { return }
+        guard isSimulating, !isPaused else { return }
         let tickTime = now()
         var seconds = lastTick.map { max(0, tickTime - $0) } ?? 0
         lastTick = tickTime
@@ -711,7 +708,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
             guard journey?.isFinished == true else { break }
             seconds = max(0, seconds - remaining)
             finishRoute()
-            guard isSimulating, !isPaused, !isSeeking, seconds > 0 else { break }
+            guard isSimulating, !isPaused, seconds > 0 else { break }
             // A delayed background tick may span many very short repeated legs.
             // Skip their elapsed time arithmetically without a notification flood.
             if finishState.action == .loop || finishState.action == .backAndForth,
@@ -770,6 +767,11 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
         journey = RouteJourney(track: track, speedKmh: speedKmh)
         let coords = track.coordinates.map(CoordTransform.wgs84ToGcj02)
         routePolyline = MKPolyline(coordinates: coords, count: coords.count)
+        // A held scrub always previews the current leg, including when a loop
+        // or reverse transition occurs before the finger is released.
+        if let fraction = seekFraction {
+            previewPosition = CoordTransform.wgs84ToGcj02(track.position(at: fraction * track.length).coordinate)
+        }
         // Keep the same timer, background task and location updates across legs.
         let start = track.coordinates[0]
         let jumped = previous.map { $0.latitude != start.latitude || $0.longitude != start.longitude } ?? true
@@ -785,7 +787,7 @@ class RouteSimulator: NSObject, ObservableObject, CLLocationManagerDelegate {
 
     private func updateLocation(reason: LocationInjectionReason = .continuous) {
         guard let journey = journey else { return }
-        let motion = journey.motion(paused: isPaused || isSeeking)
+        let motion = journey.motion(paused: isPaused)
         progress = journey.progress
         let location = RouteLocationSample.make(coordinate: motion.coordinate,
             course: motion.course, speed: motion.speed, timestamp: Date())

@@ -208,6 +208,56 @@ func testRouteStopEngine() {
     precondition(f.engine.stopRequest == nil, "Natural final arrival invalidates the dialog")
 }
 
+func testMovingScrubEngine() {
+    let f = EngineFixture()
+    defer { f.close() }
+    f.prepare(); f.engine.startSimulation()
+    f.clock += 1
+    f.engine.previewSeek(0.46)
+    let preview = f.engine.previewPosition!
+    let startProgress = f.engine.progress
+    precondition(f.owner.current!.speed == 50 / 3.6)
+    f.clock += 2; f.engine.advanceRoute()
+    precondition(f.engine.progress > startProgress && f.engine.progress < 0.1)
+    precondition(f.engine.previewPosition!.latitude == preview.latitude)
+    precondition(f.owner.current!.speed == 50 / 3.6 && f.owner.current!.meters == 250)
+    let count = f.driver.samples.count
+    f.engine.previewSeek(0.7)
+    precondition(f.driver.samples.count == count, "Moving a preview must not inject")
+    f.engine.updateLiveSpeed(120)
+    precondition(f.owner.current!.speed == 120 / 3.6)
+    f.clock += 2; f.engine.advanceRoute()
+    f.engine.seek(to: 0.46)
+    precondition(abs(f.engine.progress - 0.46) < 0.000001 && f.engine.previewPosition == nil)
+    precondition(f.owner.current!.speed == 120 / 3.6)
+    f.engine.previewSeek(0.1); f.engine.seek(to: 0.1)
+    precondition(abs(f.engine.progress - 0.1) < 0.000001)
+    f.engine.previewSeek(0.8)
+    let beforeCancel = f.driver.samples.count
+    f.engine.cancelSeek()
+    precondition(f.driver.samples.count == beforeCancel && f.engine.previewPosition == nil)
+    f.clock += 1; f.engine.advanceRoute()
+    precondition(f.engine.progress > 0.1 && f.owner.current!.speed > 0)
+    f.engine.togglePause()
+    let pausedAt = f.engine.progress
+    f.engine.previewSeek(0.6)
+    f.clock += 10; f.engine.advanceRoute()
+    precondition(f.engine.progress == pausedAt && f.owner.current!.speed == 0)
+    f.engine.seek(to: 0.6)
+    precondition(f.engine.isPaused && abs(f.engine.progress - 0.6) < 0.000001 && f.owner.current!.speed == 0)
+    f.engine.togglePause(); f.engine.previewSeek(1); f.engine.seek(to: 1)
+    precondition(!f.engine.isSimulating && f.at(f.b) && f.owner.current!.speed == 0)
+    precondition(f.notifications == ["Staying at destination"])
+
+    f.prepare(); f.engine.configureFinish(RouteFinishConfiguration(action: .backAndForth)); f.engine.startSimulation()
+    f.engine.previewSeek(0.4)
+    f.clock += 100; f.engine.advanceRoute() // Cross the outbound leg with the finger held.
+    precondition(f.engine.isSimulating && f.owner.current!.speed > 0)
+    precondition(f.engine.previewPosition != nil)
+    f.engine.seek(to: 0.4)
+    precondition(abs(f.engine.progress - 0.4) < 0.000001 && f.owner.current!.speed > 0)
+}
+
 @main final class EngineApp: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
@@ -218,7 +268,8 @@ func testRouteStopEngine() {
         DispatchQueue.main.async {
             testRouteFinishEngine()
             testRouteStopEngine()
-            let text = "PASS: actual RouteSimulator prepared defaults, all six live finish actions, both Stop choice sets/defaults, Cancel, stale replies, exact previous/current/start/specific/real outcomes, motion and altitude\n"
+            testMovingScrubEngine()
+            let text = "PASS: actual RouteSimulator finish actions, Route Stop choices/outcomes, moving/paused scrub, live speed during scrub, Cancel, reverse transition, endpoint completion, motion and altitude\n"
             let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("results.txt")
             try! text.write(to: path, atomically: true, encoding: .utf8)
         }
