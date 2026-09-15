@@ -4,15 +4,14 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: Phase 2 accepted at `13ee72e` build 13; full CI 34849262175 SUCCESS, package/signing verified. Phase 3: R5 `f962922` build14 full CI 34882926556 SUCCESS; R6 `91dae7d` build15 pushed (CI 34883627252). R18-R21 `b7df278` build16 pushed; F5 `269fc4a` build17 pushed; test fix `b5eb299` pushed. R6 drag test passed; short-layout Stop exposed shared-alert presentation conflict, fix `e3901f8` build18 pushed (34885693225); build19 strengthens actual preparation/auto-start cancellation coverage. Next: inspect/fix Phase 3 CI, including real touch tests, then acceptance.
-- Audit CI: [34759000421](https://github.com/dm2mymcszt-commits/Andromeda/actions/runs/34759000421), source `f2c2a4256ca6782cf904dad0dd607f109fdb6896`: completed SUCCESS; package, model/live checks and all preview checks passed.
-- Downloaded audit package: `build/trollroute-phase0/package/Geranium.tipa`; ZIP/ARM64/app+helper+share entitlements verified. SHA256 `f1941ea870dc0f71299993ee4493d72f022082f15de4d75f0490d82bade0abd9`.
-- Compact resume/audit split: `e7e20a2`, pushed; long audit preserved intact in ROUND-AUDIT.md.
+- Current checkpoint: **Phase 3 validation**, build20 pending push. Phase 2 accepted (`13ee72e`); Phase 3 implementation through `6ee3ce7` is committed and pushed.
+- CI 34886008482: app/model/live checks pass; toolbar drag passes; long press, short-toolbar confirmation and favorite observation fail. Build20 fixes recognizer competition, uses iOS15 alert presentation and refreshes the test's saved-favorite observation on dismissal.
+- **Next:** inspect build20 full CI; fix remaining failures, inspect simulator visuals and accept Phase 3 before Phase 4. Details/history in audit.
 - Persist each finished step and its next action. Keep this file short; append detailed findings to audit. Delete **all three ROUND files** in the final commit.
 
 ## Decisions already approved
 
-- **Entitlement removal table approved** on 2026-09-13 (exact section 0.5 at `c3ba6b9`, approval recorded `575d61d`). Apply in Phase 2, not before. Keep rows stay; future extension privileges need separate review.
+- **Entitlement removal table approved** on 2026-09-13 (exact section 0.5 at `c3ba6b9`, approval recorded `575d61d`). Applied in Phase 2. Keep rows stay; future extension privileges need separate review.
 - **Exact GitHub list approved**: rename to TrollRoute; description "Location simulation and route playback for TrollStore."; default `experiment/route-motion`; keep `main`; delete only the 14 tags listed with SHAs in audit; update origin. Executed and verified: new identity/default/description, all 14 tags removed, main preserved.
 - **Live Activity destination = current leg endpoint**, including original start on return legs.
 - Icon comparison at `1349f7f` explicitly approved on 2026-09-13; ship that exact render, without the rim.
@@ -39,9 +38,9 @@
 | 2 F2 injection | Done; phone test required | `c5cbc37` build 9 pushed. Root cause: restart/timezone per sample, unbounded slider inputs. 4 Hz coalescing + immediate jump/pause/arrival + geometry UI. Full CI 34816390584 SUCCESS, including adapter/cancellation tests and all previews |
 | 2 F1 altitude | Done; phone check | `13ee72e` build 13: batched terrain, weighted quota, held/provisional refinement, separate prepared/active profiles. Full CI 34849262175 SUCCESS, including actual-owner terrain lifecycle tests |
 | 2 acceptance | Done | `13ee72e`: all model/live/UI checks SUCCESS; signed build 13 verified. Build/package 46 s; phone limitations in audit |
-| 3 R5, R6 | In progress | R5 `f962922` full CI SUCCESS; R6 `91dae7d`: drag XCTest passed; short-layout Stop alert failed. Separate alert hosts fix build18 pending CI. Next long-press routing |
-| 3 R18, R19, R20, R21 | In progress | `b7df278` build16 long press + one-shot Navigation calculation/auto-start pushed; controller/draft/touch tests added, CI pending |
-| 3 F5 + acceptance | In progress | Build17 search/map favorite editor + persistence/touch tests implemented. Phase acceptance waits for current full CI and visual review |
+| 3 R5, R6 | Validation | R5 `f962922`, R6 `91dae7d`; real drag test passes. Short-toolbar alert awaits build20 |
+| 3 R18, R19, R20, R21 | Validation | `b7df278`, workflow/cancellation `6ee3ce7`; model matrix passes; real gesture check awaits build20 |
+| 3 F5 + acceptance | Validation | `269fc4a`; persistence models pass, UI observation corrected in build20. Full CI + visual review required |
 | 4 R11, R12, R13 | Not started | Default/per-trip/live finish action, including return legs |
 | 4 R15, R16, R17 | Not started | All Route Stop entry points; both choice sets/outcomes/default preselection |
 | 4 R14, F3 + acceptance | Not started | Credits inside active panel; moving scrub preview; engine tests + screenshots |
@@ -59,7 +58,7 @@
 ## Carry-forward constraints
 
 - Three distinct systems: main Stop ends spoofing; Route Stop always asks location outcome; finish action applies at natural arrival.
-- Existing preview tests omit the production toolbar ScrollView; existing route tests omit RouteSimulator itself. Add real composition/engine coverage in affected phases.
+- Toolbar UI tests now use the production modifier and real gestures. Existing route tests still omit RouteSimulator itself; add actual-engine coverage in Phase 4.
 - Old favorites/finish destination are WGS-84; recents are map coordinates. Preserve formats and old data. Removing no-container later must not hide newly imported preferences.
 - Root helper/dead utilities removed at d40830b. Welcome/checkSandbox/Favorites remain live. New approved icon is opaque PNG; identity localizations updated.
 - Source confirms missing share delivery events, not a fixed one-minute timer or a proven scenePhase race. Do not replace with polling.

@@ -101,10 +101,12 @@ final class MapMoveController: ObservableObject {
 struct MapMoveConfirmation: ViewModifier {
     @ObservedObject var controller: MapMoveController
     func body(content: Content) -> some View {
-        content.alert(item: $controller.presentedRequest) { request in
-            Alert(title: Text("Move location here?"), message: Text(request.message),
-                  primaryButton: .cancel(Text("Cancel")) { controller.cancel() },
-                  secondaryButton: .default(Text("Move")) { controller.confirm(request) })
-        }
+        content.alert("Move location here?", isPresented: Binding(
+            get: { controller.presentedRequest != nil },
+            set: { if !$0 { controller.presentedRequest = nil } }),
+            presenting: controller.presentedRequest) { request in
+                Button("Cancel", role: .cancel) { controller.cancel() }
+                Button("Move") { controller.confirm(request) }
+            } message: { request in Text(request.message) }
     }
 }

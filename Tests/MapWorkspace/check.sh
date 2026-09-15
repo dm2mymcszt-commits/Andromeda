@@ -49,7 +49,11 @@ python3 Tests/MapWorkspace/ui-project.py "$QA_DIR"
 xcodebuild test -project "$QA_DIR/MapGestureTests.xcodeproj" -scheme MapGestureTests \
   -destination "platform=iOS Simulator,id=$DEVICE" -parallel-testing-enabled NO \
   -derivedDataPath "$QA_DIR/DerivedData" -resultBundlePath "$QA_DIR/Gestures.xcresult" \
-  CODE_SIGNING_ALLOWED=NO > "$QA_DIR/gestures.log" 2>&1 || { cat "$QA_DIR/gestures.log"; exit 1; }
+  CODE_SIGNING_ALLOWED=NO > "$QA_DIR/gestures.log" 2>&1 || {
+    xcrun xcresulttool export attachments --path "$QA_DIR/Gestures.xcresult" --output-path "$QA_DIR/attachments" || true
+    cat "$QA_DIR/gestures.log"
+    exit 1
+  }
 cat "$QA_DIR/gestures.log"
 for appearance in dark light; do
   xcrun simctl ui "$DEVICE" appearance "$appearance"

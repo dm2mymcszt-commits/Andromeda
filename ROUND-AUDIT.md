@@ -966,3 +966,12 @@ R6 CI34883627252: real drag-below-Stop test PASSED for labels and icons, includi
 ### Long-press auto-start acceptance coverage
 
 The initial matrix proved the chosen auto-start flag reached Navigation, but not the actual directions-completion decision. Extracted that decision into RoutePreparationController, used directly by RouteSimSheet: successful directions publish preview then optionally start; failure never starts; duplicate/obsolete completions and closing Navigation cannot start. Added tests for the actual workflow. Navigation also invalidates a pending notification-permission start on disappearance, so closing and reopening before the permission callback cannot revive the old start. Existing motion/sample path remains unchanged. This is a Phase3 acceptance refinement, not Phase4 work. Build19.
+
+## Phase 3 CI diagnosis and build20
+
+- Resume verified clean/pushed `6ee3ce7`, build19. Full CI34886008482 failed only the workspace UI step: real below-toolbar panning passed; long-press counter stayed zero; short-toolbar Stop alert absent; saved-favorite test label stayed at its initial value. App build, models and live checks passed.
+- Favorite UI observation was a direct defaults read in an unobserved Text expression: saving a nested sheet need not reevaluate the enclosing host. Refresh the observation on picker dismissal, then await the actual value. Production persistence and editor are unchanged; unit tests already exercise the production writer.
+- Long press waited on double-tap failure and competed with MapKit's own hold recognizer. Remove the long-press/double-tap failure dependency (the single tap still waits on both), allow simultaneous recognition specifically with other long presses, keep pan competition. Real hold/single/double test remains the acceptance gate.
+- Separate background hosts in build18 did not fix the legacy alert presentation. Replace all three map confirmation modifiers' legacy Alert API with the iOS15 isPresented/presenting API. Keep request-ID/cancellation logic and destructive main Stop unchanged; test now reports callback/presentation state if it fails.
+- Cancelled start permission work now also clears Navigation's isStarting flag when the view disappears, so reopening cannot inherit a disabled start control.
+- Build20 includes xcresult attachment export on UI failure for direct screenshot inspection. Phase 3 remains unaccepted pending full CI; no Phase 4 work started.

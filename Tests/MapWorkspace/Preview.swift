@@ -20,6 +20,8 @@ struct WorkspacePreview: View {
     @StateObject private var mainStop = MainStopController()
     @State private var pressCount = 0
     @State private var tapCount = 0
+    @State private var savedFavoriteName = "No favorite"
+    @State private var lastAction = "none"
     @State private var tapped: EquatableCoordinate?
     // Deterministic address fixture for the confirmation screenshot, not a live lookup.
     @StateObject private var mapMove = MapMoveController(lookup: { _, completion in
@@ -43,6 +45,7 @@ struct WorkspacePreview: View {
         }
         .frame(height: screen == "gestures-short" ? 240 : nil)
         .modifier(MapToolbarOverlay(onAction: { action in
+            lastAction = action.rawValue
             if action == .settings { showSettings = true }
             if action == .search { showSearch = true }
             if action == .route { routeActive.toggle() }
@@ -51,12 +54,14 @@ struct WorkspacePreview: View {
         .frame(maxHeight: .infinity, alignment: .top)
         .overlay(alignment: .topLeading) {
             if screen.hasPrefix("gestures") {
+                Text("action=\(lastAction),confirmation=\(mainStop.presentedRequest != nil)")
+                    .accessibilityIdentifier("toolbar-state").allowsHitTesting(false)
                 MapObservation().frame(width: 1, height: 1).allowsHitTesting(false)
                 Text("presses=\(pressCount),taps=\(tapCount)")
                     .accessibilityIdentifier("gesture-counts").allowsHitTesting(false)
             }
             if screen == "favorites" {
-                Text(BookMarkRetrieve().last?["name"] as? String ?? "No favorite")
+                Text(savedFavoriteName)
                     .accessibilityIdentifier("saved-favorite").allowsHitTesting(false)
             }
         }
@@ -71,7 +76,9 @@ struct WorkspacePreview: View {
         }
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(isPresented: $showAltitude) { AltitudeSheet(settings: .shared, controller: altitude) }
-        .sheet(isPresented: $showSearch) {
+        .sheet(isPresented: $showSearch, onDismiss: {
+            savedFavoriteName = BookMarkRetrieve().last?["name"] as? String ?? "No favorite"
+        }) {
             RouteLocationPicker(title: "Find a place", region: nil, selectedCoordinate: nil,
                 recents: places, initialQuery: screen == "favorites" ? "44.817059, -0.585746" : "125 Cr Gambetta, 33400 Talence", select: { _ in })
         }

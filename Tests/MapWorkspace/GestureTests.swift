@@ -54,7 +54,8 @@ final class MapGestureTests: XCTestCase {
         toolbar.swipeUp()
         XCTAssertTrue(app.buttons["Stop"].isHittable)
         app.buttons["Stop"].tap()
-        XCTAssertTrue(app.alerts["Stop location spoofing?"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.alerts["Stop location spoofing?"].waitForExistence(timeout: 3),
+                      app.staticTexts["toolbar-state"].label)
         app.alerts.buttons["Cancel"].tap()
         XCTAssertFalse(app.alerts["Stop location spoofing?"].exists)
     }
@@ -101,7 +102,9 @@ final class MapGestureTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Find a place"].waitForExistence(timeout: 5),
                       "Saving must leave the picker open, not select or move")
         app.navigationBars["Find a place"].buttons["Cancel"].tap()
-        XCTAssertEqual(app.staticTexts["saved-favorite"].label, "Saved search result")
+        expectation(for: NSPredicate(format: "label == %@", "Saved search result"),
+                    evaluatedWith: app.staticTexts["saved-favorite"])
+        waitForExpectations(timeout: 5)
         app.buttons["Search"].tap()
         app.buttons["Choose on Map"].tap()
         XCTAssertTrue(app.navigationBars["Choose on Map"].waitForExistence(timeout: 5))
@@ -112,6 +115,8 @@ final class MapGestureTests: XCTestCase {
                       "Saving a map pin must not select it")
         app.navigationBars["Choose on Map"].buttons["Cancel"].tap()
         app.navigationBars["Find a place"].buttons["Cancel"].tap()
-        XCTAssertEqual(app.staticTexts["saved-favorite"].label, "Saved map point")
+        expectation(for: NSPredicate(format: "label == %@", "Saved map point"),
+                    evaluatedWith: app.staticTexts["saved-favorite"])
+        waitForExpectations(timeout: 5)
     }
 }

@@ -137,7 +137,8 @@ struct CustomMapView: UIViewRepresentable {
             press.delegate = self
             press.isEnabled = parent.onLongPress != nil
             mapView.addGestureRecognizer(press)
-            press.require(toFail: doubleTap)
+            // A held finger must recognize before touch-up. Only the single tap
+            // waits for double-tap failure; a long press is distinguished by duration.
             tap.require(toFail: press)
             longPress = press
         }
@@ -153,7 +154,11 @@ struct CustomMapView: UIViewRepresentable {
 
         func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
                                shouldRecognizeSimultaneouslyWith other: UIGestureRecognizer) -> Bool {
+            // MapKit has its own hold recognizer. It must not prevent our route
+            // hold; panning still competes normally and cancels a moving finger.
             gestureRecognizer === doubleTapGuard || other === doubleTapGuard
+                || (gestureRecognizer === longPress && other is UILongPressGestureRecognizer)
+                || (other === longPress && gestureRecognizer is UILongPressGestureRecognizer)
         }
 
         func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,

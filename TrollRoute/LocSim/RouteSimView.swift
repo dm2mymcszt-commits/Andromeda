@@ -283,6 +283,7 @@ struct RouteSimSheet: View {
         .onDisappear {
             preparation.cancel()
             startRequestID = UUID()
+            isStarting = false
             currentLocation.cancel()
             draft.start = startCoord.map { RoutePlace(name: startText, coordinate: $0) }
             draft.destination = endCoord.map { RoutePlace(name: endText, coordinate: $0) }
