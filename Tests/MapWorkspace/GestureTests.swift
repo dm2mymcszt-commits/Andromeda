@@ -9,6 +9,52 @@ final class MapGestureTests: XCTestCase {
         return app
     }
 
+    private func capture(_ app: XCUIApplication, _ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    func testMainStopPreservesRouteUntilConfirmed() {
+        let app = launch()
+        app.buttons["Route"].tap()
+        app.buttons["Stop"].tap()
+        let alert = app.alerts["Stop location spoofing?"]
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        XCTAssertTrue(alert.staticTexts["This will stop the running route and restore your real location."].exists)
+        capture(app, "main-stop-running-route")
+        alert.buttons["Cancel"].tap()
+        XCTAssertTrue(app.staticTexts["toolbar-state"].label.contains("running=true"))
+        app.buttons["Stop"].tap()
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        alert.buttons["Stop"].tap()
+        XCTAssertTrue(app.staticTexts["toolbar-state"].label.contains("running=false"))
+        app.terminate()
+        app.launchArguments = ["--screen", "gestures", "--stop-without-confirmation"]
+        app.launch()
+        XCTAssertTrue(app.buttons["Route"].waitForExistence(timeout: 15))
+        app.buttons["Route"].tap()
+        app.buttons["Stop"].tap()
+        XCTAssertFalse(alert.exists)
+        XCTAssertTrue(app.staticTexts["toolbar-state"].label.contains("running=false"))
+    }
+
+    func testLongPressConfirmationCancelAndCreate() {
+        let app = launch("gestures-confirm")
+        let spot = app.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.65))
+        let alert = app.alerts["Create route to here?"]
+        spot.press(forDuration: 1)
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        capture(app, "long-press-confirmation")
+        alert.buttons["Cancel"].tap()
+        XCTAssertEqual(app.staticTexts["gesture-counts"].label, "presses=0,taps=0")
+        spot.press(forDuration: 1)
+        XCTAssertTrue(alert.waitForExistence(timeout: 5))
+        alert.buttons["Create route"].tap()
+        XCTAssertEqual(app.staticTexts["gesture-counts"].label, "presses=1,taps=0")
+    }
+
     private func mapState(_ app: XCUIApplication) -> [Double] {
         let probe = app.otherElements["map-observation"]
         XCTAssertTrue(probe.waitForExistence(timeout: 5))
@@ -88,6 +134,7 @@ final class MapGestureTests: XCTestCase {
         let oldName = field.value as? String ?? ""
         field.tap()
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: oldName.count) + name)
+        capture(app, name == "Saved search result" ? "favorite-from-search" : "favorite-from-map")
         app.navigationBars["Save as favorite"].buttons["Save"].tap()
     }
 

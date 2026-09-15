@@ -18,6 +18,8 @@ struct WorkspacePreview: View {
     @StateObject private var altitude = AltitudeController(currentLocation: { nil }, deliver: { _ in })
     @State private var routeActive = false
     @StateObject private var mainStop = MainStopController()
+    @StateObject private var longPressRoute = LongPressRouteController()
+    @AppStorage("confirmBeforeStoppingSpoofing", store: SharedPreferences.defaults) private var confirmStop = true
     @State private var pressCount = 0
     @State private var tapCount = 0
     @State private var savedFavoriteName = "No favorite"
@@ -40,7 +42,12 @@ struct WorkspacePreview: View {
             CustomMapView(tappedCoordinate: $tapped, moveToRegion: $region,
                           allowsLocationSelection: tapEnabled, showsUserLocation: false, mapStyle: mapStyle,
                           proposedPosition: mapMove.pendingRequest?.coordinate,
-                          onLongPress: screen == "gestures-long" ? { _ in pressCount += 1 } : nil)
+                          onLongPress: screen == "gestures-long" ? { _ in pressCount += 1 }
+                            : screen == "gestures-confirm" ? { point in
+                                longPressRoute.request(destination: point, enabled: true, confirm: true,
+                                    autoStart: false, spoofedStart: CLLocationCoordinate2D(latitude: 44.8, longitude: -0.6),
+                                    routeRunning: false, lookup: { _ in {} }, create: { _ in pressCount += 1 })
+                            } : nil)
                 .ignoresSafeArea()
         }
         .frame(height: screen == "gestures-short" ? 240 : nil)
@@ -49,12 +56,12 @@ struct WorkspacePreview: View {
             if action == .settings { showSettings = true }
             if action == .search { showSearch = true }
             if action == .route { routeActive.toggle() }
-            if action == .stop { mainStop.request(confirm: true, routeRunning: routeActive) { routeActive = false } }
+            if action == .stop { mainStop.request(confirm: confirmStop, routeRunning: routeActive) { routeActive = false } }
         }, joystickActive: false, routeActive: routeActive))
         .frame(maxHeight: .infinity, alignment: .top)
         .overlay(alignment: .topLeading) {
             if screen.hasPrefix("gestures") {
-                Text("action=\(lastAction),confirmation=\(mainStop.presentedRequest != nil)")
+                Text("action=\(lastAction),confirmation=\(mainStop.presentedRequest != nil),running=\(routeActive)")
                     .accessibilityIdentifier("toolbar-state").allowsHitTesting(false)
                 MapObservation().frame(width: 1, height: 1).allowsHitTesting(false)
                 Text("presses=\(pressCount),taps=\(tapCount)")
@@ -65,12 +72,13 @@ struct WorkspacePreview: View {
                     .accessibilityIdentifier("saved-favorite").allowsHitTesting(false)
             }
         }
-        .modifier(MainStopConfirmation(controller: mainStop))
         .modifier(MapMoveConfirmation(controller: mapMove))
+        .modifier(MainStopConfirmation(controller: mainStop))
+        .modifier(LongPressRouteConfirmation(controller: longPressRoute))
         .onChange(of: tapped) { coordinate in
             guard let coordinate = coordinate else { return }
             tapped = nil
-            if screen == "gestures-long" { tapCount += 1; return }
+            if screen == "gestures-long" || screen == "gestures-confirm" { tapCount += 1; return }
             mapMove.request(coordinate.coordinate, displayCoordinate: coordinate.coordinate,
                             enabled: tapEnabled, ask: askBeforeMoving, routeRunning: routeActive) { _ in }
         }
@@ -87,7 +95,7 @@ struct WorkspacePreview: View {
             if screen == "altitude-custom" { AltitudeSettings.shared.setCustom(250) }
             if screen == "altitude-negative" { AltitudeSettings.shared.setCustom(-12.5) }
             if screen.hasPrefix("altitude-") { showAltitude = true }
-            tapEnabled = screen == "settings-enabled" || screen == "gestures-long"
+            tapEnabled = screen == "settings-enabled" || screen == "gestures-long" || screen == "gestures-confirm"
             if screen == "settings" || screen == "settings-enabled" { showSettings = true }
             if screen == "search" { showSearch = true }
             if screen == "favorites" { showSearch = true }
@@ -105,6 +113,7 @@ struct WorkspacePreview: View {
 @main struct MapWorkspacePreview: App {
     init() {
         let args = ProcessInfo.processInfo.arguments
+        SharedPreferences.defaults.set(!args.contains("--stop-without-confirmation"), forKey: "confirmBeforeStoppingSpoofing")
         if let index = args.firstIndex(of: "--labels"), index + 1 < args.count {
             SharedPreferences.defaults.set(args[index + 1] == "yes", forKey: "mapButtonLabels")
         } else { SharedPreferences.defaults.set(true, forKey: "mapButtonLabels") }

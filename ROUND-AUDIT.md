@@ -975,3 +975,9 @@ The initial matrix proved the chosen auto-start flag reached Navigation, but not
 - Separate background hosts in build18 did not fix the legacy alert presentation. Replace all three map confirmation modifiers' legacy Alert API with the iOS15 isPresented/presenting API. Keep request-ID/cancellation logic and destructive main Stop unchanged; test now reports callback/presentation state if it fails.
 - Cancelled start permission work now also clears Navigation's isStarting flag when the view disappears, so reopening cannot inherit a disabled start control.
 - Build20 includes xcresult attachment export on UI failure for direct screenshot inspection. Phase 3 remains unaccepted pending full CI; no Phase 4 work started.
+
+### Build20 packaging correction / Phase3 UI matrix
+
+`4273216` compiled successfully in CI34941875688 but package identity verification failed: project version20 versus source Info.plist19. Corrected Info.plist to20 and added a local identity assertion that every project configuration matches it. No package was uploaded from that failed run.
+
+Workspace tests additionally exercise main Stop while a route is active (Cancel preserves, Confirm stops, setting OFF stops immediately), and the production long-press confirmation controller/alert (Cancel never prepares, Create prepares once). The host stacks the same three confirmation modifiers in production order. Tests retain screenshots of both dialogs and both favorite editors; attachments export on success as well as failure. These augment rather than replace model coverage and the existing real gesture tests.

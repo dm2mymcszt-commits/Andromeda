@@ -2,6 +2,7 @@
 from pathlib import Path
 import json
 import plistlib
+import re
 import sys
 import zipfile
 
@@ -11,6 +12,9 @@ assert app['CFBundleIdentifier'] == 'com.dm2mymcszt.trollroute'
 assert app['CFBundleDisplayName'] == app['CFBundleExecutable'] == 'TrollRoute'
 assert app['CFBundleShortVersionString'] == '3.0.0'
 assert int(app['CFBundleVersion']) > 4
+project_versions = set(re.findall(r'CURRENT_PROJECT_VERSION = (\d+);',
+    (root / 'TrollRoute.xcodeproj/project.pbxproj').read_text(encoding='utf-8')))
+assert project_versions == {app['CFBundleVersion']}, (project_versions, app['CFBundleVersion'])
 assert app['MinimumOSVersion'] == '15.0'
 assert app['CFBundleURLTypes'][0]['CFBundleURLSchemes'] == ['trollroute']
 project = (root / 'TrollRoute.xcodeproj/project.pbxproj').read_text(encoding='utf-8')

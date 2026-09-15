@@ -23,7 +23,7 @@ xcrun --sdk iphonesimulator swiftc TrollRoute/Storage/SharedPreferences.swift -t
   -sdk "$(xcrun --sdk iphonesimulator --show-sdk-path)" \
   TrollRoute/LocSim/CustomMapView.swift TrollRoute/LocSim/FloatingQuickMenu.swift \
   TrollRoute/LocSim/RouteLocationPicker.swift TrollRoute/LocSim/FavoritePlaceEditor.swift TrollRoute/LocSim/PlaceModels.swift TrollRoute/LocSim/PlaceInput.swift TrollRoute/LocSim/AddressQuery.swift TrollRoute/LocSim/PlaceSearch.swift TrollRoute/SettingsView.swift \
-  TrollRoute/LocSim/MapMoveConfirmation.swift TrollRoute/LocSim/MainStopConfirmation.swift \
+  TrollRoute/LocSim/MapMoveConfirmation.swift TrollRoute/LocSim/MainStopConfirmation.swift TrollRoute/LocSim/LongPressRoute.swift \
   TrollRoute/LocSim/RouteElevation.swift TrollRoute/LocSim/Altitude.swift TrollRoute/LocSim/AltitudeSheet.swift \
   TrollRoute/LocSim/CoordTransform.swift TrollRoute/LocSim/RouteFinish.swift "$QA_DIR/Bookmarks.swift" \
   "$QA_DIR/AppSettings.swift" Tests/MapWorkspace/Preview.swift \
@@ -55,6 +55,7 @@ xcodebuild test -project "$QA_DIR/MapGestureTests.xcodeproj" -scheme MapGestureT
     exit 1
   }
 cat "$QA_DIR/gestures.log"
+xcrun xcresulttool export attachments --path "$QA_DIR/Gestures.xcresult" --output-path "$QA_DIR/attachments"
 for appearance in dark light; do
   xcrun simctl ui "$DEVICE" appearance "$appearance"
   for screen in map settings settings-enabled confirmation search altitude-automatic altitude-custom altitude-negative; do
