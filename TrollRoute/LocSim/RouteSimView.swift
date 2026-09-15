@@ -638,6 +638,7 @@ struct RoutePlaybackPanel: View {
     let stop: () -> Void
     var finishActionTitle: String? = nil
     var editFinish: (() -> Void)? = nil
+    var showsRoutingCredit = false
     @State private var draggedProgress: Double?
     @GestureState private var dragging = false
 
@@ -720,6 +721,11 @@ struct RoutePlaybackPanel: View {
                 }
             } else {
                 ProgressView(value: progress).tint(.accentColor)
+            }
+            if showsRoutingCredit {
+                Text("© [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) · [Routing](https://routing.openstreetmap.de/about.html) · [Fix the map](https://www.openstreetmap.org/fixthemap)")
+                    .font(.caption2)
+                    .accessibilityIdentifier("active-route-credit")
             }
         }
         .padding(14)

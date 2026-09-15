@@ -413,7 +413,8 @@ private struct PlaybackFixture: View {
                 collapsed: $collapsed,
                 preview: { previewPosition = trip.track.position(at: trip.track.length * $0).coordinate },
                 seek: { trip.seek($0); previewPosition = nil }, cancelSeek: { previewPosition = nil },
-                pause: { paused.toggle() }, stop: { paused = true })
+                pause: { paused.toggle() }, stop: { paused = true },
+                finishActionTitle: "Drive back to start", editFinish: {}, showsRoutingCredit: true)
                 .padding(.horizontal, 12).padding(.bottom, 6)
                 .background(GeometryReader { geometry in
                     Color.clear.preference(key: PlaybackFrames.self, value: ["panel": geometry.frame(in: .global)])

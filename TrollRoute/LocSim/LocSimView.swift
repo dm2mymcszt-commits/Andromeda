@@ -113,10 +113,11 @@ struct LocSimView: View {
                     preview: routeSimulator.previewSeek, seek: routeSimulator.seek,
                     cancelSeek: routeSimulator.cancelSeek, pause: routeSimulator.togglePause, stop: routeSimulator.requestRouteStop,
                     finishActionTitle: routeSimulator.finishConfiguration.action.title,
-                    editFinish: { showRouteFinish = true }
+                    editFinish: { showRouteFinish = true },
+                    showsRoutingCredit: routeSimulator.travelMode == .cycling
                 ).padding(.horizontal, 12).padding(.bottom, 6)
             }
-            if routeSimulator.travelMode == .cycling && !routeSimulator.availableRoutes.isEmpty {
+            if !routeSimulator.isSimulating && routeSimulator.travelMode == .cycling && !routeSimulator.availableRoutes.isEmpty {
                 Text("© [OpenStreetMap contributors](https://www.openstreetmap.org/copyright) · [Routing](https://routing.openstreetmap.de/about.html) · [Fix the map](https://www.openstreetmap.org/fixthemap)")
                     .font(.caption2).padding(6).background(.regularMaterial)
             }
