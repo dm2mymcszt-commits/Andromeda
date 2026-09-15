@@ -7,7 +7,9 @@ import plistlib
 import sys
 
 folder = Path(sys.argv[1]).resolve()
-project = folder / 'MapGestureTests.xcodeproj'
+test_name = sys.argv[3] if len(sys.argv) > 3 else 'MapGestureTests'
+source_path = sys.argv[2] if len(sys.argv) > 2 else 'Tests/MapWorkspace/GestureTests.swift'
+project = folder / f'{test_name}.xcodeproj'
 project.mkdir(parents=True, exist_ok=True)
 objects = {}
 def obj(identifier, isa, **values):
@@ -15,9 +17,9 @@ def obj(identifier, isa, **values):
     return identifier
 
 source = obj('A00000000000000000000001', 'PBXFileReference', lastKnownFileType='sourcecode.swift',
-             path=str(Path('Tests/MapWorkspace/GestureTests.swift').resolve()), sourceTree='<absolute>')
+             path=str(Path(source_path).resolve()), sourceTree='<absolute>')
 product = obj('A00000000000000000000002', 'PBXFileReference', explicitFileType='wrapper.cfbundle',
-              path='MapGestureTests.xctest', sourceTree='BUILT_PRODUCTS_DIR')
+              path=f'{test_name}.xctest', sourceTree='BUILT_PRODUCTS_DIR')
 group = obj('A00000000000000000000003', 'PBXGroup', children=[source, product], sourceTree='<group>')
 buildfile = obj('A00000000000000000000004', 'PBXBuildFile', fileRef=source)
 sources = obj('A00000000000000000000005', 'PBXSourcesBuildPhase', buildActionMask=2147483647,
@@ -30,9 +32,9 @@ settings = dict(SDKROOT='iphoneos', IPHONEOS_DEPLOYMENT_TARGET='17.0', SWIFT_VER
 config = obj('A00000000000000000000006', 'XCBuildConfiguration', name='Debug', buildSettings=settings)
 configs = obj('A00000000000000000000007', 'XCConfigurationList', buildConfigurations=[config],
               defaultConfigurationIsVisible=0, defaultConfigurationName='Debug')
-target = obj('A00000000000000000000008', 'PBXNativeTarget', name='MapGestureTests',
+target = obj('A00000000000000000000008', 'PBXNativeTarget', name=test_name,
              buildConfigurationList=configs, buildPhases=[sources], buildRules=[], dependencies=[],
-             productName='MapGestureTests', productReference=product,
+             productName=test_name, productReference=product,
              productType='com.apple.product-type.bundle.ui-testing')
 root = obj('A00000000000000000000009', 'PBXProject', attributes=dict(LastUpgradeCheck='1640'),
            buildConfigurationList=configs, compatibilityVersion='Xcode 14.0', developmentRegion='en',
@@ -42,8 +44,8 @@ root = obj('A00000000000000000000009', 'PBXProject', attributes=dict(LastUpgrade
     objectVersion='56', objects=objects, rootObject=root)))
 schemes = project / 'xcshareddata/xcschemes'
 schemes.mkdir(parents=True, exist_ok=True)
-reference = f'<BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{target}" BuildableName="MapGestureTests.xctest" BlueprintName="MapGestureTests" ReferencedContainer="container:MapGestureTests.xcodeproj"/>'
-(schemes / 'MapGestureTests.xcscheme').write_text(f'''<?xml version="1.0" encoding="UTF-8"?>
+reference = f'<BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="{target}" BuildableName="{test_name}.xctest" BlueprintName="{test_name}" ReferencedContainer="container:{test_name}.xcodeproj"/>'
+(schemes / f'{test_name}.xcscheme').write_text(f'''<?xml version="1.0" encoding="UTF-8"?>
 <Scheme LastUpgradeVersion="1640" version="1.3">
 <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES"><BuildActionEntries>
 <BuildActionEntry buildForTesting="YES" buildForRunning="NO" buildForProfiling="NO" buildForArchiving="NO" buildForAnalyzing="YES">{reference}</BuildActionEntry>

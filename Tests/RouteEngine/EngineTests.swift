@@ -27,7 +27,7 @@ final class EngineFixture {
     let b = CLLocationCoordinate2D(latitude: 44.81, longitude: -0.59)
     let c = CLLocationCoordinate2D(latitude: 45, longitude: 1)
 
-    init() {
+    init(realtime: Bool = false) {
         let domain = "engine-tests-\(UUID().uuidString)"
         let storage = UserDefaults(suiteName: domain)!
         let recording = EngineDriver()
@@ -41,7 +41,7 @@ final class EngineFixture {
         owner = LocationSession(driver: recording, defaults: storage, settings: altitudeSettings,
             injectionInterval: 0, lookup: { _ in nil }, batchLookup: { _ in nil })
         engine = RouteSimulator(locationSession: owner, finishDefaults: settings, stopDefaults: storage,
-            now: { [unowned self] in self.clock },
+            now: { [unowned self] in realtime ? ProcessInfo.processInfo.systemUptime : self.clock },
             notifyCompletion: { [unowned self] in self.notifications.append($0) })
     }
     func prepare() {

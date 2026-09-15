@@ -14,7 +14,7 @@ struct RouteFinishControls: View {
                 else { configuration.action = action }
             })) {
                 ForEach(RouteFinishAction.allCases) { action in Text(action.title).tag(action) }
-            }.pickerStyle(.menu)
+            }.pickerStyle(.menu).accessibilityIdentifier("route-finish-action")
             if configuration.action == .goToPlace {
                 if let place = configuration.destination {
                     Text(place.name).font(.subheadline)
