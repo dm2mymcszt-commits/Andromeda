@@ -4,9 +4,8 @@
 
 - Plan: [ROUND-PLAN.md](ROUND-PLAN.md). Detailed evidence, root causes, inventory, exact approvals/commands, tag snapshot and migration inputs: [ROUND-AUDIT.md](ROUND-AUDIT.md).
 - Branch: `experiment/route-motion`; origin: `dm2mymcszt-commits/TrollRoute`. Application baseline `546ffb2`; Phase 1 identity and migration pushed.
-- Current checkpoint: **Phase 3 accepted**, build20 `8b2d8b2`, full CI34942207636 SUCCESS; six real-touch tests pass, screenshots reviewed, package/signing verified.
-- Phase4 R11 `1976d8a`; R12/R13 `08eb495` build22: full CI34972501561 SUCCESS. R15-R17 `369ef15` build23 pushed; CI34973886091 running. R14 `c0962af` build24 pushed. F3 `6d4fa2e` build25 pushed; CI34974393620. `26416c0` build26 adds actual Navigation/Stop/finish UI tests; CI34975112552 running. `b0fdc0b` build27 adds both Navigation Stop checks; CI34975588062 running. Build26 UI job passed4 tests; screenshots reviewed. Build28 corrects a MapKit attribution overlap found in review.
-- **Next:** push/check build28 and review new panel screenshots (native MapKit attribution above panel), plus build27/28 five UI tests and full CI. Confirm full Phase4 acceptance before Phase5.
+- Current checkpoint: **Phase 4 accepted**, build28 `e1f3cac`, full CI34976588469 SUCCESS; five route UI tests, engine tests, screenshots and package/signing verified.
+- **Next:** Phase5 shared-command architecture and exact extension privilege table; obtain separate approval before adding privileges. Implement source labels, durable delivery, immediate signaling, direct Go/Favorite and automatic Navigation handoff with lifecycle tests.
 - Persist each finished step and its next action. Keep this file short; append detailed findings to audit. Delete **all three ROUND files** in the final commit.
 
 ## Decisions already approved
@@ -41,9 +40,9 @@
 | 3 R5, R6 | Done | `f962922`, `91dae7d`, `4273216`, `8b2d8b2`; six real-touch tests and full CI34942207636 SUCCESS |
 | 3 R18, R19, R20, R21 | Done; real-location phone check | `b7df278`, `6ee3ce7`, `4273216`; model matrix, preparation workflow and gesture/confirmation tests pass |
 | 3 F5 + acceptance | Done | `269fc4a`, `8b2d8b2`; save/edit/persistence tests, visual review and signed build20 pass |
-| 4 R11, R12, R13 | In progress | R11 `1976d8a`; R12/R13 `08eb495`: full CI34972501561 SUCCESS; dedicated Phase4 UI acceptance pending |
-| 4 R15, R16, R17 | In progress | `369ef15`: all three in-app controls, both dialogs/defaults, exact held samples and stale-trip guards; engine matrix passed in CI34973886091; full UI acceptance pending. Injection change: phone Bitmoji check |
-| 4 R14, F3 + acceptance | In progress | R14 `c0962af`; F3 `6d4fa2e`: preview-only dragging, normal moving/paused metadata and current-leg seeking. engine scrub matrix passed in CI34974393620; full CI/UI acceptance pending; phone Bitmoji check |
+| 4 R11, R12, R13 | Done; phone checks remain | `1976d8a`, `08eb495`; full engine/action matrix and actual Navigation/panel UI pass |
+| 4 R15, R16, R17 | Done; phone checks remain | `369ef15`, `b0fdc0b`; both sets, all outcomes, three Stop entry points pass; phone Bitmoji check |
+| 4 R14, F3 + acceptance | Done; phone checks remain | `c0962af`, `6d4fa2e`, `e1f3cac`; credits reviewed, moving/paused scrub metadata pass; signed build28; phone Bitmoji check |
 | 5 R7, R8, R9, R10, F4 | Not started | Direct share Go/Favorite; auto-open endpoints; immediate exactly-once channel/source labels |
 | 5 acceptance | Not started | Lifecycle harness, source/outcome tests; phone flows |
 | 6 R29, R30, R31, R32 | Not started | Registration/access/accuracy status, evidence-based onboarding |
@@ -58,7 +57,7 @@
 ## Carry-forward constraints
 
 - Three distinct systems: main Stop ends spoofing; Route Stop always asks location outcome; finish action applies at natural arrival.
-- Toolbar UI tests now use the production modifier and real gestures. Phase4 actual-engine harness now passes finish-action coverage; expand it for Stop and scrub.
+- Production toolbar/Navigation touch tests and full engine finish/Stop/scrub matrices pass. Physical injection and locked-screen behavior remain phone checks.
 - Old favorites/finish destination are WGS-84; recents are map coordinates. Preserve formats and old data. Removing no-container later must not hide newly imported preferences.
 - Root helper/dead utilities removed at d40830b. Welcome/checkSandbox/Favorites remain live. New approved icon is opaque PNG; identity localizations updated.
 - Source confirms missing share delivery events, not a fixed one-minute timer or a proven scenePhase race. Do not replace with polling.
